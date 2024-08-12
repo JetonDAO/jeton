@@ -1,0 +1,23 @@
+{
+  "name": "jeton",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev-web": "turbo run dev --filter @jeton/web",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "turbo run format"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.12",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
