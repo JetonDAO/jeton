@@ -5,10 +5,16 @@
     "build": "turbo run build",
     "dev-web": "turbo run dev --filter @jeton/web",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "turbo run format"
+    "check": "turbo run check",
+    "fix": "turbo run fix",
+    "biome:check": "biome check .",
+    "biome:fix": "biome check . --write",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "husky": "^9.1.4",
+    "lint-staged": "^15.2.8",
     "turbo": "^2.0.12",
     "typescript": "^5.4.5"
   },
@@ -16,8 +22,10 @@
     "node": ">=20"
   },
   "packageManager": "npm@10.8.2",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "workspaces": ["apps/*", "packages/*"],
+  "lint-staged": {
+    "*": [
+      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+    ]
+  }
 }

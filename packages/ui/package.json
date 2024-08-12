@@ -8,7 +8,7 @@
     "./code": "./src/code.tsx"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*",
+    "@jeton/typescript-config": "*",
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",

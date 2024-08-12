@@ -12,11 +12,19 @@
       "cache": false,
       "persistent": true
     },
-    "lint": {
-      "dependsOn": ["^lint"]
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false
     },
-    "format": {
-      "dependsOn": ["^format"]
+    "check": {
+      "dependsOn": ["^check", "//#biome:check"]
+    },
+    "fix": {
+      "dependsOn": ["^fix", "//#biome:fix"]
+    },
+    "//#biome:check": {},
+    "//#biome:fix": {
+      "cache": false
     }
   }
 }

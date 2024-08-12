@@ -6,8 +6,8 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 - `web`: a [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a React component library shared by `web` application
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@jeton/ui`: a React component library shared by `web` application
+- `@jeton/typescript-config`: `tsconfig.json`s used throughout the monorepo
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
 ### Utilities
