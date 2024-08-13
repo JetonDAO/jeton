@@ -1,0 +1,11 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["next-on-pages:build"],
+      "outputs": [".vercel/**"]
+    },
+    "next-on-pages:build": {}
+  }
+}

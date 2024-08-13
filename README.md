@@ -58,7 +58,14 @@ To add a npm package `pkg` use the following command:
 
 ```shell
 cd jeton
-npm install pkg --workspace=<YOUR PROJECT/WORKSPACE>
+npm install --workspace=<YOUR PROJECT/WORKSPACE> [--save|--save-dev] pkg
+```
+
+For example:
+
+```shell
+cd jeton
+npm install --workspace=apps/web --save-dev @cloudflare/next-on-pages
 ```
 
 ### Lint Project

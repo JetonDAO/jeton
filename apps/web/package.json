@@ -5,19 +5,22 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "next-on-pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "@jeton/ui": "*",
+    "next": "15.0.0-rc.0",
     "react": "19.0.0-rc-f994737d14-20240522",
-    "react-dom": "19.0.0-rc-f994737d14-20240522",
-    "next": "15.0.0-rc.0"
+    "react-dom": "19.0.0-rc-f994737d14-20240522"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.2",
+    "@cloudflare/workers-types": "^4.20240806.0",
     "@jeton/typescript-config": "*",
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "typescript": "^5"
   }
 }

@@ -1,0 +1,25 @@
+name: "Deploy"
+description: "Deploy Apps"
+inputs:
+  cloudflare-api-token:
+    description: "Couldflare API Token"
+    required: true
+outputs:
+  cloudflare-preview-url:
+    description: "Couldflare Preview URL"
+    value: ${{ steps.deploy.outputs.deployment-url }}
+runs:
+  using: "composite"
+  steps:
+    - name: Setup
+      uses: ./.github/actions/setup
+    - name: Run Build
+      shell: bash
+      run: npm run build
+    - name: Deploy To Cloudflare
+      id: deploy
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ inputs.cloudflare-api-token }}
+        workingDirectory: "apps/web"
+        command: pages deploy

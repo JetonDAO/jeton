@@ -1,0 +1,10 @@
+name: "Test"
+description: "Run Tests"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup
+      uses: ./.github/actions/setup
+    - name: Run Tests
+      shell: bash
+      run: npm run test

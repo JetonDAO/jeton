@@ -136,6 +136,9 @@ dist
 # Vercel
 .vercel
 
+# Wrangler
+.wrangler
+
 # Build Outputs
 .next/
 out/

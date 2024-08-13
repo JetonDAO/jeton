@@ -1,0 +1,20 @@
+name: "Setup"
+description: "Setup the dependencies"
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Turbo Build Setup
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        key: ${{ runner.os }}-release-job-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-release-job-
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: "npm"
+    - name: Install Dependencies
+      shell: bash
+      run: npm install
