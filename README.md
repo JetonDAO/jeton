@@ -11,14 +11,35 @@ This Turborepo includes the following packages/apps:
 - `web`: a [Next.js](https://nextjs.org/) app
 - `@jeton/ui`: a React component library shared by `web` application
 - `@jeton/typescript-config`: `tsconfig.json`s used throughout the monorepo
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+  Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
 ### Utilities
 
-This Turborepo has some additional tools already setup for you:
+This repo has some additional tools setuped:
 
+- [TurboRepo](https://turbo.build/) for running monorepo tasks
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [Biome](https://biomejs.dev/) for code linting and formatting
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have the correct versions of Node.js and npm installed:
+
+- **Node.js**: v20.16 or later
+- **npm**: v10.8 or later
+
+You can use [NVM](https://github.com/nvm-sh/nvm) to install the required version of node and npm.
+
+### Cloning the Repository
+
+To get started, first clone the repository:
+
+```shell
+git clone https://github.com/JetonDAO/jeton.git
+cd jeton
+```
 
 ### Build
 
@@ -49,7 +70,7 @@ cd jeton
 npm run check
 ```
 
-To run the linter and automatically fix problems rum:
+To run the linter and automatically fix problems run:
 
 ```shell
 cd jeton
@@ -67,7 +88,7 @@ npm run dev
 
 ### Develop Web
 
-To develop all apps and packages, run the following command:
+To develop only the web app, run the following command:
 
 ```shell
 cd jeton
@@ -95,4 +116,5 @@ npx turbo link
 
 ### Recommended VSCode Plugins
 
- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
+- [Turborepo LSP](https://marketplace.visualstudio.com/items?itemName=Vercel.turbo-vsc)
+- [Biome](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
