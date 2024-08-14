@@ -11,6 +11,7 @@
     "dev": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch"
   },
   "devDependencies": {
+    "@jeton/tailwindcss-config": "*",
     "@jeton/typescript-config": "*",
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.61",

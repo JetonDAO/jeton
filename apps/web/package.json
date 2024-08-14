@@ -15,6 +15,7 @@
     "react-dom": "19.0.0-rc-f994737d14-20240522"
   },
   "devDependencies": {
+    "@jeton/tailwindcss-config": "*",
     "@cloudflare/next-on-pages": "^1.13.2",
     "@cloudflare/workers-types": "^4.20240806.0",
     "@jeton/typescript-config": "*",
