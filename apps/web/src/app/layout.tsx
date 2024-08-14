@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
+import "@jeton/ui/styles.css";
 
 export const metadata: Metadata = {
   title: "Jeton DAO",
