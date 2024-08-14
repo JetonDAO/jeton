@@ -1,5 +1,5 @@
 export const runtime = "edge";
 
 export default function Home() {
-  return <div>Welcome to Jeton DAO</div>;
+  return <div className="text-center mt-[50vh]">Welcome to Jeton DAO</div>;
 }
