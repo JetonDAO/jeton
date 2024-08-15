@@ -55,9 +55,3 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      - name: Publish Preview URL
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: "**Preview URL**: [${{ steps.deploy.outputs.cloudflare-preview-url }}](${{ steps.deploy.outputs.cloudflare-preview-url }})"
