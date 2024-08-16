@@ -1,5 +1,5 @@
 {
-  "name": "@jeton/tailwindccs-config",
+  "name": "@jeton/tailwindcss-config",
   "version": "0.0.0",
   "private": true,
   "exports": {

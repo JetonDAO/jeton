@@ -9,10 +9,11 @@
     "next-on-pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
+    "@jeton/sdk-js": "*",
+    "@jeton/ui": "*",
     "@aptos-labs/wallet-adapter-ant-design": "^3.0.11",
     "@aptos-labs/wallet-adapter-react": "^3.6.0",
     "@aptos-labs/ts-sdk": "^1.27.0",
-    "@jeton/ui": "*",
     "@mizuwallet-sdk/core": "^1.3.0",
     "aptos": "^1.21.0",
     "graphql-request": "^7.1.0",
