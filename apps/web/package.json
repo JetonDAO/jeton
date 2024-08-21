@@ -3,21 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "next-on-pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.27.0",
     "@jeton/ui": "*",
     "next": "15.0.0-rc.0",
     "react": "19.0.0-rc-f994737d14-20240522",
     "react-dom": "19.0.0-rc-f994737d14-20240522"
   },
   "devDependencies": {
-    "@jeton/tailwindcss-config": "*",
     "@cloudflare/next-on-pages": "^1.13.2",
     "@cloudflare/workers-types": "^4.20240806.0",
+    "@jeton/tailwindcss-config": "*",
     "@jeton/typescript-config": "*",
     "@types/node": "^20",
     "@types/react": "^18",
