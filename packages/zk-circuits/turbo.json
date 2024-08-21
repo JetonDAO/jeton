@@ -1,0 +1,211 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["circom:build", "snarkjs:build", "typescript:build"]
+    },
+    "test": {
+      "dependsOn": ["mocha:test"]
+    },
+    "check": {
+      "dependsOn": ["circom:check"]
+    },
+    "circom:build": {
+      "dependsOn": [
+        "circom:build:shuffle-encrypt-deck",
+        "circom:build:decrypt-card"
+      ]
+    },
+    "circom:build:shuffle-encrypt-deck": {
+      "dependsOn": [
+        "circom:build:shuffle-encrypt-deck:mkdir",
+        "circom:build:shuffle-encrypt-deck:compile"
+      ]
+    },
+    "circom:build:shuffle-encrypt-deck:mkdir": {
+      "inputs": [],
+      "outputs": ["dist/circuits/shuffle_encrypt_deck"]
+    },
+    "circom:build:shuffle-encrypt-deck:compile": {
+      "dependsOn": ["circom:build:shuffle-encrypt-deck:mkdir"],
+      "inputs": [
+        "circuits/shuffle_encrypt_deck.circom",
+        "circuits/templates/**"
+      ],
+      "outputs": ["dist/circuits/shuffle_encrypt_deck/**"]
+    },
+    "circom:build:decrypt-card": {
+      "dependsOn": [
+        "circom:build:decrypt-card:mkdir",
+        "circom:build:decrypt-card:compile"
+      ]
+    },
+    "circom:build:decrypt-card:mkdir": {
+      "inputs": [],
+      "outputs": ["dist/circuits/decrypt_card"]
+    },
+    "circom:build:decrypt-card:compile": {
+      "dependsOn": ["circom:build:decrypt-card:mkdir"],
+      "inputs": ["circuits/decrypt_card.circom", "circuits/templates/**"],
+      "outputs": ["dist/circuits/decrypt_card/**"]
+    },
+    "circom:check:shuffle-encrypt-deck": {
+      "inputs": [
+        "circuits/shuffle_encrypt_deck.circom",
+        "circuits/templates/**"
+      ]
+    },
+    "circom:check": {
+      "dependsOn": [
+        "circom:check:shuffle-encrypt-deck",
+        "circom:check:decrypt-card"
+      ]
+    },
+    "circom:check:decrypt-card": {
+      "inputs": ["circuits/decrypt_card.circom", "circuits/templates/**"]
+    },
+    "snarkjs:build": {
+      "dependsOn": ["snarkjs:build:zkey", "snarkjs:build:verificationkey"]
+    },
+    "snarkjs:build:powersoftau": {
+      "dependsOn": [
+        "snarkjs:build:powersoftau:mkdir",
+        "snarkjs:build:powersoftau:pot18"
+      ]
+    },
+    "snarkjs:build:powersoftau:mkdir": {
+      "inputs": [],
+      "outputs": ["dist/powersoftaus"]
+    },
+    "snarkjs:build:powersoftau:pot18": {
+      "dependsOn": [
+        "snarkjs:build:powersoftau:pot18:new",
+        "snarkjs:build:powersoftau:pot18:contribute",
+        "snarkjs:build:powersoftau:pot18:beacon",
+        "snarkjs:build:powersoftau:pot18:prepare"
+      ]
+    },
+    "snarkjs:build:powersoftau:pot18:new": {
+      "dependsOn": ["snarkjs:build:powersoftau:mkdir"],
+      "inputs": [],
+      "outputs": ["dist/powersoftaus/pot18_new.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot18:contribute": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot18:new"],
+      "inputs": ["dist/powersoftaus/pot18_new.ptau"],
+      "outputs": ["dist/powersoftaus/pot18_contribute.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot18:beacon": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot18:contribute"],
+      "inputs": ["dist/powersoftaus/pot18_contribute.ptau"],
+      "outputs": ["dist/powersoftaus/pot18_beacon.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot18:prepare": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot18:beacon"],
+      "inputs": ["dist/powersoftaus/pot18_beacon.ptau"],
+      "outputs": ["dist/powersoftaus/pot18.ptau"]
+    },
+    "snarkjs:build:zkey": {
+      "dependsOn": [
+        "snarkjs:build:zkey:mkdir",
+        "snarkjs:build:zkey:shuffle-encrypt-deck",
+        "snarkjs:build:zkey:decrypt-card"
+      ]
+    },
+    "snarkjs:build:zkey:mkdir": {
+      "inputs": [],
+      "outputs": ["dist/zkeys"]
+    },
+    "snarkjs:build:zkey:shuffle-encrypt-deck": {
+      "dependsOn": [
+        "snarkjs:build:zkey:shuffle-encrypt-deck:setup",
+        "snarkjs:build:zkey:shuffle-encrypt-deck:contribute",
+        "snarkjs:build:zkey:shuffle-encrypt-deck:beacon"
+      ]
+    },
+    "snarkjs:build:zkey:shuffle-encrypt-deck:setup": {
+      "dependsOn": [
+        "snarkjs:build:zkey:mkdir",
+        "circom:build:shuffle-encrypt-deck"
+      ],
+      "inputs": [
+        "dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck.r1cs",
+        "dist/powersoftaus/pot18.ptau"
+      ],
+      "outputs": ["dist/zkeys/shuffle_encrypt_deck_setup.zkey"]
+    },
+    "snarkjs:build:zkey:shuffle-encrypt-deck:contribute": {
+      "dependsOn": ["snarkjs:build:zkey:shuffle-encrypt-deck:setup"],
+      "inputs": ["dist/zkeys/shuffle_encrypt_deck_setup.zkey"],
+      "outputs": ["dist/zkeys/shuffle_encrypt_deck_contribute.zkey"]
+    },
+    "snarkjs:build:zkey:shuffle-encrypt-deck:beacon": {
+      "dependsOn": ["snarkjs:build:zkey:shuffle-encrypt-deck:contribute"],
+      "inputs": ["dist/zkeys/shuffle_encrypt_deck_contribute.zkey"],
+      "outputs": ["dist/zkeys/shuffle_encrypt_deck.zkey"]
+    },
+    "snarkjs:build:zkey:decrypt-card": {
+      "dependsOn": [
+        "snarkjs:build:zkey:decrypt-card:setup",
+        "snarkjs:build:zkey:decrypt-card:contribute",
+        "snarkjs:build:zkey:decrypt-card:beacon"
+      ]
+    },
+    "snarkjs:build:zkey:decrypt-card:setup": {
+      "dependsOn": ["snarkjs:build:zkey:mkdir", "circom:build:decrypt-card"],
+      "inputs": [
+        "dist/circuits/decrypt_card/decrypt_card.r1cs",
+        "dist/powersoftaus/pot18.ptau"
+      ],
+      "outputs": ["dist/zkeys/decrypt_card_setup.zkey"]
+    },
+    "snarkjs:build:zkey:decrypt-card:contribute": {
+      "dependsOn": ["snarkjs:build:zkey:decrypt-card:setup"],
+      "inputs": ["dist/zkeys/decrypt_card_setup.zkey"],
+      "outputs": ["dist/zkeys/decrypt_card_contribute.zkey"]
+    },
+    "snarkjs:build:zkey:decrypt-card:beacon": {
+      "dependsOn": ["snarkjs:build:zkey:decrypt-card:contribute"],
+      "inputs": ["dist/zkeys/decrypt_card_contribute.zkey"],
+      "outputs": ["dist/zkeys/decrypt_card.zkey"]
+    },
+    "snarkjs:build:verificationkey": {
+      "dependsOn": [
+        "snarkjs:build:verificationkey:mkdir",
+        "snarkjs:build:verificationkey:shuffle-encrypt-deck",
+        "snarkjs:build:verificationkey:decrypt-card"
+      ]
+    },
+    "snarkjs:build:verificationkey:mkdir": {
+      "inputs": [],
+      "outputs": ["dist/verification_keys"]
+    },
+    "snarkjs:build:verificationkey:shuffle-encrypt-deck": {
+      "dependsOn": [
+        "snarkjs:build:verificationkey:mkdir",
+        "snarkjs:build:zkey:shuffle-encrypt-deck"
+      ],
+      "inputs": ["dist/zkeys/shuffle_encrypt_deck_contribute.zkey"],
+      "outputs": [
+        "dist/verification_keys/shuffle_encrypt_deck_verification_key.json"
+      ]
+    },
+    "snarkjs:build:verificationkey:decrypt-card": {
+      "dependsOn": [
+        "snarkjs:build:verificationkey:mkdir",
+        "snarkjs:build:zkey:decrypt-card"
+      ],
+      "inputs": ["dist/zkeys/decrypt_card_contribute.zkey"],
+      "outputs": ["dist/verification_keys/decrypt_card_verification_key.json"]
+    },
+    "typescript:build": {
+      "inputs": ["src/**", "tsconfig.json"],
+      "outputs": ["dist/src/**", "dist/tests/**"]
+    },
+    "mocha:test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**"]
+    }
+  }
+}

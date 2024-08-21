@@ -1,0 +1,57 @@
+{
+  "name": "@jeton/zk-circuits",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "shuffle-encrypt-deck.wasm": "./dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck_js/shuffle_encrypt_deck.wasm",
+    "decrypt-card.wasm": "./dist/circuits/decrypt_card/decrypt_card_js/decrypt_card.wasm",
+    "shuffle-encrypt-deck.zkey": "./dist/zkeys/shuffle_encrypt_deck.zkey",
+    "decrypt-card.zkey": "./dist/zkeys/decrypt_card.zkey",
+    "shuffle-encrypt-deck-verification-key.json": "./dist/verification_keys/shuffle_encrypt_deck_verification_key.json",
+    "decrypt-card-verification-key.json": "./dist/verification_keys/decrypt_card_verification_key.json"
+  },
+  "scripts": {
+    "circom:build:shuffle-encrypt-deck:mkdir": "mkdir -p dist/circuits/shuffle_encrypt_deck",
+    "circom:build:shuffle-encrypt-deck:compile": "circom --r1cs --wasm --output dist/circuits/shuffle_encrypt_deck circuits/shuffle_encrypt_deck.circom",
+    "circom:build:decrypt-card:mkdir": "mkdir -p dist/circuits/decrypt_card",
+    "circom:build:decrypt-card:compile": "circom --r1cs --wasm --output dist/circuits/decrypt_card circuits/decrypt_card.circom",
+    "circom:check:shuffle-encrypt-deck": "circom --inspect circuits/shuffle_encrypt_deck.circom",
+    "circom:check:decrypt-card": "circom --inspect circuits/decrypt_card.circom",
+    "snarkjs:build:powersoftau:pot18:mkdir": "mkdir -p dist/powersoftaus",
+    "snarkjs:build:powersoftau:pot18:new": "snarkjs powersoftau new bn128 18 dist/powersoftaus/pot18_new.ptau",
+    "snarkjs:build:powersoftau:pot18:contribute": "snarkjs powersoftau contribute dist/powersoftaus/pot18_new.ptau dist/powersoftaus/pot18_contribute.ptau -e='x9J$gyWEGjBfHqp@CLn2^2XjXzJWrEeyb9EmkJqr2Hos@zpZmEq3HFiC4M2XbvBL'",
+    "snarkjs:build:powersoftau:pot18:beacon": "snarkjs powersoftau beacon dist/powersoftaus/pot18_contribute.ptau dist/powersoftaus/pot18_beacon.ptau '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:powersoftau:pot18:prepare": "snarkjs powersoftau prepare phase2 dist/powersoftaus/pot18_beacon.ptau dist/powersoftaus/pot18.ptau",
+    "snarkjs:build:zkey:mkdir": "mkdir -p dist/zkeys",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:setup": "snarkjs groth16 setup dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck.r1cs dist/powersoftaus/pot18.ptau dist/zkeys/shuffle_encrypt_deck_setup.zkey",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:contribute": "snarkjs zkey contribute dist/zkeys/shuffle_encrypt_deck_setup.zkey dist/zkeys/shuffle_encrypt_deck_contribute.zkey -e='JS^dbdvBo!P8HxjCxKJrdwF!HadBxS!b&vJtknJe5nDcnnGL3eo498UQe6yv87TU'",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:beacon": "snarkjs zkey beacon dist/zkeys/shuffle_encrypt_deck_contribute.zkey dist/zkeys/shuffle_encrypt_deck.zkey '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:zkey:decrypt-card:setup": "snarkjs groth16 setup dist/circuits/decrypt_card/decrypt_card.r1cs dist/powersoftaus/pot18.ptau dist/zkeys/decrypt_card_setup.zkey",
+    "snarkjs:build:zkey:decrypt-card:contribute": "snarkjs zkey contribute dist/zkeys/decrypt_card_setup.zkey dist/zkeys/decrypt_card_contribute.zkey -e='ex#UciTJm^4$RebWxzrUK%9c#*4^KPE!VrxnaeoFhQb7aRojg@6n&hiCFWbG4$qB'",
+    "snarkjs:build:zkey:decrypt-card:beacon": "snarkjs zkey beacon dist/zkeys/decrypt_card_contribute.zkey dist/zkeys/decrypt_card.zkey '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:verificationkey:mkdir": "mkdir -p dist/verification_keys",
+    "snarkjs:build:verificationkey:shuffle-encrypt-deck": "snarkjs zkey export verificationkey dist/zkeys/shuffle_encrypt_deck.zkey dist/verification_keys/shuffle_encrypt_deck_verification_key.json",
+    "snarkjs:build:verificationkey:decrypt-card": "snarkjs zkey export verificationkey dist/zkeys/decrypt_card.zkey dist/verification_keys/decrypt_card_verification_key.json",
+    "typescript:build": "tsc",
+    "mocha:test": "mocha src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@jeton/typescript-config": "^0.0.0",
+    "@types/chai": "^4.3.18",
+    "@types/mocha": "^10.0.7",
+    "@types/snarkjs": "^0.7.8",
+    "chai": "^5.1.1",
+    "circomlib": "^2.0.5",
+    "mocha": "^10.7.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "ffjavascript": "^0.3.0",
+    "snarkjs": "^0.7.4"
+  },
+  "mocha": {
+    "loader": "ts-node/esm"
+  }
+}
