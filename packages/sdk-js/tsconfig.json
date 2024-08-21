@@ -1,7 +1,12 @@
 {
   "extends": "@jeton/typescript-config/base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

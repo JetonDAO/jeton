@@ -30,7 +30,11 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
+    "dotenv": "^16.4.5",
     "tsup": "^8.2.4",
     "typescript": "^5"
+  },
+  "dependencies": {
+    "piesocket-js": "^5.1.0"
   }
 }
