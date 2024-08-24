@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LoginButton from "./component/LoginButton";
 
 export const runtime = "edge";
 
@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="text-center">
       <div> Welcome to Jeton DAO</div>
-      <Link href="/login">Login here</Link>
+      <LoginButton />
     </div>
   );
 }

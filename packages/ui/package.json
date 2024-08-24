@@ -4,7 +4,8 @@
   "private": true,
   "exports": {
     "./styles.css": "./dist/index.css",
-    "./Modal": "./src/Modal.tsx"
+    "./Modal": "./src/Modal.tsx",
+    "./GoogleLogo": "./src/GoogleLogo.tsx"
   },
   "scripts": {
     "build": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
