@@ -1,38 +1,41 @@
-import {
-  type Field,
-  type FieldElement,
-  Scalar,
-  getCurveFromName,
-} from "ffjavascript";
+import { type Field, type FieldElement, Scalar } from "ffjavascript";
 
 export type Point = [FieldElement, FieldElement];
 
-export class BabyJubJub {
-  readonly field: Field;
-  readonly generator: Point;
+export class TwistedEdwardsCurve {
   readonly edwardsA: FieldElement;
   readonly edwardsD: FieldElement;
-
-  constructor(field: Field) {
-    this.field = field;
-    this.edwardsA = this.element("168700");
-    this.edwardsD = this.element("168696");
-    this.generator = [
-      this.element(
-        "5299619240641551281634865583518297030282874472190772894086521144482721001553",
-      ),
-      this.element(
-        "16950150798460657717958625567821834550301663161624707787222815936182638968203",
-      ),
-    ];
+  readonly generator: Point;
+  readonly zero: Point;
+  constructor(
+    readonly field: Field,
+    edwardsA: string,
+    edwardsD: string,
+    generator: [string, string],
+  ) {
+    this.edwardsA = this.element(edwardsA);
+    this.edwardsD = this.element(edwardsD);
+    this.generator = this.point(generator);
+    this.zero = this.point([0, 1]);
   }
 
-  public element(v: string | bigint | number | FieldElement): FieldElement {
+  public element(v: string | bigint | number): FieldElement {
     return this.field.e(v);
   }
 
   public elementToString(e: FieldElement): string {
     return this.field.toString(e);
+  }
+
+  public point([x, y]:
+    | [string, string]
+    | [bigint, bigint]
+    | [number, number]): Point {
+    return [this.element(x), this.element(y)];
+  }
+
+  public pointToStringTuple(p: Point): [string, string] {
+    return [this.elementToString(p[0]), this.elementToString(p[1])];
   }
 
   public sampleScalar(): bigint {
@@ -77,7 +80,7 @@ export class BabyJubJub {
 
   public mulScalarPoint(s: string | bigint | number, p: Point): Point {
     const f = this.field;
-    let acc: Point = [this.element("0"), this.element("1")];
+    let acc: Point = this.zero;
     let rem = Scalar.e(s);
     let exp: Point = p;
     while (!Scalar.isZero(rem)) {
@@ -89,9 +92,4 @@ export class BabyJubJub {
     }
     return acc;
   }
-}
-
-export default async function createBabyJubJub(): Promise<BabyJubJub> {
-  const curve = await getCurveFromName("bn128", true);
-  return new BabyJubJub(curve.Fr);
 }

@@ -16,16 +16,16 @@ template EncryptCard() {
         16950150798460657717958625567821834550301663161624707787222815936182638968203
     ];
     
-    component randomBits = Num2Bits(253);
+    component randomBits = Num2Bits(254);
     randomBits.in <== random;
 
-    component multiplyRandomBase8 = EscalarMulFix(253, BASE8);
-    for (var i = 0; i < 253; i++) {
+    component multiplyRandomBase8 = EscalarMulFix(254, BASE8);
+    for (var i = 0; i < 254; i++) {
         multiplyRandomBase8.e[i] <== randomBits.out[i];
     }
 
-    component multiplyRandomPublicKey = EscalarMulAny(253);
-    for (var i = 0; i < 253; i++) {
+    component multiplyRandomPublicKey = EscalarMulAny(254);
+    for (var i = 0; i < 254; i++) {
         multiplyRandomPublicKey.e[i] <== randomBits.out[i];
     }
     for (var i = 0; i < 2; i++) {

@@ -15,19 +15,19 @@ template DecryptCard() {
         16950150798460657717958625567821834550301663161624707787222815936182638968203
     ];
     
-    component secretKeyBits = Num2Bits(253);
+    component secretKeyBits = Num2Bits(254);
     secretKeyBits.in <== secretKey;
 
-    component multiplySecretKeyBase8 = EscalarMulFix(253, BASE8);
-    for (var i = 0; i < 253; i++) {
+    component multiplySecretKeyBase8 = EscalarMulFix(254, BASE8);
+    for (var i = 0; i < 254; i++) {
         multiplySecretKeyBase8.e[i] <== secretKeyBits.out[i];
     }
     for (var i = 0; i < 2; i++) {
         multiplySecretKeyBase8.out[i] === publicKey[i];
     }
 
-    component multiplySecretKeyInputVector = EscalarMulAny(253);
-    for (var i = 0; i < 253; i++) {
+    component multiplySecretKeyInputVector = EscalarMulAny(254);
+    for (var i = 0; i < 254; i++) {
         multiplySecretKeyInputVector.e[i] <== secretKeyBits.out[i];
     }
     for (var i = 0; i < 2; i++) {

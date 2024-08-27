@@ -14,7 +14,7 @@
     "circom:build": {
       "dependsOn": [
         "circom:build:shuffle-encrypt-deck",
-        "circom:build:decrypt-card"
+        "circom:build:decrypt-share-card"
       ]
     },
     "circom:build:shuffle-encrypt-deck": {
@@ -35,20 +35,20 @@
       ],
       "outputs": ["dist/circuits/shuffle_encrypt_deck/**"]
     },
-    "circom:build:decrypt-card": {
+    "circom:build:decrypt-share-card": {
       "dependsOn": [
-        "circom:build:decrypt-card:mkdir",
-        "circom:build:decrypt-card:compile"
+        "circom:build:decrypt-share-card:mkdir",
+        "circom:build:decrypt-share-card:compile"
       ]
     },
-    "circom:build:decrypt-card:mkdir": {
+    "circom:build:decrypt-share-card:mkdir": {
       "inputs": [],
-      "outputs": ["dist/circuits/decrypt_card"]
+      "outputs": ["dist/circuits/decrypt_card_share"]
     },
-    "circom:build:decrypt-card:compile": {
-      "dependsOn": ["circom:build:decrypt-card:mkdir"],
-      "inputs": ["circuits/decrypt_card.circom", "circuits/templates/**"],
-      "outputs": ["dist/circuits/decrypt_card/**"]
+    "circom:build:decrypt-share-card:compile": {
+      "dependsOn": ["circom:build:decrypt-share-card:mkdir"],
+      "inputs": ["circuits/decrypt_card_share.circom", "circuits/templates/**"],
+      "outputs": ["dist/circuits/decrypt_card_share/**"]
     },
     "circom:check:shuffle-encrypt-deck": {
       "inputs": [
@@ -59,11 +59,11 @@
     "circom:check": {
       "dependsOn": [
         "circom:check:shuffle-encrypt-deck",
-        "circom:check:decrypt-card"
+        "circom:check:decrypt-share-card"
       ]
     },
-    "circom:check:decrypt-card": {
-      "inputs": ["circuits/decrypt_card.circom", "circuits/templates/**"]
+    "circom:check:decrypt-share-card": {
+      "inputs": ["circuits/decrypt_card_share.circom", "circuits/templates/**"]
     },
     "snarkjs:build": {
       "dependsOn": ["snarkjs:build:zkey", "snarkjs:build:verificationkey"]
@@ -110,7 +110,7 @@
       "dependsOn": [
         "snarkjs:build:zkey:mkdir",
         "snarkjs:build:zkey:shuffle-encrypt-deck",
-        "snarkjs:build:zkey:decrypt-card"
+        "snarkjs:build:zkey:decrypt-share-card"
       ]
     },
     "snarkjs:build:zkey:mkdir": {
@@ -145,36 +145,39 @@
       "inputs": ["dist/zkeys/shuffle_encrypt_deck_contribute.zkey"],
       "outputs": ["dist/zkeys/shuffle_encrypt_deck.zkey"]
     },
-    "snarkjs:build:zkey:decrypt-card": {
+    "snarkjs:build:zkey:decrypt-share-card": {
       "dependsOn": [
-        "snarkjs:build:zkey:decrypt-card:setup",
-        "snarkjs:build:zkey:decrypt-card:contribute",
-        "snarkjs:build:zkey:decrypt-card:beacon"
+        "snarkjs:build:zkey:decrypt-share-card:setup",
+        "snarkjs:build:zkey:decrypt-share-card:contribute",
+        "snarkjs:build:zkey:decrypt-share-card:beacon"
       ]
     },
-    "snarkjs:build:zkey:decrypt-card:setup": {
-      "dependsOn": ["snarkjs:build:zkey:mkdir", "circom:build:decrypt-card"],
+    "snarkjs:build:zkey:decrypt-share-card:setup": {
+      "dependsOn": [
+        "snarkjs:build:zkey:mkdir",
+        "circom:build:decrypt-share-card"
+      ],
       "inputs": [
-        "dist/circuits/decrypt_card/decrypt_card.r1cs",
+        "dist/circuits/decrypt_card_share/decrypt_card_share.r1cs",
         "dist/powersoftaus/pot18.ptau"
       ],
-      "outputs": ["dist/zkeys/decrypt_card_setup.zkey"]
+      "outputs": ["dist/zkeys/decrypt_card_share_setup.zkey"]
     },
-    "snarkjs:build:zkey:decrypt-card:contribute": {
-      "dependsOn": ["snarkjs:build:zkey:decrypt-card:setup"],
-      "inputs": ["dist/zkeys/decrypt_card_setup.zkey"],
-      "outputs": ["dist/zkeys/decrypt_card_contribute.zkey"]
+    "snarkjs:build:zkey:decrypt-share-card:contribute": {
+      "dependsOn": ["snarkjs:build:zkey:decrypt-share-card:setup"],
+      "inputs": ["dist/zkeys/decrypt_card_share_setup.zkey"],
+      "outputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"]
     },
-    "snarkjs:build:zkey:decrypt-card:beacon": {
-      "dependsOn": ["snarkjs:build:zkey:decrypt-card:contribute"],
-      "inputs": ["dist/zkeys/decrypt_card_contribute.zkey"],
-      "outputs": ["dist/zkeys/decrypt_card.zkey"]
+    "snarkjs:build:zkey:decrypt-share-card:beacon": {
+      "dependsOn": ["snarkjs:build:zkey:decrypt-share-card:contribute"],
+      "inputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"],
+      "outputs": ["dist/zkeys/decrypt_card_share.zkey"]
     },
     "snarkjs:build:verificationkey": {
       "dependsOn": [
         "snarkjs:build:verificationkey:mkdir",
         "snarkjs:build:verificationkey:shuffle-encrypt-deck",
-        "snarkjs:build:verificationkey:decrypt-card"
+        "snarkjs:build:verificationkey:decrypt-share-card"
       ]
     },
     "snarkjs:build:verificationkey:mkdir": {
@@ -191,20 +194,23 @@
         "dist/verification_keys/shuffle_encrypt_deck_verification_key.json"
       ]
     },
-    "snarkjs:build:verificationkey:decrypt-card": {
+    "snarkjs:build:verificationkey:decrypt-share-card": {
       "dependsOn": [
         "snarkjs:build:verificationkey:mkdir",
-        "snarkjs:build:zkey:decrypt-card"
+        "snarkjs:build:zkey:decrypt-share-card"
       ],
-      "inputs": ["dist/zkeys/decrypt_card_contribute.zkey"],
-      "outputs": ["dist/verification_keys/decrypt_card_verification_key.json"]
+      "inputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"],
+      "outputs": [
+        "dist/verification_keys/decrypt_card_share_verification_key.json"
+      ]
     },
     "typescript:build": {
+      "dependsOn": ["snarkjs:build"],
       "inputs": ["src/**", "tsconfig.json"],
       "outputs": ["dist/src/**", "dist/tests/**"]
     },
     "mocha:test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["circom:build", "snarkjs:build"],
       "inputs": ["src/**"]
     }
   }
