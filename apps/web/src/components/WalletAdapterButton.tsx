@@ -1,13 +1,14 @@
 "use client";
-import { WalletConnector as MuiWalletSelector } from "@aptos-labs/wallet-adapter-mui-design";
-import { WalletName, useWallet } from "@aptos-labs/wallet-adapter-react";
+import { WalletSelector } from "@aptos-labs/wallet-adapter-ant-design";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 export default function WalletAdapterButton() {
-  const { connect, disconnect, account, connected } = useWallet();
+  const { connect, disconnect, account, connected, isLoading } = useWallet();
   if (connected) return <div>{account?.address}</div>;
+  if (isLoading) return <div>is Loading</div>;
   return (
     <div>
-      <MuiWalletSelector />
+      <WalletSelector />
     </div>
   );
 }
