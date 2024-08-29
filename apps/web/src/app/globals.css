@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-.player-position {
+.player-position,
+.chips,
+.cards {
   position: absolute;
 }
 
@@ -31,4 +33,39 @@
   top: 12%;
   right: 5%;
   transform: translateY(-50%);
+}
+
+.player-1 .cards,
+.player-1 .chips {
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-4 .cards,
+.player-4 .chips {
+  bottom: -30%;
+  left: -15%;
+  transform: translate(-50%);
+}
+
+.player-5 .cards,
+.player-5 .chips {
+  top: -25%;
+  left: -15%;
+  transform: translate(-50%);
+}
+
+.player-2 .cards,
+.player-2 .chips {
+  top: -20%;
+  right: -15%;
+  transform: translate(50%);
+}
+
+.player-3 .cards,
+.player-3 .chips {
+  bottom: -30%;
+  right: -15%;
+  transform: translate(50%);
 }

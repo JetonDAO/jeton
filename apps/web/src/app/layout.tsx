@@ -27,7 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={pressStart2P.className}>
-        <div className="relative bg-[#958b6f] min-h-screen z-50 flex items-center justify-center">
+        <div
+          className={`relative bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] min-h-screen z-50 flex items-center justify-center`}
+        >
           <div className="w-full flex max-w-[2400px] aspect-video max-h-screen rounded-2xl flex-col relative items-center justify-center py-2 -z-40">
             <div>{children}</div>
             <div>{modal}</div>

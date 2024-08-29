@@ -1,7 +1,15 @@
 "use client";
 
+import CardPlaceAudio from "@src/assets/audio/card-place.mp3";
 import type { CardName } from "@src/types";
-import { type ReactNode, createContext, useContext, useState } from "react";
+import { dealCards, playSound } from "@src/utils/gameFunctions";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export type GameState = {
   currentPlayer: number;
@@ -21,13 +29,22 @@ export function useGame() {
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [currentPlayer, setCurrentPlayer] = useState<number>(1);
-  const cardsOnTable: CardName[] = [
+  const [cardsOnTable, setCardsOnTable] = useState<CardName[]>([]);
+
+  const allCards: CardName[] = [
     "hearts-J",
     "clubs-07",
     "spades-04",
     "diamonds-09",
     "spades-09",
   ];
+
+  useEffect(() => {
+    dealCards(allCards, (newCard) => {
+      setCardsOnTable((prevCards) => [...prevCards, newCard]);
+      playSound(CardPlaceAudio);
+    });
+  }, []);
 
   return (
     <GameContext.Provider
