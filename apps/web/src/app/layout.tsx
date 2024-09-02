@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
+import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
+
 import "@jeton/ui/styles.css";
+import { WalletProvider } from "../components/WalletProvider";
 
 export const metadata: Metadata = {
   title: "Jeton DAO",
@@ -19,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div>{children}</div>
-        <div>{modal}</div>
+        <WalletProvider>
+          <div>{children}</div>
+          <div>{modal}</div>
+        </WalletProvider>
       </body>
     </html>
   );
