@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "next-on-pages:build": "npx @cloudflare/next-on-pages"
@@ -11,6 +11,7 @@
   "dependencies": {
     "@aptos-labs/wallet-adapter-ant-design": "^3.0.11",
     "@aptos-labs/wallet-adapter-react": "^3.6.0",
+    "@aptos-labs/ts-sdk": "^1.27.0",
     "@jeton/ui": "*",
     "@mizuwallet-sdk/core": "^1.3.0",
     "aptos": "^1.21.0",
