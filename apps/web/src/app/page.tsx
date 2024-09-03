@@ -2,10 +2,9 @@
 
 import buttonBackground from "@src/assets/images/button.png";
 import background from "@src/assets/images/main-menu-background.png";
+import WalletAdapterButton from "@src/components/WalletAdapterButton";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import LoginButton from "./component/LoginButton";
-
 export const runtime = "edge";
 
 export default function Home() {
@@ -59,7 +58,7 @@ export default function Home() {
               <span className="text-white">{btn.label}</span>
             </button>
           ))}
-          <LoginButton />
+          <WalletAdapterButton />
         </div>
       </div>
     </>
