@@ -18,8 +18,3 @@ export function dealCards(
     }
   }, delay);
 }
-
-export function playSound(soundFile: string) {
-  const audio = new Audio(soundFile);
-  audio.play();
-}

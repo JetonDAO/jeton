@@ -1,13 +1,15 @@
 "use client";
 
 import CardPlaceAudio from "@src/assets/audio/card-place.mp3";
+import { useAudio } from "@src/hooks/useAudio";
 import type { CardName } from "@src/types";
-import { dealCards, playSound } from "@src/utils/gameFunctions";
+import { dealCards } from "@src/utils/gameFunctions";
 import {
   type ReactNode,
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -39,12 +41,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
     "spades-09",
   ];
 
+  const hasDealtCards = useRef(false);
+  const { play: playCardSound, reset: resetCardSound } =
+    useAudio(CardPlaceAudio);
+
   useEffect(() => {
-    dealCards(allCards, (newCard) => {
-      setCardsOnTable((prevCards) => [...prevCards, newCard]);
-      playSound(CardPlaceAudio);
+    if (hasDealtCards.current) return;
+
+    hasDealtCards.current = true;
+
+    dealCards(allCards, (newCard: CardName) => {
+      setCardsOnTable((prevCards: CardName[]) => [...prevCards, newCard]);
+      playCardSound();
     });
-  }, []);
+
+    return () => {
+      resetCardSound();
+    };
+  }, [playCardSound, resetCardSound]);
 
   return (
     <GameContext.Provider
