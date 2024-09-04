@@ -29,7 +29,7 @@ describe("ZKDeck", () => {
         .fill(undefined)
         .map((_) => zkdeck.generatePublicKey(zkdeck.sampleSecretKey())),
     );
-    const inDeck: EncryptedDeck = new Array(numCards)
+    const inputDeck: EncryptedDeck = new Array(numCards)
       .fill(undefined)
       .map((_) => [
         ...zkdeck.curve.pointToStringTuple(
@@ -51,7 +51,7 @@ describe("ZKDeck", () => {
       .map((_) => zkdeck.curve.sampleScalar());
     const { proof, deck } = await zkdeck.proveShuffleEncryptDeck(
       aggregatedPublicKey,
-      inDeck,
+      inputDeck,
       permutationVector,
       randomVector,
     );
@@ -59,14 +59,14 @@ describe("ZKDeck", () => {
       await zkdeck.verifyShuffleEncryptDeck(
         proof,
         aggregatedPublicKey,
-        inDeck,
+        inputDeck,
         deck,
       ),
     ).to.be.true;
     expect(deck).to.deep.equal(
       zkdeck.shuffleEncryptDeck(
         aggregatedPublicKey,
-        inDeck,
+        inputDeck,
         permutationVector,
         randomVector,
       ),

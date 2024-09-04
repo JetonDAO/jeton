@@ -4,6 +4,7 @@ declare module "ffjavascript" {
     isOdd(e: bigint): boolean;
 
     bitLength(e: bigint): number;
+    bits(e: bigint): number[];
     shiftRight(e: bigint, n: number): bigint;
   };
   export const Scalar: Scalar;

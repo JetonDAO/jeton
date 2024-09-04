@@ -1,3 +1,4 @@
+import { Scalar } from "ffjavascript";
 import { type Groth16Proof, groth16 } from "snarkjs";
 
 import {
@@ -94,22 +95,28 @@ export class ZKDeck {
 
   public async proveShuffleEncryptDeck(
     aggregatedPublicKey: AggregatedPublicKey,
-    deck: EncryptedDeck,
+    inputDeck: EncryptedDeck,
     permutationVector?: number[],
     randomVector?: bigint[],
   ): Promise<{ proof: Groth16Proof; deck: EncryptedDeck }> {
+    const permutationMatrix = createPermutationMatrix(
+      permutationVector || samplePermutationVector(numCards),
+    );
+    const randomVectorBits = (
+      randomVector ||
+      new Array(numCards).fill(undefined).map((_) => this.curve.sampleScalar())
+    ).map((random) => {
+      const bits = Scalar.bits(random);
+      return bits.concat(
+        new Array(Scalar.bitLength(this.curve.order) - bits.length).fill(0),
+      );
+    });
     const { proof, publicSignals } = await groth16.fullProve(
       {
-        permutationMatrix: createPermutationMatrix(
-          permutationVector || samplePermutationVector(numCards),
-        ),
+        permutationMatrix,
         aggregatedPublicKey,
-        randomVector:
-          randomVector ||
-          new Array(numCards)
-            .fill(undefined)
-            .map((_) => this.curve.sampleScalar()),
-        inputDeck: deck,
+        randomVectorBits,
+        inputDeck,
       },
       this.shuffleEncryptDeckWasm,
       this.shuffleEncryptDeckZkey,
@@ -125,12 +132,12 @@ export class ZKDeck {
   public async verifyShuffleEncryptDeck(
     proof: Groth16Proof,
     aggregatedPublicKey: AggregatedPublicKey,
-    inDeck: EncryptedDeck,
+    inputDeck: EncryptedDeck,
     outDeck: EncryptedDeck,
   ): Promise<boolean> {
     return groth16.verify(
       shuffleEncryptDeckVerificationKey,
-      [...outDeck.flat(), ...aggregatedPublicKey, ...inDeck.flat()],
+      [...outDeck.flat(), ...aggregatedPublicKey, ...inputDeck.flat()],
       proof,
     );
   }
@@ -153,13 +160,19 @@ export class ZKDeck {
     cardIndex: number,
     deck: EncryptedDeck,
   ): Promise<{ proof: Groth16Proof; decryptCardShare: DecryptCardShare }> {
+    let secretKeyBits = Scalar.bits(secretKey);
+    secretKeyBits = secretKeyBits.concat(
+      new Array(Scalar.bitLength(this.curve.order) - secretKeyBits.length).fill(
+        0,
+      ),
+    );
     const publicKey = this.generatePublicKey(secretKey);
-    const inputVector = deck[cardIndex]?.slice(0, 2) as [string, string];
+    const inputPoint = deck[cardIndex]?.slice(0, 2) as [string, string];
     const { proof, publicSignals } = await groth16.fullProve(
       {
-        secretKey,
+        secretKeyBits,
         publicKey,
-        inputVector,
+        inputPoint,
       },
       this.decryptCardShareWasm,
       this.decryptCardShareZkey,

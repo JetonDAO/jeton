@@ -14,7 +14,7 @@ export function applyPermutationVector<T>(
   permutationVector: number[],
   inputVector: T[],
 ): T[] {
-  return permutationVector.map((_, i) => inputVector[i] as T);
+  return permutationVector.map((i) => inputVector[i] as T);
 }
 
 export function createPermutationMatrix(
