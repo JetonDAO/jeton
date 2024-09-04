@@ -1,17 +1,15 @@
 import { expect } from "chai";
-import { getCurveFromName } from "ffjavascript";
 import { before, describe, test } from "mocha";
 
-import { TwistedEdwardsCurve } from "./twisted_edwards_curve.js";
+import {
+  type TwistedEdwardsCurve,
+  createBabyJubJub,
+} from "./twisted_edwards_curve.js";
 
 describe("TwistedEdwardsCurve", () => {
   let curve: TwistedEdwardsCurve;
   before(async () => {
-    const bn128 = await getCurveFromName("bn128", true);
-    curve = new TwistedEdwardsCurve(bn128.Fr, "168700", "168696", [
-      "5299619240641551281634865583518297030282874472190772894086521144482721001553",
-      "16950150798460657717958625567821834550301663161624707787222815936182638968203",
-    ]);
+    curve = await createBabyJubJub();
   });
 
   test("ap should be in curve", () => {
@@ -95,7 +93,7 @@ describe("TwistedEdwardsCurve", () => {
     const b = curve.sampleScalar();
     const p = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
 
-    const left = curve.mulScalarPoint(a + b, p);
+    const left = curve.mulScalarPoint((a + b) % curve.order, p);
     const right = curve.addPoints(
       curve.mulScalarPoint(a, p),
       curve.mulScalarPoint(b, p),
@@ -109,6 +107,14 @@ describe("TwistedEdwardsCurve", () => {
     const p = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
 
     const left = curve.addPoints(p, curve.negPoint(p));
+    expect(curve.inCurve(left)).to.be.true;
+    expect(curve.eqPoints(left, curve.zero)).to.be.true;
+  });
+
+  test("order * p = 0", () => {
+    const p = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
+
+    const left = curve.mulScalarPoint(curve.order, p);
     expect(curve.inCurve(left)).to.be.true;
     expect(curve.eqPoints(left, curve.zero)).to.be.true;
   });

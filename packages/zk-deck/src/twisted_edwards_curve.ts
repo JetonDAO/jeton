@@ -1,20 +1,28 @@
-import { type Field, type FieldElement, Scalar } from "ffjavascript";
+import {
+  type Field,
+  type FieldElement,
+  Scalar,
+  getCurveFromName,
+} from "ffjavascript";
 
 export type Point = [FieldElement, FieldElement];
 
 export class TwistedEdwardsCurve {
   readonly edwardsA: FieldElement;
   readonly edwardsD: FieldElement;
+  readonly order: bigint;
   readonly generator: Point;
   readonly zero: Point;
   constructor(
     readonly field: Field,
-    edwardsA: string,
-    edwardsD: string,
-    generator: [string, string],
+    edwardsA: string | bigint | number,
+    edwardsD: string | bigint | number,
+    order: string | bigint | number,
+    generator: [string, string] | [bigint, bigint] | [number, number],
   ) {
     this.edwardsA = this.element(edwardsA);
     this.edwardsD = this.element(edwardsD);
+    this.order = BigInt(order);
     this.generator = this.point(generator);
     this.zero = this.point([0, 1]);
   }
@@ -39,7 +47,14 @@ export class TwistedEdwardsCurve {
   }
 
   public sampleScalar(): bigint {
-    return this.field.toObject(this.field.random());
+    const numBits = Scalar.bitLength(this.order);
+    const buffer = new Uint8Array(Math.ceil(numBits / 8));
+    let sample: bigint;
+    do {
+      crypto.getRandomValues(buffer);
+      sample = buffer.reduce((acc, byte) => acc * 256n + BigInt(byte), 0n);
+    } while (sample >= this.order);
+    return sample;
   }
 
   public inCurve(p: Point): boolean {
@@ -81,7 +96,7 @@ export class TwistedEdwardsCurve {
   public mulScalarPoint(s: string | bigint | number, p: Point): Point {
     const f = this.field;
     let acc: Point = this.zero;
-    let rem = Scalar.e(s);
+    let rem = BigInt(s);
     let exp: Point = p;
     while (!Scalar.isZero(rem)) {
       if (Scalar.isOdd(rem)) {
@@ -92,4 +107,18 @@ export class TwistedEdwardsCurve {
     }
     return acc;
   }
+}
+
+export async function createBabyJubJub(): Promise<TwistedEdwardsCurve> {
+  const bn128 = await getCurveFromName("bn128", true);
+  return new TwistedEdwardsCurve(
+    bn128.Fr,
+    168700n,
+    168696n,
+    2736030358979909402780800718157159386076813972158567259200215660948447373041n,
+    [
+      5299619240641551281634865583518297030282874472190772894086521144482721001553n,
+      16950150798460657717958625567821834550301663161624707787222815936182638968203n,
+    ],
+  );
 }

@@ -1,11 +1,10 @@
 declare module "ffjavascript" {
-  export type ScalarElement = Record<string, never>;
   export type Scalar = {
-    e(v: bigint | string | number | ScalarElement): ScalarElement;
-    isZero(e: ScalarElement): boolean;
-    isOdd(e: ScalarElement): boolean;
+    isZero(e: bigint): boolean;
+    isOdd(e: bigint): boolean;
 
-    shiftRight(e: ScalarElement, n: number): ScalarElement;
+    bitLength(e: bigint): number;
+    shiftRight(e: bigint, n: number): bigint;
   };
   export const Scalar: Scalar;
 

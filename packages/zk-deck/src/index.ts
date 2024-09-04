@@ -1,4 +1,3 @@
-import { getCurveFromName } from "ffjavascript";
 import { type Groth16Proof, groth16 } from "snarkjs";
 
 import {
@@ -6,7 +5,10 @@ import {
   createPermutationMatrix,
   samplePermutationVector,
 } from "./permutation.js";
-import { TwistedEdwardsCurve } from "./twisted_edwards_curve.js";
+import {
+  type TwistedEdwardsCurve,
+  createBabyJubJub,
+} from "./twisted_edwards_curve.js";
 
 import decryptCardShareVerificationKey from "../dist/verification_keys/decrypt_card_share_verification_key.json" with {
   type: "json",
@@ -211,11 +213,7 @@ export async function createZKDeck(
   decryptCardShareWasm: string,
   decryptCardShareZkey: string,
 ): Promise<ZKDeck> {
-  const bn128 = await getCurveFromName("bn128", true);
-  const curve = new TwistedEdwardsCurve(bn128.Fr, "168700", "168696", [
-    "5299619240641551281634865583518297030282874472190772894086521144482721001553",
-    "16950150798460657717958625567821834550301663161624707787222815936182638968203",
-  ]);
+  const curve = await createBabyJubJub();
   return new ZKDeck(
     curve,
     shuffleEncryptDeckWasm,
