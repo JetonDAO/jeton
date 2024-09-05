@@ -1,39 +1,29 @@
 pragma circom 2.0.0;
 
-include "../../../../node_modules/circomlib/circuits/escalarmulany.circom";
-include "../../../../node_modules/circomlib/circuits/escalarmulfix.circom";
+include "./multiply_scalar_twisted_edwards_curve_fix_point.circom";
+include "./multiply_scalar_twisted_edwards_curve_point.circom";
 
-template DecryptCardShare(numBits) {
+template DecryptCardShare(numTripleBits, edwardsA, edwardsD, generator) {
+    var numBits = 3 * numTripleBits;
+
     signal input secretKeyBits[numBits];
     signal input publicKey[2];
     signal input inputPoint[2];
     signal output outputPoint[2];
 
-    var BASE8[2] = [
-        5299619240641551281634865583518297030282874472190772894086521144482721001553,
-        16950150798460657717958625567821834550301663161624707787222815936182638968203
-    ];
-    
+    component multiplyGenerator = MultiplyScalarTwistedEdwardsCurveFixPoint(numTripleBits, edwardsA, edwardsD, generator);
     for (var i = 0; i < numBits; i++) {
-        secretKeyBits[i] * (secretKeyBits[i] - 1) === 0;
+        multiplyGenerator.scalarBits[i] <== secretKeyBits[i];
     }
-    
-    component multiplySecretKeyBase8 = EscalarMulFix(numBits, BASE8);
-    for (var i = 0; i < numBits; i++) {
-        multiplySecretKeyBase8.e[i] <== secretKeyBits[i];
-    }
-    for (var i = 0; i < 2; i++) {
-        multiplySecretKeyBase8.out[i] === publicKey[i];
-    }
+    publicKey[0] === multiplyGenerator.outputPoint[0];
+    publicKey[1] === multiplyGenerator.outputPoint[1];
 
-    component multiplySecretKeyInputVector = EscalarMulAny(numBits);
+    component multiplyInputPoint = MultiplyScalarTwistedEdwardsCurvePoint(numBits, edwardsA, edwardsD);
     for (var i = 0; i < numBits; i++) {
-        multiplySecretKeyInputVector.e[i] <== secretKeyBits[i];
+        multiplyInputPoint.scalarBits[i] <== secretKeyBits[i];
     }
-    for (var i = 0; i < 2; i++) {
-        multiplySecretKeyInputVector.p[i] <== inputPoint[i];
-    }
-    for(var i = 0; i < 2; i++) {
-        outputPoint[i] <== multiplySecretKeyInputVector.out[i];
-    }
+    multiplyInputPoint.inputPoint[0] <== inputPoint[0];
+    multiplyInputPoint.inputPoint[1] <== inputPoint[1];
+    outputPoint[0] <== multiplyInputPoint.outputPoint[0];
+    outputPoint[1] <== multiplyInputPoint.outputPoint[1];
 }

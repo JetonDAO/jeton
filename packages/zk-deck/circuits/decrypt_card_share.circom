@@ -2,4 +2,12 @@ pragma circom 2.0.0;
 
 include "./templates/decrypt_card_share.circom";
 
-component main { public[ publicKey, inputPoint ] } = DecryptCardShare(251);
+component main { public[ publicKey, inputPoint ] } = DecryptCardShare(
+    84,
+    168700,
+    168696,
+    [
+        5299619240641551281634865583518297030282874472190772894086521144482721001553,
+        16950150798460657717958625567821834550301663161624707787222815936182638968203
+    ]
+);

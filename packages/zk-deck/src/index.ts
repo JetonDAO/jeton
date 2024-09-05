@@ -107,9 +107,7 @@ export class ZKDeck {
       new Array(numCards).fill(undefined).map((_) => this.curve.sampleScalar())
     ).map((random) => {
       const bits = Scalar.bits(random);
-      return bits.concat(
-        new Array(Scalar.bitLength(this.curve.order) - bits.length).fill(0),
-      );
+      return bits.concat(new Array(252 - bits.length).fill(0));
     });
     const { proof, publicSignals } = await groth16.fullProve(
       {
@@ -162,9 +160,7 @@ export class ZKDeck {
   ): Promise<{ proof: Groth16Proof; decryptCardShare: DecryptCardShare }> {
     let secretKeyBits = Scalar.bits(secretKey);
     secretKeyBits = secretKeyBits.concat(
-      new Array(Scalar.bitLength(this.curve.order) - secretKeyBits.length).fill(
-        0,
-      ),
+      new Array(252 - secretKeyBits.length).fill(0),
     );
     const publicKey = this.generatePublicKey(secretKey);
     const inputPoint = deck[cardIndex]?.slice(0, 2) as [string, string];
