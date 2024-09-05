@@ -3,13 +3,13 @@ import { before, describe, test } from "mocha";
 
 import {
   type TwistedEdwardsCurve,
-  createBabyJubJub,
+  createJubJub,
 } from "./twisted_edwards_curve.js";
 
 describe("TwistedEdwardsCurve", () => {
   let curve: TwistedEdwardsCurve;
   before(async () => {
-    curve = await createBabyJubJub();
+    curve = await createJubJub();
   });
 
   test("ap should be in curve", () => {

@@ -8,7 +8,7 @@ import {
 } from "./permutation.js";
 import {
   type TwistedEdwardsCurve,
-  createBabyJubJub,
+  createJubJub,
 } from "./twisted_edwards_curve.js";
 
 import decryptCardShareVerificationKey from "../dist/verification_keys/decrypt_card_share_verification_key.json" with {
@@ -222,7 +222,7 @@ export async function createZKDeck(
   decryptCardShareWasm: string,
   decryptCardShareZkey: string,
 ): Promise<ZKDeck> {
-  const curve = await createBabyJubJub();
+  const curve = await createJubJub();
   return new ZKDeck(
     curve,
     shuffleEncryptDeckWasm,

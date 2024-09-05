@@ -72,6 +72,10 @@ template MultiplyScalarTwistedEdwardsCurvePoint(numBits, edwardsA, edwardsD) {
         segments[i].addInputPoint[0] <== segments[i - 1].addOutputPoint[0];
         segments[i].addInputPoint[1] <== segments[i - 1].addOutputPoint[1];
     }
+    signal unused0;
+    unused0 <== segments[numBits - 2].doubleOutputPoint[0];
+    signal unused1;
+    unused1 <== segments[numBits - 2].doubleOutputPoint[1];
 
     component edwardsPoint = Montgomery2Edwards();
     edwardsPoint.in[0] <== segments[numBits - 2].addOutputPoint[0];

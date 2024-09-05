@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["circom:build", "snarkjs:build", "typescript:build"]
+      "dependsOn": ["circom:build", "typescript:build"]
     },
     "test": {
       "dependsOn": ["mocha:test"]
@@ -24,8 +24,7 @@
       ]
     },
     "circom:build:shuffle-encrypt-deck:mkdir": {
-      "inputs": [],
-      "outputs": ["dist/circuits/shuffle_encrypt_deck"]
+      "cache": false
     },
     "circom:build:shuffle-encrypt-deck:compile": {
       "dependsOn": ["circom:build:shuffle-encrypt-deck:mkdir"],
@@ -42,19 +41,12 @@
       ]
     },
     "circom:build:decrypt-share-card:mkdir": {
-      "inputs": [],
-      "outputs": ["dist/circuits/decrypt_card_share"]
+      "cache": false
     },
     "circom:build:decrypt-share-card:compile": {
       "dependsOn": ["circom:build:decrypt-share-card:mkdir"],
       "inputs": ["circuits/decrypt_card_share.circom", "circuits/templates/**"],
       "outputs": ["dist/circuits/decrypt_card_share/**"]
-    },
-    "circom:check:shuffle-encrypt-deck": {
-      "inputs": [
-        "circuits/shuffle_encrypt_deck.circom",
-        "circuits/templates/**"
-      ]
     },
     "circom:check": {
       "dependsOn": [
@@ -62,21 +54,58 @@
         "circom:check:decrypt-share-card"
       ]
     },
+    "circom:check:shuffle-encrypt-deck": {
+      "inputs": [
+        "circuits/shuffle_encrypt_deck.circom",
+        "circuits/templates/**"
+      ]
+    },
     "circom:check:decrypt-share-card": {
       "inputs": ["circuits/decrypt_card_share.circom", "circuits/templates/**"]
     },
     "snarkjs:build": {
-      "dependsOn": ["snarkjs:build:zkey", "snarkjs:build:verificationkey"]
+      "dependsOn": [
+        "snarkjs:build:powersoftau",
+        "snarkjs:build:zkey",
+        "snarkjs:build:verificationkey"
+      ]
     },
     "snarkjs:build:powersoftau": {
       "dependsOn": [
         "snarkjs:build:powersoftau:mkdir",
+        "snarkjs:build:powersoftau:pot14",
         "snarkjs:build:powersoftau:pot18"
       ]
     },
     "snarkjs:build:powersoftau:mkdir": {
-      "inputs": [],
-      "outputs": ["dist/powersoftaus"]
+      "cache": false
+    },
+    "snarkjs:build:powersoftau:pot14": {
+      "dependsOn": [
+        "snarkjs:build:powersoftau:pot14:new",
+        "snarkjs:build:powersoftau:pot14:contribute",
+        "snarkjs:build:powersoftau:pot14:beacon",
+        "snarkjs:build:powersoftau:pot14:prepare"
+      ]
+    },
+    "snarkjs:build:powersoftau:pot14:new": {
+      "dependsOn": ["snarkjs:build:powersoftau:mkdir"],
+      "outputs": ["dist/powersoftaus/pot14_new.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot14:contribute": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot14:new"],
+      "inputs": ["dist/powersoftaus/pot14_new.ptau"],
+      "outputs": ["dist/powersoftaus/pot14_contribute.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot14:beacon": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot14:contribute"],
+      "inputs": ["dist/powersoftaus/pot14_contribute.ptau"],
+      "outputs": ["dist/powersoftaus/pot14_beacon.ptau"]
+    },
+    "snarkjs:build:powersoftau:pot14:prepare": {
+      "dependsOn": ["snarkjs:build:powersoftau:pot14:beacon"],
+      "inputs": ["dist/powersoftaus/pot14_beacon.ptau"],
+      "outputs": ["dist/powersoftaus/pot14.ptau"]
     },
     "snarkjs:build:powersoftau:pot18": {
       "dependsOn": [
@@ -88,7 +117,6 @@
     },
     "snarkjs:build:powersoftau:pot18:new": {
       "dependsOn": ["snarkjs:build:powersoftau:mkdir"],
-      "inputs": [],
       "outputs": ["dist/powersoftaus/pot18_new.ptau"]
     },
     "snarkjs:build:powersoftau:pot18:contribute": {
@@ -114,8 +142,7 @@
       ]
     },
     "snarkjs:build:zkey:mkdir": {
-      "inputs": [],
-      "outputs": ["dist/zkeys"]
+      "cache": false
     },
     "snarkjs:build:zkey:shuffle-encrypt-deck": {
       "dependsOn": [
@@ -126,8 +153,9 @@
     },
     "snarkjs:build:zkey:shuffle-encrypt-deck:setup": {
       "dependsOn": [
-        "snarkjs:build:zkey:mkdir",
-        "circom:build:shuffle-encrypt-deck"
+        "circom:build:shuffle-encrypt-deck",
+        "snarkjs:build:powersoftau:pot18",
+        "snarkjs:build:zkey:mkdir"
       ],
       "inputs": [
         "dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck.r1cs",
@@ -154,12 +182,13 @@
     },
     "snarkjs:build:zkey:decrypt-share-card:setup": {
       "dependsOn": [
-        "snarkjs:build:zkey:mkdir",
-        "circom:build:decrypt-share-card"
+        "circom:build:decrypt-share-card",
+        "snarkjs:build:powersoftau:pot14",
+        "snarkjs:build:zkey:mkdir"
       ],
       "inputs": [
         "dist/circuits/decrypt_card_share/decrypt_card_share.r1cs",
-        "dist/powersoftaus/pot18.ptau"
+        "dist/powersoftaus/pot14.ptau"
       ],
       "outputs": ["dist/zkeys/decrypt_card_share_setup.zkey"]
     },
@@ -181,8 +210,7 @@
       ]
     },
     "snarkjs:build:verificationkey:mkdir": {
-      "inputs": [],
-      "outputs": ["dist/verification_keys"]
+      "cache": false
     },
     "snarkjs:build:verificationkey:shuffle-encrypt-deck": {
       "dependsOn": [
@@ -205,12 +233,12 @@
       ]
     },
     "typescript:build": {
-      "dependsOn": ["snarkjs:build"],
+      "dependsOn": ["circom:build"],
       "inputs": ["src/**", "tsconfig.json"],
       "outputs": ["dist/src/**", "dist/tests/**"]
     },
     "mocha:test": {
-      "dependsOn": ["circom:build", "snarkjs:build"],
+      "dependsOn": ["circom:build"],
       "inputs": ["src/**"]
     }
   }
