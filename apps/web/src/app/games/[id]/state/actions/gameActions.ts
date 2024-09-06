@@ -14,7 +14,14 @@ export const initGame = async (
     transaction: InputTransactionData,
   ) => Promise<void>,
 ) => {
-  await when(() => state$.tableId.get() !== undefined && state$.loading);
+  await when(
+    () =>
+      state$.tableId.get() !== undefined &&
+      state$.loading.get() &&
+      !state$.initializing.get(),
+  );
+  console.log("calling init game");
+  state$.initializing.set(true);
   const tableId = state$.tableId.peek() as string;
   const tableInfo = await getTableInfo(tableId);
   const game = createGame({
@@ -27,6 +34,7 @@ export const initGame = async (
   const entryGameState = await game.checkIn(1000);
   state$.gameState.set(entryGameState);
   state$.loading.set(false);
+  state$.initializing.set(false);
 };
 
 export const setTableId = (id: string) => {

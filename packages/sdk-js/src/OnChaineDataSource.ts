@@ -26,6 +26,7 @@ export class OnChainDataSource extends EventEmitter {
     this.pieSocketTransport.subscribe(
       OnChainEvents.PLAYER_CHECKED_IN,
       (data: PlayerCheckedInData) => {
+        console.log("onchaindatasource: player checked in ");
         this.emit(OnChainEvents.PLAYER_CHECKED_IN, data);
       },
     );
@@ -41,13 +42,21 @@ export class OnChainDataSource extends EventEmitter {
       address,
     });
 
-    this.pieSocketTransport.subscribe("game-state", (data: GameState) => {
-      this.gameState = data;
-    });
+    this.pieSocketTransport.subscribe(
+      "game-state",
+      (data: { receiver: string; state: GameState }) => {
+        console.log("received game state");
+        if (data.receiver === address) {
+          this.gameState = data.state;
+        }
+      },
+    );
   }
 
   async queryGameState() {
+    console.log("query game state");
     await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log("query game state returning", this.gameState);
     return this.gameState;
   }
 }

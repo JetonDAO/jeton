@@ -26,7 +26,6 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
     account,
   } = useWallet();
 
-  console.log("sadfasdf", isWalletLoading, connected, account);
   useEffect(() => {
     if (!isWalletLoading && !connected) {
       //router.push("/");

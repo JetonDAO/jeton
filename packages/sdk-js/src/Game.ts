@@ -40,6 +40,7 @@ export class Game {
   private gameState?: GameState;
 
   constructor(config: GameConfigs) {
+    console.log("constructing Game", config);
     // wallet address of the user
     this.playerId = config.address;
 
@@ -64,22 +65,26 @@ export class Game {
     );
   }
 
-  private newPlayerCheckedIn(data: PlayerCheckedInData) {
-    console.log("new player checked in", data);
+  private newPlayerCheckedIn = (data: PlayerCheckedInData) => {
+    if (data.address === this.playerId) return;
+    console.log("new player checked in", data, this.playerId);
     this.gameState?.players.push({ id: data.address, balance: data.buyIn });
 
+    console.log("updated game state", this.gameState);
     // TODO: remove
     if (this.playerId === this.gameState?.players[0]?.id) {
+      console.log("sending game-state", this.gameState);
       this.onChainDataSource.pieSocketTransport.publish("game-state", {
         receiver: this.playerId,
         state: this.gameState,
       });
     }
-  }
+  };
 
   public async checkIn(buyIn: number): Promise<GameState> {
+    console.log("Running checkIn");
     this.gameState = await this.callCheckInContract(buyIn);
-    console.log("checked in. game state is", this.gameState);
+    console.log("checked in. game state is", JSON.stringify(this.gameState));
 
     await this.initiateOffChainTransport();
     // tell other players you checkedIn
@@ -96,7 +101,11 @@ export class Game {
   }
 
   private async callCheckInContract(buyIn: number) {
-    this.onChainDataSource.checkIn(this.tableInfo.id, buyIn, this.playerId);
+    await this.onChainDataSource.checkIn(
+      this.tableInfo.id,
+      buyIn,
+      this.playerId,
+    );
     // first call checkIn transaction
     // then fetch game status
     return this.onChainDataSource.queryGameState();
