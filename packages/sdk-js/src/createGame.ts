@@ -1,12 +1,23 @@
-import { Game, type GameOptions } from "@src/Game";
+import { Game, type GameConfigs } from "@src/Game";
 import { PieSocketTransport } from "@src/transport";
+import { OnChainDataSource } from "./OnChaineDataSource";
 
 export function createGame(
-  options: Partial<Omit<GameOptions, "tableId">> & Pick<GameOptions, "tableId">,
+  options: Partial<
+    Omit<
+      GameConfigs,
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address"
+    >
+  > &
+    Pick<
+      GameConfigs,
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address"
+    >,
 ) {
-  const finalOptions: GameOptions = {
+  const finalOptions: GameConfigs = {
     ...options,
     offChainTransport: options.offChainTransport || new PieSocketTransport(),
+    onChainDataSource: options.onChainDataSource || new OnChainDataSource(),
   };
   return new Game(finalOptions);
 }

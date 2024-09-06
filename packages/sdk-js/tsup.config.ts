@@ -14,4 +14,5 @@ export default defineConfig({
   env: {
     PIESOCKET_API_KEY: process.env.PIESOCKET_API_KEY || "",
   },
+  noExternal: ["events"],
 });

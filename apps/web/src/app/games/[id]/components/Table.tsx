@@ -8,6 +8,8 @@ import {
   selectGamePlayers$,
   selectIsGameLoading$,
 } from "../state/selectors/gameSelectors";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useRouter } from "next/navigation";
 
 type TableComponentProps = {
   id: string;
@@ -15,12 +17,30 @@ type TableComponentProps = {
 
 export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   const players = useSelector(selectGamePlayers$());
-  useEffect(() => {
-    initGame();
-    setTableId(id);
-  });
+  const router = useRouter();
+  const {
+    connected,
+    isLoading: isWalletLoading,
+    signMessage,
+    signAndSubmitTransaction,
+    account,
+  } = useWallet();
 
-  const isLoading = useSelector(selectIsGameLoading$());
+  console.log("sadfasdf", isWalletLoading, connected, account);
+  useEffect(() => {
+    if (!isWalletLoading && !connected) {
+      //router.push("/");
+    }
+  }, [isWalletLoading, connected, router]);
+
+  useEffect(() => {
+    if (!isWalletLoading && account) {
+      initGame(account.address, signMessage, signAndSubmitTransaction);
+    }
+    setTableId(id);
+  }, [id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
+
+  const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
   if (isLoading) return <FullPageLoading />;
 
   return (

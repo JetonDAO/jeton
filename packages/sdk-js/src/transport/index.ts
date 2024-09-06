@@ -8,6 +8,7 @@ export class PieSocketTransport {
     this.pieSocket = new PieSocket({
       clusterId: "demo",
       apiKey: process.env.PIESOCKET_API_KEY || "",
+      notifySelf: false,
     });
   }
 
