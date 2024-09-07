@@ -35,6 +35,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "events": "^3.3.0",
     "piesocket-js": "^5.1.0"
+  },
+  "peerDependencies": {
+    "@aptos-labs/wallet-adapter-core": "^4.15.0"
   }
 }

@@ -1,20 +1,60 @@
-import { offChainEventFactory } from "@src/offChainEventFactory";
-import { type GameState, GameStatus, type offChainTransport } from "@src/types";
+import { EventEmitter } from "events";
+import type {
+  InputTransactionData,
+  SignMessagePayload,
+  SignMessageResponse,
+} from "@aptos-labs/wallet-adapter-core";
+import {
+  type GameState,
+  GameStatus,
+  type TableInfo,
+  type offChainTransport,
+} from "@src/types";
 import type { OffChainEvents } from "@src/types/OffChainEvents";
+import {
+  type OnChainDataSource,
+  OnChainEventTypes,
+  type OnChainPlayerCheckedInData,
+} from "./OnChainDataSource";
+import { type GameEventMap, GameEventTypes } from "./types/GameEvents";
 
-export type GameOptions = {
+export type GameConfigs = {
   offChainTransport: offChainTransport;
-  tableId: string;
+  tableInfo: TableInfo;
+  address: string;
+  signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
+  signAndSubmitTransaction: (
+    transaction: InputTransactionData,
+  ) => Promise<void>;
+  onChainDataSource: OnChainDataSource;
 };
 
-export class Game {
+export class Game extends EventEmitter<GameEventMap> {
   private offChainTransport: offChainTransport;
-  private tableId: string;
+  private onChainDataSource: OnChainDataSource;
+
+  private tableInfo: TableInfo;
+  private playerId: string;
+  private signMessage: (
+    message: SignMessagePayload,
+  ) => Promise<SignMessageResponse>;
+  private signAndSubmitTransaction: (
+    transaction: InputTransactionData,
+  ) => Promise<void>;
+
   private gameState: GameState;
 
-  constructor(config: GameOptions) {
+  constructor(config: GameConfigs) {
+    super();
+    // wallet address of the user
+    this.playerId = config.address;
+
+    this.signMessage = config.signMessage;
+    this.signAndSubmitTransaction = config.signAndSubmitTransaction;
     this.offChainTransport = config.offChainTransport;
-    this.tableId = config.tableId;
+    this.tableInfo = config.tableInfo;
+    this.onChainDataSource = config.onChainDataSource;
+    this.addOnChainListeners();
     // TODO
     this.gameState = {
       players: [],
@@ -23,33 +63,49 @@ export class Game {
     };
   }
 
-  public async checkIn(playerId: string): Promise<GameState> {
-    const playerIds = await this.callCheckInContract(playerId);
-    for (const id of playerIds) {
-      this.gameState.players.push({ id, balance: 0, bet: 0 });
-    }
-
-    await this.initiateOffChainTransport();
-    // tell other players you checkedIn
-    this.offChainTransport.publish(
-      "poker",
-      offChainEventFactory.createCheckInEvent(playerId),
+  private addOnChainListeners() {
+    this.onChainDataSource.on(
+      OnChainEventTypes.PLAYER_CHECKED_IN,
+      this.newPlayerCheckedIn,
     );
-    // TODO: here we need a way to construct consensus
-    // we need this consensus algorithm for many different event too
-
-    // wait until everyone acknowledge your checkIn
-    // and construct full game state based on their responses
-
-    return this.gameState;
   }
 
-  private async callCheckInContract(playerId: string) {
-    return ["john", "jane", "bob"];
+  private newPlayerCheckedIn = (data: OnChainPlayerCheckedInData) => {
+    if (data.address === this.playerId) return;
+    const newPlayer = { id: data.address, balance: data.buyIn };
+    this.gameState?.players.push(newPlayer);
+
+    // TODO: remove
+    if (this.playerId === this.gameState?.players[0]?.id) {
+      this.onChainDataSource.pieSocketTransport.publish("game-state", {
+        receiver: data.address,
+        state: this.gameState,
+      });
+    }
+
+    this.emit(GameEventTypes.newPlayerCheckedIn, newPlayer);
+  };
+
+  public async checkIn(buyIn: number): Promise<GameState> {
+    this.gameState = await this.callCheckInContract(buyIn);
+
+    await this.initiateOffChainTransport();
+    return JSON.parse(JSON.stringify(this.gameState));
+  }
+
+  private async callCheckInContract(buyIn: number) {
+    await this.onChainDataSource.checkIn(
+      this.tableInfo.id,
+      buyIn,
+      this.playerId,
+    );
+    // first call checkIn transaction
+    // then fetch game status
+    return this.onChainDataSource.queryGameState();
   }
 
   private async initiateOffChainTransport() {
-    await this.offChainTransport.create(this.tableId);
+    await this.offChainTransport.create(this.tableInfo.id);
     this.offChainTransport.subscribe<OffChainEvents>("poker", (data) => {});
   }
 }

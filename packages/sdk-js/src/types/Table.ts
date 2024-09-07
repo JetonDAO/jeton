@@ -1,7 +1,17 @@
 // represents one Table, params are subject to change
-export type Table = {
+export enum ChipUnits {
+  apt = "apt",
+  usdt = "usdt",
+  eth = "eth",
+}
+export interface TableInfo {
   id: string;
-  game: string;
-  buyIn: number;
-  stake: number;
-};
+  smallBlind: number;
+  numberOfRaises: number;
+  minPlayers: number;
+  maxPlayers: number;
+  minBuyIn: number;
+  maxBuyIn: number;
+  waitingBlocks: number;
+  chipUnit: ChipUnits;
+}

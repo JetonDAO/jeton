@@ -2,9 +2,9 @@ export enum OffChainEventTypes {
   checkInEvent = 0,
 }
 
-export type CheckInEvent = {
+export type OffChainCheckInEvent = {
   type: OffChainEventTypes.checkInEvent;
   playerId: string;
 };
 
-export type OffChainEvents = CheckInEvent;
+export type OffChainEvents = OffChainCheckInEvent;

@@ -1,7 +1,7 @@
-import { type CheckInEvent, OffChainEventTypes } from "@src/types";
+import { type OffChainCheckInEvent, OffChainEventTypes } from "@src/types";
 
 export const offChainEventFactory = {
-  createCheckInEvent(playerId: string): CheckInEvent {
+  createCheckInEvent(playerId: string): OffChainCheckInEvent {
     return {
       type: OffChainEventTypes.checkInEvent,
       playerId,

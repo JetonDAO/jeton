@@ -4,5 +4,5 @@ import type { Player } from "./Player";
 export interface GameState {
   players: Player[];
   dealer: number;
-  status: GameStatus;
+  status?: GameStatus;
 }
