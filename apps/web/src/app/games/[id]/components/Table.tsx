@@ -4,7 +4,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import FullPageLoading from "@jeton/ui/FullPageLoading";
 import { useSelector } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
-import { type FC, useEffect } from "react";
+import { type FC, useEffect, useState } from "react";
 import { initGame, setTableId } from "../state/actions/gameActions";
 import {
   selectGamePlayers$,
@@ -16,6 +16,7 @@ type TableComponentProps = {
 };
 
 export const TableComponent: FC<TableComponentProps> = ({ id }) => {
+  const [toffState, setToffState] = useState(false);
   const players = useSelector(selectGamePlayers$());
   const router = useRouter();
   const {
@@ -26,12 +27,13 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
     account,
   } = useWallet();
 
-  console.log("wallet loading?", isWalletLoading, connected, account);
   useEffect(() => {
-    if (!isWalletLoading && !connected) {
-      //router.push("/");
+    if (!isWalletLoading && !connected && toffState) {
+      router.push("/login");
+    } else if (!isWalletLoading && !connected) {
+      setTimeout(() => setToffState(true), 100);
     }
-  }, [isWalletLoading, connected, router]);
+  }, [isWalletLoading, connected, router, toffState]);
 
   useEffect(() => {
     if (!isWalletLoading && account) {

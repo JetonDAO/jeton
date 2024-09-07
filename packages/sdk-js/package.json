@@ -39,6 +39,6 @@
     "piesocket-js": "^5.1.0"
   },
   "peerDependencies": {
-    "@aptos-labs/wallet-adapter-core": "^4.15.0"
+    "@aptos-labs/wallet-adapter-core": "^4.16.0"
   }
 }
