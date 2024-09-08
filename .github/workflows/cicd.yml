@@ -60,6 +60,7 @@ jobs:
           piesocket-api-key: ${{ secrets.PIESOCKET_API_KEY }}
       - name: Comment Preview URL
         uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
         with:
           script: |
             github.rest.issues.createComment({
