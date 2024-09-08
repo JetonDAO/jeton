@@ -3,7 +3,6 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["PIESOCKET_API_KEY"],
       "outputs": ["dist/**"]
     }
   }
