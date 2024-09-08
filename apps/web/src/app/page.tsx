@@ -1,6 +1,6 @@
-import WalletAdapterButton from "../components/WalletAdapterButton";
-
 export const runtime = "edge";
+
+import WalletAdapterButton from "@src/components/WalletAdapterButton";
 
 export default function Home() {
   return (
