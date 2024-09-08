@@ -55,3 +55,4 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          piesocket-api-key: ${{ secrets.PIESOCKET_API_KEY }}
