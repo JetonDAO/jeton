@@ -1,4 +1,4 @@
-import type { Game, GameState } from "@jeton/sdk-js";
+import type { Game, GameState } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
 interface State {

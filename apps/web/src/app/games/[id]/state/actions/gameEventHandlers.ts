@@ -1,4 +1,4 @@
-import type { Player } from "@jeton/sdk-js";
+import type { Player } from "@jeton/ts-sdk";
 import { state$ } from "../state";
 
 export function newPlayerCheckedInHandler(player: Player) {

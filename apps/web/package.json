@@ -9,7 +9,7 @@
     "next-on-pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
-    "@jeton/sdk-js": "*",
+    "@jeton/ts-sdk": "*",
     "@jeton/ui": "*",
     "@aptos-labs/wallet-adapter-ant-design": "^3.0.13",
     "@aptos-labs/wallet-adapter-react": "^3.6.2",

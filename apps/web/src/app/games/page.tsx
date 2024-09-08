@@ -1,4 +1,4 @@
-import { getTablesInfo } from "@jeton/sdk-js";
+import { getTablesInfo } from "@jeton/ts-sdk";
 import { LaunchGameButton } from "@src/components/LaunchGameButton";
 
 // I used button here to show case client components

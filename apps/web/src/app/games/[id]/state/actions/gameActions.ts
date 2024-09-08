@@ -3,7 +3,7 @@ import type {
   SignMessagePayload,
   SignMessageResponse,
 } from "@aptos-labs/wallet-adapter-react";
-import { GameEventTypes, createGame, getTableInfo } from "@jeton/sdk-js";
+import { GameEventTypes, createGame, getTableInfo } from "@jeton/ts-sdk";
 import { when, whenReady } from "@legendapp/state";
 import { state$ } from "../state";
 import { newPlayerCheckedInHandler } from "./gameEventHandlers";

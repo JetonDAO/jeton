@@ -29,7 +29,7 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
 
   useEffect(() => {
     if (!isWalletLoading && !connected && toffState) {
-      router.push("/login");
+      router.push("/");
     } else if (!isWalletLoading && !connected) {
       setTimeout(() => setToffState(true), 100);
     }
