@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev-web": "turbo run dev --filter @jeton/web --filter @jeton/ui",
+    "dev-web": "turbo run dev --filter @jeton/web --filter @jeton/ui --filter @jeton/ts-sdk",
     "test": "turbo run test",
     "check": "turbo run check",
     "fix": "turbo run fix",

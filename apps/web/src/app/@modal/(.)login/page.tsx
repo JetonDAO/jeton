@@ -1,11 +1,11 @@
 export const runtime = "edge";
 import Modal from "@jeton/ui/Modal";
-import GoogleAuth from "./GoogleAuth";
+import WalletAdapterButton from "@src/components/WalletAdapterButton";
 
 export default function LoginModal() {
   return (
     <Modal>
-      <GoogleAuth />
+      <WalletAdapterButton />
     </Modal>
   );
 }

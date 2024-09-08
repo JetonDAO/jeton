@@ -1,4 +1,4 @@
-import sharedConfig from "@jeton/tailwindccs-config";
+import sharedConfig from "@jeton/tailwindcss-config";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

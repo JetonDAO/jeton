@@ -18,6 +18,8 @@ permissions:
   id-token: write
   contents: read
   deployments: write
+  issues: write
+  pull-requests: write
 
 jobs:
   check:
@@ -55,3 +57,14 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          piesocket-api-key: ${{ secrets.PIESOCKET_API_KEY }}
+      - name: Comment Preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "Preview URL: ${{ steps.deploy.outputs.cloudflare-preview-url }}"
+            })
