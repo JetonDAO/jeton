@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "next-on-pages:build": "npx @cloudflare/next-on-pages"
+    "next-on-pages": "npx @cloudflare/next-on-pages",
+    "start": "next start"
   },
   "dependencies": {
     "@jeton/ts-sdk": "*",
