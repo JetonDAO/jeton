@@ -10,6 +10,7 @@ import {
   createJubJub,
 } from "./twisted_edwards_curve.js";
 
+import { decryptCardShareZkey } from "./zkey.test.js";
 const decryptCardShareWasm =
   "./dist/circuits/decrypt_card_share/decrypt_card_share_js/decrypt_card_share.wasm";
 
@@ -38,6 +39,7 @@ describe("decrypt card share", () => {
       publicKey,
       inputPoint,
       decryptCardShareWasm,
+      decryptCardShareZkey,
     );
     expect(outputPoint).to.deep.equal(expectedOutputPoint);
     expect(
@@ -60,6 +62,7 @@ describe("decrypt card share", () => {
         publicKey,
         inputPoint,
         decryptCardShareWasm,
+        decryptCardShareZkey,
       ),
     ).to.rejected;
   });

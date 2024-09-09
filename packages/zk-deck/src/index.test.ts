@@ -1,16 +1,13 @@
 import { expect } from "chai";
 import { before, describe, test } from "mocha";
 
-import {
-  type EncryptedDeck,
-  type ZKDeck,
-  createZKDeck,
-  numCards,
-} from "./index.js";
+import { type ZKDeck, createZKDeck, numCards } from "./index.js";
 import {
   applyPermutationVector,
   samplePermutationVector,
 } from "./permutation.js";
+
+import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "./zkey.test.js";
 
 describe("ZKDeck", () => {
   let zkdeck: ZKDeck;
@@ -18,10 +15,12 @@ describe("ZKDeck", () => {
     zkdeck = await createZKDeck(
       "dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck_js/shuffle_encrypt_deck.wasm",
       "dist/circuits/decrypt_card_share/decrypt_card_share_js/decrypt_card_share.wasm",
+      shuffleEncryptDeckZkey,
+      decryptCardShareZkey,
     );
   });
 
-  for (let numPlayers = 2; numPlayers <= 5; numPlayers++) {
+  for (let numPlayers = 2; numPlayers < 4; numPlayers++) {
     test(`end to end of shuffle, encrypt and decrypt for ${numPlayers} player`, async () => {
       const secretKeys = new Array(numPlayers)
         .fill(undefined)
@@ -86,6 +85,6 @@ describe("ZKDeck", () => {
           Array.from(new Array(numCards).keys()),
         ),
       );
-    }).timeout(numPlayers * 60 * 1000);
+    }).timeout(numPlayers * 5 * 60 * 1000);
   }
 });

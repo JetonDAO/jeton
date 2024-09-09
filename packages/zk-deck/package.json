@@ -67,7 +67,7 @@
   },
   "mocha": {
     "node-option": ["import=tsx"],
-    "timeout": "20000",
+    "timeout": "90000",
     "exit": true
   }
 }

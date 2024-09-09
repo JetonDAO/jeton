@@ -4,14 +4,16 @@ import { type Groth16Proof, groth16 } from "snarkjs";
 import shuffleEncryptDeckVerificationKey from "#verificationkey:shuffle-encrypt-deck.json";
 import { numCards, numTripleBits } from "./constants.js";
 
-const shuffleEncryptDeckZkey = "./dist/zkeys/shuffle_encrypt_deck.zkey";
+const shuffleEncryptDeckZkey =
+  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/shuffle_encrypt_deck.zkey";
 
 export async function proveShuffleEncryptDeck(
   permutationMatrix: number[][],
   aggregatedPublicKey: [string, string],
   randomVector: bigint[],
   inputDeck: [string, string, string, string][],
-  shuffleEncryptDeckWasm: string,
+  shuffleEncryptDeckWasm: string | Uint8Array,
+  shuffleEncryptDeckZkey: string | Uint8Array,
 ): Promise<{
   proof: Groth16Proof;
   outputDeck: [string, string, string, string][];

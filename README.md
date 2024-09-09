@@ -30,7 +30,17 @@ Make sure you have the correct versions of Node.js and npm installed:
 - **Node.js**: v20.16 or later
 - **npm**: v10.8 or later
 
-You can use [NVM](https://github.com/nvm-sh/nvm) to install the required version of node and npm.
+You can use [NVM](https://github.com/nvm-sh/nvm) to install the required version
+of node and npm.
+
+Also you need rustc and cargo install. It is recommended to use
+[rustup](https://rustup.rs/) to install them.
+
+After that you need to also install circom using:
+
+```shell
+cargo install --git https://github.com/iden3/circom.git --tag v2.1.9
+```
 
 ### Cloning the Repository
 

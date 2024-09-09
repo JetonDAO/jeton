@@ -19,6 +19,7 @@ import {
   createJubJub,
 } from "./twisted_edwards_curve.js";
 
+import { shuffleEncryptDeckZkey } from "./zkey.test.js";
 const shuffleEncrypDeckWasm =
   "./dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck_js/shuffle_encrypt_deck.wasm";
 
@@ -93,6 +94,7 @@ describe("shuffle encrypt deck", () => {
       randomVector,
       inputDeck,
       shuffleEncrypDeckWasm,
+      shuffleEncryptDeckZkey,
     );
     expect(outputDeck).to.deep.equal(expectedOutputPoint);
     expect(
@@ -137,6 +139,7 @@ describe("shuffle encrypt deck", () => {
         randomVector,
         inputDeck,
         shuffleEncrypDeckWasm,
+        shuffleEncryptDeckZkey,
       ),
     ).to.rejected;
 
@@ -151,6 +154,7 @@ describe("shuffle encrypt deck", () => {
         randomVector,
         inputDeck,
         shuffleEncrypDeckWasm,
+        shuffleEncryptDeckZkey,
       ),
     ).to.rejected;
 
@@ -167,6 +171,7 @@ describe("shuffle encrypt deck", () => {
         randomVector,
         inputDeck,
         shuffleEncrypDeckWasm,
+        shuffleEncryptDeckZkey,
       ),
     ).to.rejected;
   });

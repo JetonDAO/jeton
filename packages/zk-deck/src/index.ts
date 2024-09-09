@@ -6,7 +6,6 @@ import {
   verifyDecryptCardShare,
 } from "./decrypt_card_share.js";
 import {
-  applyPermutationVector,
   createPermutationMatrix,
   samplePermutationVector,
 } from "./permutation.js";
@@ -18,6 +17,9 @@ import {
   type TwistedEdwardsCurve,
   createJubJub,
 } from "./twisted_edwards_curve.js";
+
+export type { Groth16Proof } from "snarkjs";
+export { numCards } from "./constants.js";
 
 export type SecretKey = bigint;
 export type PublicKey = [string, string];
@@ -31,8 +33,10 @@ export class ZKDeck {
   readonly initialEncryptedDeck: EncryptedDeck;
   constructor(
     readonly curve: TwistedEdwardsCurve,
-    readonly shuffleEncryptDeckWasm: string,
-    readonly decryptCardShareWasm: string,
+    readonly shuffleEncryptDeckWasm: string | Uint8Array,
+    readonly decryptCardShareWasm: string | Uint8Array,
+    readonly shuffleEncryptDeckZkey: string | Uint8Array,
+    readonly decryptCardShareZkey: string | Uint8Array,
   ) {
     this.initialEncryptedDeck = Array.from(new Array(numCards).keys()).map(
       (i) =>
@@ -82,6 +86,7 @@ export class ZKDeck {
           .map((_) => this.curve.sampleScalar()),
       inputDeck,
       this.shuffleEncryptDeckWasm,
+      this.shuffleEncryptDeckZkey,
     );
   }
 
@@ -114,6 +119,7 @@ export class ZKDeck {
       publicKey,
       inputPoint,
       this.decryptCardShareWasm,
+      this.decryptCardShareZkey,
     );
     return { proof, decryptionCardShare: outputPoint };
   }
@@ -156,12 +162,17 @@ export class ZKDeck {
 }
 
 export async function createZKDeck(
-  shuffleEncryptDeckWasm: string,
-  shuffleEncryptDeckZkey: string,
+  shuffleEncryptDeckWasm: string | Uint8Array,
+  decryptCardShareWasm: string | Uint8Array,
+  shuffleEncryptDeckZkey: string | Uint8Array,
+  decryptCardShareWasmZkey: string | Uint8Array,
 ): Promise<ZKDeck> {
   const curve = await createJubJub();
-  return new ZKDeck(curve, shuffleEncryptDeckWasm, shuffleEncryptDeckZkey);
+  return new ZKDeck(
+    curve,
+    shuffleEncryptDeckWasm,
+    decryptCardShareWasm,
+    shuffleEncryptDeckZkey,
+    decryptCardShareWasmZkey,
+  );
 }
-
-export { numCards } from "./constants.js";
-export type { Groth16Proof } from "snarkjs";

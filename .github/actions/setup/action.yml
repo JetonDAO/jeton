@@ -6,7 +6,9 @@ runs:
     - name: Cache Turbo Build Setup
       uses: actions/cache@v4
       with:
-        path: .turbo
+        path: |
+          ~/.cargo
+          .turbo
         key: ${{ runner.os }}-release-job-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-release-job-
