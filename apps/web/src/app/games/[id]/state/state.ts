@@ -1,4 +1,4 @@
-import type { Game, GameState } from "@jeton/ts-sdk";
+import type { Game, GameState, GameStatus, Player } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
 interface State {
@@ -6,7 +6,12 @@ interface State {
   loading: boolean;
   initializing: boolean;
   game?: Game;
-  gameState?: GameState;
+  gameState?: {
+    status: GameStatus;
+    players: Player[];
+    dealer: Player;
+    shufflingPlayer?: Player;
+  };
 }
 
 export const state$: Observable<State> = observable<State>({
