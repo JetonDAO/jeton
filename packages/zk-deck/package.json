@@ -1,0 +1,73 @@
+{
+  "name": "@jeton/zk-deck",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#verificationkey:shuffle-encrypt-deck.json": "./verification_keys/shuffle_encrypt_deck.json",
+    "#verificationkey:decrypt-card-share.json": "./verification_keys/decrypt_card_share.json"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/index.d.ts",
+        "default": "./dist/src/index.js"
+      }
+    },
+    "./wasm/shuffle-encrypt-deck.wasm": "./dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck_js/shuffle_encrypt_deck.wasm",
+    "./wasm/decrypt-card-share.wasm": "./dist/circuits/decrypt_card_share/decrypt_card_share_js/decrypt_card_share.wasm"
+  },
+  "scripts": {
+    "circom:build:shuffle-encrypt-deck:mkdir": "mkdir -p dist/circuits/shuffle_encrypt_deck",
+    "circom:build:shuffle-encrypt-deck:compile": "circom --r1cs --wasm --prime bls12381 --output dist/circuits/shuffle_encrypt_deck circuits/shuffle_encrypt_deck.circom",
+    "circom:build:decrypt-card-share:mkdir": "mkdir -p dist/circuits/decrypt_card_share",
+    "circom:build:decrypt-card-share:compile": "circom --r1cs --wasm --prime bls12381 --output dist/circuits/decrypt_card_share circuits/decrypt_card_share.circom",
+    "circom:check:shuffle-encrypt-deck": "circom --inspect --prime bls12381 circuits/shuffle_encrypt_deck.circom",
+    "circom:check:decrypt-card-share": "circom --inspect --prime bls12381 circuits/decrypt_card_share.circom",
+    "snarkjs:build:powersoftau:pot14:mkdir": "mkdir -p dist/powersoftaus/pot14",
+    "snarkjs:build:powersoftau:pot14:new": "snarkjs powersoftau new bls12381 14 dist/powersoftaus/pot14/new.ptau",
+    "snarkjs:build:powersoftau:pot14:contribute": "snarkjs powersoftau contribute dist/powersoftaus/pot14/new.ptau dist/powersoftaus/pot14/contribute.ptau -e='x9J$gyWEGjBfHqp@CLn2^2XjXzJWrEeyb9EmkJqr2Hos@zpZmEq3HFiC4M2XbvBL'",
+    "snarkjs:build:powersoftau:pot14:beacon": "snarkjs powersoftau beacon dist/powersoftaus/pot14/contribute.ptau dist/powersoftaus/pot14/beacon.ptau '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:powersoftau:pot14:prepare": "snarkjs powersoftau prepare phase2 dist/powersoftaus/pot14/beacon.ptau dist/powersoftaus/pot14.ptau",
+    "snarkjs:build:powersoftau:pot18:mkdir": "mkdir -p dist/powersoftaus/pot18",
+    "snarkjs:build:powersoftau:pot18:new": "snarkjs powersoftau new bls12381 18 dist/powersoftaus/pot18/new.ptau",
+    "snarkjs:build:powersoftau:pot18:contribute": "snarkjs powersoftau contribute dist/powersoftaus/pot18/new.ptau dist/powersoftaus/pot18/contribute.ptau -e='x9J$gyWEGjBfHqp@CLn2^2XjXzJWrEeyb9EmkJqr2Hos@zpZmEq3HFiC4M2XbvBL'",
+    "snarkjs:build:powersoftau:pot18:beacon": "snarkjs powersoftau beacon dist/powersoftaus/pot18/contribute.ptau dist/powersoftaus/pot18/beacon.ptau '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:powersoftau:pot18:prepare": "snarkjs powersoftau prepare phase2 dist/powersoftaus/pot18/beacon.ptau dist/powersoftaus/pot18.ptau",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:mkdir": "mkdir -p dist/zkeys/shuffle_encrypt_deck",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:setup": "snarkjs groth16 setup dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck.r1cs dist/powersoftaus/pot18.ptau dist/zkeys/shuffle_encrypt_deck/setup.zkey",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:contribute": "snarkjs zkey contribute dist/zkeys/shuffle_encrypt_deck/setup.zkey dist/zkeys/shuffle_encrypt_deck/contribute.zkey -e='JS^dbdvBo!P8HxjCxKJrdwF!HadBxS!b&vJtknJe5nDcnnGL3eo498UQe6yv87TU'",
+    "snarkjs:build:zkey:shuffle-encrypt-deck:beacon": "snarkjs zkey beacon dist/zkeys/shuffle_encrypt_deck/contribute.zkey dist/zkeys/shuffle_encrypt_deck.zkey '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:zkey:decrypt-card-share:mkdir": "mkdir -p dist/zkeys/decrypt_card_share",
+    "snarkjs:build:zkey:decrypt-card-share:setup": "snarkjs groth16 setup dist/circuits/decrypt_card_share/decrypt_card_share.r1cs dist/powersoftaus/pot14.ptau dist/zkeys/decrypt_card_share/setup.zkey",
+    "snarkjs:build:zkey:decrypt-card-share:contribute": "snarkjs zkey contribute dist/zkeys/decrypt_card_share/setup.zkey dist/zkeys/decrypt_card_share/contribute.zkey -e='ex#UciTJm^4$RebWxzrUK%9c#*4^KPE!VrxnaeoFhQb7aRojg@6n&hiCFWbG4$qB'",
+    "snarkjs:build:zkey:decrypt-card-share:beacon": "snarkjs zkey beacon dist/zkeys/decrypt_card_share/contribute.zkey dist/zkeys/decrypt_card_share.zkey '68445acb30fba9ed3a7732c47baad8bf32d1a76e74b662a644941732d17076af' 10",
+    "snarkjs:build:verificationkey:mkdir": "mkdir -p verification_keys",
+    "snarkjs:build:verificationkey:shuffle-encrypt-deck": "snarkjs zkey export verificationkey dist/zkeys/shuffle_encrypt_deck.zkey verification_keys/shuffle_encrypt_deck.json",
+    "snarkjs:build:verificationkey:decrypt-card-share": "snarkjs zkey export verificationkey dist/zkeys/decrypt_card_share.zkey verification_keys/decrypt_card_share.json",
+    "typescript:build": "tsc",
+    "mocha:test": "mocha src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@jeton/typescript-config": "^0.0.0",
+    "@types/chai": "^4.3.18",
+    "@types/chai-as-promised": "^8.0.0",
+    "@types/mocha": "^10.0.7",
+    "@types/snarkjs": "^0.7.8",
+    "chai": "^5.1.1",
+    "chai-as-promised": "^8.0.0",
+    "circomlib": "^2.0.5",
+    "mocha": "^10.7.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "ffjavascript": "^0.3.0",
+    "snarkjs": "^0.7.4"
+  },
+  "mocha": {
+    "node-option": ["import=tsx"],
+    "timeout": "90000",
+    "exit": true
+  }
+}
