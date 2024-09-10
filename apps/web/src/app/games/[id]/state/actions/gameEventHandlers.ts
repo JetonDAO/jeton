@@ -1,4 +1,9 @@
-import { GameStatus, type HandStartedEvent, type Player, type playerShufflingEvent } from "@jeton/ts-sdk";
+import {
+  GameStatus,
+  type HandStartedEvent,
+  type Player,
+  type playerShufflingEvent,
+} from "@jeton/ts-sdk";
 import { state$ } from "../state";
 
 export function newPlayerCheckedInHandler(player: Player) {

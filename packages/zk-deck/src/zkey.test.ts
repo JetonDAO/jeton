@@ -8,9 +8,7 @@ async function getUrlBytes(url: string): Promise<Uint8Array> {
 
   const contentLength = response.headers.get("content-length");
   if (contentLength === null) {
-    throw new Error(
-      `could not get zkey file from ${url}, content-length is null`,
-    );
+    throw new Error(`could not get zkey file from ${url}, content-length is null`);
   }
   const length = Number.parseInt(contentLength);
 
@@ -27,9 +25,7 @@ async function getUrlBytes(url: string): Promise<Uint8Array> {
       throw new Error(`could not get zkey file from ${url}, early EoF`);
     }
     if (value === undefined) {
-      throw new Error(
-        `could not get zkey file from ${url}, value is undefined`,
-      );
+      throw new Error(`could not get zkey file from ${url}, value is undefined`);
     }
     buffer.set(value, lastByte);
     lastByte += value.length;

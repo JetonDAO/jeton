@@ -23,7 +23,13 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   const gameStatus = useSelector(selectGameStatus$());
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const router = useRouter();
-  const { connected, isLoading: isWalletLoading, signMessage, signAndSubmitTransaction, account } = useWallet();
+  const {
+    connected,
+    isLoading: isWalletLoading,
+    signMessage,
+    signAndSubmitTransaction,
+    account,
+  } = useWallet();
 
   useEffect(() => {
     if (!isWalletLoading && !connected && toffState) {

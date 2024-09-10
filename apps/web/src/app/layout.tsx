@@ -8,7 +8,8 @@ import { WalletProvider } from "@src/components/WalletProvider";
 
 export const metadata: Metadata = {
   title: "Jeton DAO",
-  description: "Decentralized poker protocol enabling trustless, transparent, and community-governed gameplay",
+  description:
+    "Decentralized poker protocol enabling trustless, transparent, and community-governed gameplay",
 };
 
 export default function RootLayout({

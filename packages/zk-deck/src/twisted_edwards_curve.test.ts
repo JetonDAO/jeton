@@ -1,10 +1,7 @@
 import { expect } from "chai";
 import { before, describe, test } from "mocha";
 
-import {
-  type TwistedEdwardsCurve,
-  createJubJub,
-} from "./twisted_edwards_curve.js";
+import { type TwistedEdwardsCurve, createJubJub } from "./twisted_edwards_curve.js";
 
 describe("TwistedEdwardsCurve", () => {
   let curve: TwistedEdwardsCurve;
@@ -79,10 +76,7 @@ describe("TwistedEdwardsCurve", () => {
     const q = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
 
     const left = curve.mulScalarPoint(a, curve.addPoints(p, q));
-    const right = curve.addPoints(
-      curve.mulScalarPoint(a, p),
-      curve.mulScalarPoint(a, q),
-    );
+    const right = curve.addPoints(curve.mulScalarPoint(a, p), curve.mulScalarPoint(a, q));
     expect(curve.inCurve(left)).to.be.true;
     expect(curve.inCurve(right)).to.be.true;
     expect(curve.eqPoints(left, right)).to.be.true;
@@ -94,10 +88,7 @@ describe("TwistedEdwardsCurve", () => {
     const p = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
 
     const left = curve.mulScalarPoint((a + b) % curve.order, p);
-    const right = curve.addPoints(
-      curve.mulScalarPoint(a, p),
-      curve.mulScalarPoint(b, p),
-    );
+    const right = curve.addPoints(curve.mulScalarPoint(a, p), curve.mulScalarPoint(b, p));
     expect(curve.inCurve(left)).to.be.true;
     expect(curve.inCurve(right)).to.be.true;
     expect(curve.eqPoints(left, right)).to.be.true;

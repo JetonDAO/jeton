@@ -33,8 +33,7 @@ export async function proveShuffleEncryptDeck(
     shuffleEncryptDeckZkey,
   );
   const outputDeck = Array.from(new Array(numCards).keys()).map(
-    (i) =>
-      publicSignals.slice(4 * i, 4 * i + 4) as [string, string, string, string],
+    (i) => publicSignals.slice(4 * i, 4 * i + 4) as [string, string, string, string],
   );
   return { proof, outputDeck };
 }

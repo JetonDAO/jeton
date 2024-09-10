@@ -9,15 +9,8 @@ import {
   createPermutationMatrix,
   samplePermutationVector,
 } from "./permutation.js";
-import {
-  proveShuffleEncryptDeck,
-  verifyShuffleEncryptDeck,
-} from "./shuffle_encrypt_deck.js";
-import {
-  type Point,
-  type TwistedEdwardsCurve,
-  createJubJub,
-} from "./twisted_edwards_curve.js";
+import { proveShuffleEncryptDeck, verifyShuffleEncryptDeck } from "./shuffle_encrypt_deck.js";
+import { type Point, type TwistedEdwardsCurve, createJubJub } from "./twisted_edwards_curve.js";
 
 import { shuffleEncryptDeckZkey } from "./zkey.test.js";
 const shuffleEncrypDeckWasm =
@@ -30,18 +23,11 @@ describe("shuffle encrypt deck", () => {
   });
 
   test("should prove and verify shuffle_encrypt_deck", async () => {
-    const aggregatedPublicKeyValue = curve.mulScalarPoint(
-      curve.sampleScalar(),
-      curve.generator,
-    );
-    const aggregatedPublicKey = curve.pointToStringTuple(
-      aggregatedPublicKeyValue,
-    );
+    const aggregatedPublicKeyValue = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
+    const aggregatedPublicKey = curve.pointToStringTuple(aggregatedPublicKeyValue);
     const permutationVector = samplePermutationVector(numCards);
     const permutationMatrix = createPermutationMatrix(permutationVector);
-    const randomVector = new Array(numCards)
-      .fill(undefined)
-      .map((_) => curve.sampleScalar());
+    const randomVector = new Array(numCards).fill(undefined).map((_) => curve.sampleScalar());
     const inputDeckValues = new Array(numCards)
       .fill(undefined)
       .map(
@@ -60,32 +46,25 @@ describe("shuffle encrypt deck", () => {
           string,
         ],
     );
-    const expectedOutputPoint = applyPermutationVector(
-      permutationVector,
-      inputDeckValues,
-    )
+    const expectedOutputPoint = applyPermutationVector(permutationVector, inputDeckValues)
       .map(
         ([p1, p2], i) =>
           [
-            curve.addPoints(
-              p1,
-              curve.mulScalarPoint(randomVector[i] as bigint, curve.generator),
-            ),
+            curve.addPoints(p1, curve.mulScalarPoint(randomVector[i] as bigint, curve.generator)),
             curve.addPoints(
               p2,
-              curve.mulScalarPoint(
-                randomVector[i] as bigint,
-                aggregatedPublicKeyValue,
-              ),
+              curve.mulScalarPoint(randomVector[i] as bigint, aggregatedPublicKeyValue),
             ),
           ] as [Point, Point],
       )
       .map(
         ([p1, p2]) =>
-          [
-            ...curve.pointToStringTuple(p1),
-            ...curve.pointToStringTuple(p2),
-          ] as [string, string, string, string],
+          [...curve.pointToStringTuple(p1), ...curve.pointToStringTuple(p2)] as [
+            string,
+            string,
+            string,
+            string,
+          ],
       );
 
     const { proof, outputDeck } = await proveShuffleEncryptDeck(
@@ -97,14 +76,8 @@ describe("shuffle encrypt deck", () => {
       shuffleEncryptDeckZkey,
     );
     expect(outputDeck).to.deep.equal(expectedOutputPoint);
-    expect(
-      await verifyShuffleEncryptDeck(
-        aggregatedPublicKey,
-        inputDeck,
-        outputDeck,
-        proof,
-      ),
-    ).to.be.true;
+    expect(await verifyShuffleEncryptDeck(aggregatedPublicKey, inputDeck, outputDeck, proof)).to.be
+      .true;
   });
 
   test("should not generate proof if permutation matrix is invalid", async () => {
@@ -113,9 +86,7 @@ describe("shuffle encrypt deck", () => {
     );
     const permutationVector = samplePermutationVector(numCards);
     const permutationMatrix = createPermutationMatrix(permutationVector);
-    const randomVector = new Array(numCards)
-      .fill(undefined)
-      .map((_) => curve.sampleScalar());
+    const randomVector = new Array(numCards).fill(undefined).map((_) => curve.sampleScalar());
     const inputDeck = new Array(numCards)
       .fill(undefined)
       .map(
@@ -144,9 +115,7 @@ describe("shuffle encrypt deck", () => {
     ).to.rejected;
 
     const faultyPermutationMatrix2 = permutationMatrix.map((row) => [...row]);
-    (faultyPermutationMatrix2[0] as number[])[
-      permutationMatrix[0]?.indexOf(1) as number
-    ] = 0;
+    (faultyPermutationMatrix2[0] as number[])[permutationMatrix[0]?.indexOf(1) as number] = 0;
     await expect(
       proveShuffleEncryptDeck(
         faultyPermutationMatrix2,

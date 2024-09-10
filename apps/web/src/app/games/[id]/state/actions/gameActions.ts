@@ -1,4 +1,8 @@
-import type { InputTransactionData, SignMessagePayload, SignMessageResponse } from "@aptos-labs/wallet-adapter-react";
+import type {
+  InputTransactionData,
+  SignMessagePayload,
+  SignMessageResponse,
+} from "@aptos-labs/wallet-adapter-react";
 import { GameEventTypes, createGame, getTableInfo } from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
@@ -14,7 +18,9 @@ export const initGame = async (
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>,
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>,
 ) => {
-  await when(() => state$.tableId.get() !== undefined && state$.loading.get() && !state$.initializing.get());
+  await when(
+    () => state$.tableId.get() !== undefined && state$.loading.get() && !state$.initializing.get(),
+  );
   state$.initializing.set(true);
   const tableId = state$.tableId.peek() as string;
   const tableInfo = await getTableInfo(tableId);

@@ -48,21 +48,33 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     await this.pieSocketTransport.create(`onChain-${tableId}`);
     this.playerId = address;
     // subscribe to needed events
-    this.pieSocketTransport.subscribe(OnChainEventTypes.PLAYER_CHECKED_IN, (data: OnChainPlayerCheckedInData) => {
-      this.emit(OnChainEventTypes.PLAYER_CHECKED_IN, data);
-    });
-    this.pieSocketTransport.subscribe("game-state", (data: { receiver: string; state: GameState }) => {
-      if (data.receiver === address) {
-        this.gameState = data.state;
-      }
-    });
-    this.pieSocketTransport.subscribe(OnChainEventTypes.GAME_STARTED, (data: OnChainGameStartedData) => {
-      this.emit(OnChainEventTypes.GAME_STARTED, data);
-    });
+    this.pieSocketTransport.subscribe(
+      OnChainEventTypes.PLAYER_CHECKED_IN,
+      (data: OnChainPlayerCheckedInData) => {
+        this.emit(OnChainEventTypes.PLAYER_CHECKED_IN, data);
+      },
+    );
+    this.pieSocketTransport.subscribe(
+      "game-state",
+      (data: { receiver: string; state: GameState }) => {
+        if (data.receiver === address) {
+          this.gameState = data.state;
+        }
+      },
+    );
+    this.pieSocketTransport.subscribe(
+      OnChainEventTypes.GAME_STARTED,
+      (data: OnChainGameStartedData) => {
+        this.emit(OnChainEventTypes.GAME_STARTED, data);
+      },
+    );
 
-    this.pieSocketTransport.subscribe(OnChainEventTypes.SHUFFLED_DECK, (data: OnChainShuffledDeckData) => {
-      this.emit(OnChainEventTypes.SHUFFLED_DECK, data);
-    });
+    this.pieSocketTransport.subscribe(
+      OnChainEventTypes.SHUFFLED_DECK,
+      (data: OnChainShuffledDeckData) => {
+        this.emit(OnChainEventTypes.SHUFFLED_DECK, data);
+      },
+    );
     this.pieSocketTransport.subscribe(
       OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
       (data: OnChainPrivateCardsSharesData) => {
