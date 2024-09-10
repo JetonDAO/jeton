@@ -1,6 +1,7 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { GameEventTypes } from "@jeton/ts-sdk";
 import FullPageLoading from "@jeton/ui/FullPageLoading";
 import { useSelector } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
@@ -12,6 +13,7 @@ import {
   selectIsGameLoading$,
   selectShufflingPlayer$,
 } from "../state/selectors/gameSelectors";
+import { useSubscribeToGameEvent } from "./useSubscribeToGameEvent";
 
 type TableComponentProps = {
   id: string;
@@ -22,6 +24,9 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   const players = useSelector(selectGamePlayers$());
   const gameStatus = useSelector(selectGameStatus$());
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
+  const [{ percentage }] = useSubscribeToGameEvent(GameEventTypes.DOWNLOAD_PROGRESS) || [
+    { percentage: undefined },
+  ];
   const router = useRouter();
   const {
     connected,
@@ -47,7 +52,13 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   }, [id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
 
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
-  if (isLoading) return <FullPageLoading />;
+  if (isLoading)
+    return (
+      <div>
+        {percentage && <p>downloading... {percentage}%</p>}
+        <FullPageLoading />
+      </div>
+    );
 
   return (
     <div>

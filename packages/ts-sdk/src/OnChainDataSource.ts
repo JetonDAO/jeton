@@ -8,10 +8,12 @@ export enum OnChainEventTypes {
   SHUFFLED_DECK = "shuffled-deck",
   PRIVATE_CARDS_SHARES_RECEIVED = "private-cards-shares",
 }
+import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Groth16Proof } from "@jeton/zk-deck";
 
 export type OnChainPlayerCheckedInData = {
   buyIn: number;
   address: string;
+  elGamalPublicKey: ElGamalPublicKey;
 };
 
 export type OnChainGameStartedData = {
@@ -38,13 +40,19 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
   pieSocketTransport: PieSocketTransport;
   gameState: GameState = { players: [], dealer: 0, status: 0 };
   playerId = "";
+  outDeck?: EncryptedDeck;
 
   constructor() {
     super();
     this.pieSocketTransport = new PieSocketTransport();
   }
 
-  async checkIn(tableId: string, buyIn: number, address: string) {
+  async checkIn(
+    tableId: string,
+    buyIn: number,
+    address: string,
+    elGamalPublicKey: ElGamalPublicKey,
+  ) {
     await this.pieSocketTransport.create(`onChain-${tableId}`);
     this.playerId = address;
     // subscribe to needed events
@@ -71,7 +79,8 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
 
     this.pieSocketTransport.subscribe(
       OnChainEventTypes.SHUFFLED_DECK,
-      (data: OnChainShuffledDeckData) => {
+      (data: OnChainShuffledDeckData & { outDeck: EncryptedDeck }) => {
+        this.outDeck = data.outDeck;
         this.emit(OnChainEventTypes.SHUFFLED_DECK, data);
       },
     );
@@ -89,18 +98,22 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
       this.gameState.players.push({
         id: address,
         balance: buyIn,
+        elGamalPublicKey,
       });
     }
     this.pieSocketTransport.publish(OnChainEventTypes.PLAYER_CHECKED_IN, {
       tableId,
       buyIn,
       address,
+      elGamalPublicKey,
     });
   }
 
-  async shuffledDeck(address: string) {
+  async shuffledDeck(address: string, proof: Groth16Proof, outDeck: EncryptedDeck) {
     this.pieSocketTransport.publish(OnChainEventTypes.SHUFFLED_DECK, {
       player: address,
+      proof,
+      outDeck,
     });
   }
 
@@ -113,5 +126,10 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
   async queryGameState() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     return this.gameState;
+  }
+
+  async queryLastOutDeck(tableId: string) {
+    if (!this.outDeck) throw new Error("out deck must have been present!!");
+    return this.outDeck;
   }
 }

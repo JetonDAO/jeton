@@ -43,10 +43,10 @@ export const initGame = async (
 function setGameEventListeners() {
   const game = state$.game.peek();
   if (game === undefined) throw new Error("game must exist");
-  game.addListener?.(GameEventTypes.newPlayerCheckedIn, newPlayerCheckedInHandler);
-  game.addListener?.(GameEventTypes.handStarted, handStartedHandler);
-  game.addListener?.(GameEventTypes.playerShuffling, playerShufflingHandler);
-  game.addListener?.(GameEventTypes.privateCardDecryptionStarted, privateCardsDecryptionHandler);
+  game.addListener?.(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayerCheckedInHandler);
+  game.addListener?.(GameEventTypes.HAND_STARTED, handStartedHandler);
+  game.addListener?.(GameEventTypes.PLAYER_SHUFFLING, playerShufflingHandler);
+  game.addListener?.(GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED, privateCardsDecryptionHandler);
 }
 
 export const setTableId = (id: string) => {

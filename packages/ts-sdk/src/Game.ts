@@ -1,6 +1,29 @@
 import { EventEmitter } from "events";
-import type { InputTransactionData, SignMessagePayload, SignMessageResponse } from "@aptos-labs/wallet-adapter-core";
-import { type GameState, GameStatus, type TableInfo, type offChainTransport } from "@src/types";
+import type {
+  InputTransactionData,
+  SignMessagePayload,
+  SignMessageResponse,
+} from "@aptos-labs/wallet-adapter-core";
+
+import {
+  type PublicKey as ElGamalPublicKey,
+  type ZKDeck,
+  createZKDeck,
+  decryptCardShareZkey,
+  shuffleEncryptDeckZkey,
+} from "@jeton/zk-deck";
+//@ts-ignore
+import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
+//@ts-ignore
+import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+
+import {
+  type GameState,
+  GameStatus,
+  type HandState,
+  type TableInfo,
+  type offChainTransport,
+} from "@src/types";
 import type { OffChainEvents } from "@src/types/OffChainEvents";
 import {
   type OnChainDataSource,
@@ -10,7 +33,9 @@ import {
   type OnChainPrivateCardsSharesData,
   type OnChainShuffledDeckData,
 } from "./OnChainDataSource";
+import { getUrlBytes } from "./getURLBytes";
 import { type GameEventMap, GameEventTypes } from "./types/GameEvents";
+import { calculatePercentage } from "./utils/calculatePercentage";
 
 export type GameConfigs = {
   offChainTransport: offChainTransport;
@@ -29,8 +54,16 @@ export class Game extends EventEmitter<GameEventMap> {
   private playerId: string;
   private signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
   private signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>;
+  // TODO: definitely assigned problem
+  private zkDeck?: ZKDeck;
+  private elGamalPublicKey?: ElGamalPublicKey;
+  private elGamalSecretKey?: bigint;
+
+  private creatingZKDeck: Promise<void>;
 
   private gameState: GameState;
+
+  private handState: HandState;
 
   constructor(config: GameConfigs) {
     super();
@@ -42,6 +75,7 @@ export class Game extends EventEmitter<GameEventMap> {
     this.offChainTransport = config.offChainTransport;
     this.tableInfo = config.tableInfo;
     this.onChainDataSource = config.onChainDataSource;
+    this.handState = {};
     this.addOnChainListeners();
     // TODO
     this.gameState = {
@@ -49,13 +83,31 @@ export class Game extends EventEmitter<GameEventMap> {
       status: GameStatus.AwaitingStart,
       dealer: 0,
     };
+    this.creatingZKDeck = this.createZKDeck();
+  }
+
+  private async createZKDeck() {
+    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await this.downloadZkeyFiles();
+
+    const zkDeck = await createZKDeck(
+      new Uint8Array(shuffleEncryptDeckWasm),
+      new Uint8Array(decryptCardShareWasm),
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareZkeyBytes,
+    );
+    this.zkDeck = zkDeck;
+    this.elGamalSecretKey = zkDeck.sampleSecretKey();
+    this.elGamalPublicKey = zkDeck.generatePublicKey(this.elGamalSecretKey);
   }
 
   private addOnChainListeners() {
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_CHECKED_IN, this.newPlayerCheckedIn);
     this.onChainDataSource.on(OnChainEventTypes.GAME_STARTED, this.gameStarted);
     this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
-    this.onChainDataSource.on(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, this.receivedPrivateCardsShares);
+    this.onChainDataSource.on(
+      OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
+      this.receivedPrivateCardsShares,
+    );
   }
 
   private receivedPrivateCardsShares = (data: OnChainPrivateCardsSharesData) => {
@@ -66,11 +118,11 @@ export class Game extends EventEmitter<GameEventMap> {
     const nextPlayerToShuffle = this.getNextPlayer(data.player);
     if (!nextPlayerToShuffle) {
       this.gameState.status = GameStatus.DrawPrivateCards;
-      this.emit(GameEventTypes.privateCardDecryptionStarted, {});
+      this.emit(GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED, {});
       this.createAndSharePrivateKeyShares();
       return;
     }
-    this.emit(GameEventTypes.playerShuffling, nextPlayerToShuffle);
+    this.emit(GameEventTypes.PLAYER_SHUFFLING, nextPlayerToShuffle);
     if (nextPlayerToShuffle.id === this.playerId) {
       this.shuffle();
     }
@@ -88,7 +140,12 @@ export class Game extends EventEmitter<GameEventMap> {
     return this.gameState.players[nextPlayerIndex];
   }
 
+  private amIDealer() {
+    return this.playerId === this.gameState.players[this.gameState.dealer]?.id;
+  }
+
   private gameStarted = (data: OnChainGameStartedData) => {
+    this.handState = {};
     // TODO: check if we are in the right state
     this.gameState.status = GameStatus.Shuffle;
     this.gameState.dealer = data.dealerIndex;
@@ -96,17 +153,21 @@ export class Game extends EventEmitter<GameEventMap> {
     const dealer = this.gameState.players.find((p) => p.id === dealerId);
     if (!dealer) throw new Error("could not find dealer in game state!!");
     const eventData = { dealer };
-    this.emit(GameEventTypes.handStarted, eventData);
+    this.emit(GameEventTypes.HAND_STARTED, eventData);
     if (eventData.dealer.id === this.playerId) {
       this.shuffle();
     }
 
-    this.emit(GameEventTypes.playerShuffling, dealer);
+    this.emit(GameEventTypes.PLAYER_SHUFFLING, dealer);
   };
 
   private newPlayerCheckedIn = (data: OnChainPlayerCheckedInData) => {
     if (data.address === this.playerId) return;
-    const newPlayer = { id: data.address, balance: data.buyIn };
+    const newPlayer = {
+      id: data.address,
+      balance: data.buyIn,
+      elGamalPublicKey: data.elGamalPublicKey,
+    };
     this.gameState?.players.push(newPlayer);
 
     // TODO: remove
@@ -127,7 +188,7 @@ export class Game extends EventEmitter<GameEventMap> {
       }
     }
 
-    this.emit(GameEventTypes.newPlayerCheckedIn, newPlayer);
+    this.emit(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayer);
   };
 
   private createAndSharePrivateKeyShares() {
@@ -135,14 +196,24 @@ export class Game extends EventEmitter<GameEventMap> {
     this.onChainDataSource.privateCardsDecryptionShare(this.playerId);
   }
 
-  private shuffle() {
-    // TODO: create Deck o ina
-    setTimeout(() => {
-      this.onChainDataSource.shuffledDeck(this.playerId);
-    }, 10 * 1000);
+  private async shuffle() {
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    const publicKeys = this.gameState.players.map((p) => p.elGamalPublicKey);
+    const aggregatedPublicKey = this.zkDeck.generateAggregatedPublicKey(publicKeys);
+    this.handState.aggregatedPublicKey = aggregatedPublicKey;
+    const inputDeck = this.amIDealer()
+      ? this.zkDeck.initialEncryptedDeck
+      : await this.onChainDataSource.queryLastOutDeck(this.tableInfo.id);
+    const st = new Date();
+    const { proof, outputDeck } = await this.zkDeck.proveShuffleEncryptDeck(
+      aggregatedPublicKey,
+      inputDeck,
+    );
+    this.onChainDataSource.shuffledDeck(this.playerId, proof, outputDeck);
   }
 
   public async checkIn(buyIn: number): Promise<GameState> {
+    await this.creatingZKDeck;
     this.gameState = await this.callCheckInContract(buyIn);
 
     await this.initiateOffChainTransport();
@@ -150,7 +221,13 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private async callCheckInContract(buyIn: number) {
-    await this.onChainDataSource.checkIn(this.tableInfo.id, buyIn, this.playerId);
+    if (!this.elGamalPublicKey) throw new Error("you must first create elGamal keys");
+    await this.onChainDataSource.checkIn(
+      this.tableInfo.id,
+      buyIn,
+      this.playerId,
+      this.elGamalPublicKey,
+    );
     // first call checkIn transaction
     // then fetch game status
     return this.onChainDataSource.queryGameState();
@@ -159,6 +236,40 @@ export class Game extends EventEmitter<GameEventMap> {
   private async initiateOffChainTransport() {
     await this.offChainTransport.create(this.tableInfo.id);
     this.offChainTransport.subscribe<OffChainEvents>("poker", (data) => {});
+  }
+
+  private async downloadZkeyFiles() {
+    let decryptCardShareReceived = 0;
+    let decryptCardShareTotal: number;
+    let shuffleEncryptReceived = 0;
+    let shuffleEncryptTotal: number;
+
+    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await Promise.all([
+      getUrlBytes(decryptCardShareZkey, (received, total) => {
+        decryptCardShareReceived = received;
+        decryptCardShareTotal = total;
+        if (decryptCardShareTotal && shuffleEncryptTotal)
+          this.emit(GameEventTypes.DOWNLOAD_PROGRESS, {
+            percentage: calculatePercentage(
+              [decryptCardShareReceived, shuffleEncryptReceived],
+              [decryptCardShareTotal, shuffleEncryptTotal],
+            ),
+          });
+      }),
+      getUrlBytes(shuffleEncryptDeckZkey, (received, total) => {
+        shuffleEncryptReceived = received;
+        shuffleEncryptTotal = total;
+        if (decryptCardShareTotal && shuffleEncryptTotal)
+          this.emit(GameEventTypes.DOWNLOAD_PROGRESS, {
+            percentage: calculatePercentage(
+              [decryptCardShareReceived, shuffleEncryptReceived],
+              [decryptCardShareTotal, shuffleEncryptTotal],
+            ),
+          });
+      }),
+    ]);
+
+    return [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] as const;
   }
 }
 
