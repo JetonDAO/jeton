@@ -10,7 +10,6 @@ import { GameProvider, useGame } from "@src/providers/GameProvider";
 import type { CardName } from "@src/types";
 import { loadCardImage } from "@src/utils/cardLoader";
 import { cn } from "@src/utils/cn";
-import { clsx } from "clsx";
 import Image, { type StaticImageData } from "next/image";
 import { type ReactNode, useEffect, useState } from "react";
 

@@ -35,12 +35,12 @@ export default function Modal({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={overlay}
-      className="fixed z-10 left-0 right-0 top-0 bottom-0 mx-auto bg-black/60"
+      className="fixed z-50 left-0 right-0 top-0 bottom-0 mx-auto bg-black/70"
       onClick={onClick}
     >
       <div
         ref={wrapper}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6"
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl p-10 bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] border shadow border-[#3a3526]`}
       >
         {children}
       </div>

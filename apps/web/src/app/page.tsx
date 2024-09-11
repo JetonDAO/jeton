@@ -4,24 +4,23 @@ import buttonBackground from "@src/assets/images/button.png";
 import background from "@src/assets/images/main-menu-background.png";
 import WalletAdapterButton from "@src/components/WalletAdapterButton";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 export const runtime = "edge";
 
 export default function Home() {
   const router = useRouter();
 
-  const buttonConfig = [
+  const options = [
     {
       id: 1,
       label: "Play",
-      action: () => {
-        router.push("/play");
-      },
+      url: "/setup",
     },
     {
       id: 2,
       label: "Settings",
-      action: () => {},
+      url: "/",
     },
   ];
 
@@ -40,13 +39,12 @@ export default function Home() {
           Best Opportunity to lose your money
         </p>
         <div className="flex flex-col gap-5 relative z-20">
-          {buttonConfig.map((btn) => (
-            <button
-              onClick={btn.action}
-              type="button"
+          {options.map((btn) => (
+            <Link
+              href={btn.url}
               key={btn.id}
               style={{ backgroundImage: buttonBackground.src }}
-              className="relative w-72 h-14 p-4 flex justify-center items-center hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 overflow-hidden"
+              className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 overflow-hidden"
             >
               <Image
                 src={buttonBackground}
@@ -56,7 +54,7 @@ export default function Home() {
                 className="w-full absolute left-0 top-0 -z-10"
               />
               <span className="text-white">{btn.label}</span>
-            </button>
+            </Link>
           ))}
           <WalletAdapterButton />
         </div>
