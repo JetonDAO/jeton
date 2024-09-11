@@ -9,7 +9,13 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
   return (
     <AptosWalletAdapterProvider
       autoConnect={true}
-      dappConfig={{ network: Network.TESTNET }}
+      optInWallets={["Mizu Wallet", "Petra", "Continue with Google"]}
+      dappConfig={{
+        network: Network.TESTNET,
+        mizuwallet: {
+          manifestURL: "http://localhost:3000/mizuwallet-connect-manifest.json",
+        },
+      }}
       onError={(error) => {
         console.log("error", error);
       }}
