@@ -5,7 +5,7 @@ import "./globals.css";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 
 import "@jeton/ui/styles.css";
-import { WalletProvider } from "../components/WalletProvider";
+import { WalletProvider } from "@src/components/WalletProvider";
 
 const pressStart2P = Press_Start_2P({
   weight: "400",

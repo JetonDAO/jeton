@@ -1,11 +1,11 @@
-import GoogleAuth from "../@modal/(.)login/GoogleAuth";
-
 export const runtime = "edge";
+
+import WalletAdapterButton from "@src/components/WalletAdapterButton";
 
 export default function Login() {
   return (
     <div className="text-center mt-[50vh]">
-      <GoogleAuth />
+      <WalletAdapterButton />
     </div>
   );
 }

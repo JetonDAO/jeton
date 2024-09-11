@@ -1,0 +1,45 @@
+{
+  "name": "@jeton/ts-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./transport": {
+      "import": {
+        "types": "./dist/transport/index.d.ts",
+        "default": "./dist/transport/index.js"
+      },
+      "require": {
+        "types": "./dist/transport/index.d.cts",
+        "default": "./dist/transport/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "tsup": "^8.2.4",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "events": "^3.3.0",
+    "piesocket-js": "^5.1.0",
+    "@jeton/zk-deck": "*"
+  },
+  "peerDependencies": {
+    "@aptos-labs/wallet-adapter-core": "^4.16.0"
+  }
+}

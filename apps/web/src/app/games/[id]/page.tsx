@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
 import Avatar3 from "@src/assets/images/avatars/avatar-3.png";
@@ -115,9 +117,7 @@ function Player({ info }: { info: PlayerInfo }) {
           {cardsOnTable.map((cardName, i) => (
             <Card
               className={
-                i === 0
-                  ? "animate-dealAndRotate1"
-                  : "animate-dealAndRotate2 relative right-14"
+                i === 0 ? "animate-dealAndRotate1" : "animate-dealAndRotate2 relative right-14"
               }
               key={cardName}
               cardName={cardName}
@@ -179,7 +179,10 @@ function Card({
 
   if (!cardSrc) return null;
 
-  return (
-    <Image src={cardSrc} alt={cardName} className={cn("shrink-0", className)} />
-  );
+  return <Image src={cardSrc} alt={cardName} className={cn("shrink-0", className)} />;
 }
+// import { TableComponent } from "./components/Table";
+
+// export default function TablePage({ params }: { params: { id: string } }) {
+//   return <TableComponent id={params.id} />;
+// }

@@ -3,9 +3,12 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["next-on-pages:build"],
+      "dependsOn": ["next-on-pages"],
       "outputs": [".vercel/**"]
     },
-    "next-on-pages:build": {}
+    "next-on-pages": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    }
   }
 }

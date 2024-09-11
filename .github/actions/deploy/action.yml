@@ -4,6 +4,9 @@ inputs:
   cloudflare-api-token:
     description: "Couldflare API Token"
     required: true
+  piesocket-api-key:
+    description: "PieSocket API Key"
+    required: true
 outputs:
   cloudflare-preview-url:
     description: "Couldflare Preview URL"
@@ -15,6 +18,8 @@ runs:
       uses: ./.github/actions/setup
     - name: Run Build
       shell: bash
+      env:
+        PIESOCKET_API_KEY: ${{ inputs.piesocket-api-key }}
       run: npm run build
     - name: Deploy To Cloudflare
       id: deploy
