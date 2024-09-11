@@ -2,10 +2,7 @@ import { expect } from "chai";
 import { before, describe, test } from "mocha";
 
 import { type ZKDeck, createZKDeck, numCards } from "./index.js";
-import {
-  applyPermutationVector,
-  samplePermutationVector,
-} from "./permutation.js";
+import { applyPermutationVector, samplePermutationVector } from "./permutation.js";
 
 import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "./zkey.test.js";
 
@@ -22,9 +19,7 @@ describe("ZKDeck", () => {
 
   for (let numPlayers = 2; numPlayers < 4; numPlayers++) {
     test(`end to end of shuffle, encrypt and decrypt for ${numPlayers} player`, async () => {
-      const secretKeys = new Array(numPlayers)
-        .fill(undefined)
-        .map((_) => zkdeck.sampleSecretKey());
+      const secretKeys = new Array(numPlayers).fill(undefined).map((_) => zkdeck.sampleSecretKey());
       const aggregatedPublicKey = zkdeck.generateAggregatedPublicKey(
         secretKeys.map((secretKey) => zkdeck.generatePublicKey(secretKey)),
       );
@@ -54,12 +49,11 @@ describe("ZKDeck", () => {
           const shares = await Promise.all(
             secretKeys.map(async (secretKeys) => {
               const publicKey = zkdeck.generatePublicKey(secretKeys);
-              const { proof, decryptionCardShare } =
-                await zkdeck.proveDecryptCardShare(
-                  secretKeys,
-                  cardIndex,
-                  encryptedDeck,
-                );
+              const { proof, decryptionCardShare } = await zkdeck.proveDecryptCardShare(
+                secretKeys,
+                cardIndex,
+                encryptedDeck,
+              );
 
               expect(
                 await zkdeck.verifyDecryptCardShare(
@@ -80,8 +74,7 @@ describe("ZKDeck", () => {
 
       expect(deck).to.deep.equal(
         permutationVectors.reduce(
-          (deck, permutationVector) =>
-            applyPermutationVector(permutationVector, deck),
+          (deck, permutationVector) => applyPermutationVector(permutationVector, deck),
           Array.from(new Array(numCards).keys()),
         ),
       );

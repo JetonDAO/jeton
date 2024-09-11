@@ -15,9 +15,7 @@ export async function proveDecryptCardShare(
   decryptCardShareZkey: string | Uint8Array,
 ): Promise<{ proof: Groth16Proof; outputPoint: [string, string] }> {
   let secretKeyBits = Scalar.bits(secretKey);
-  secretKeyBits = secretKeyBits.concat(
-    new Array(3 * numTripleBits - secretKeyBits.length).fill(0),
-  );
+  secretKeyBits = secretKeyBits.concat(new Array(3 * numTripleBits - secretKeyBits.length).fill(0));
   const { proof, publicSignals } = await groth16.fullProve(
     {
       secretKeyBits,

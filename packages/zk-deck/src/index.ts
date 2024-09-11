@@ -1,23 +1,11 @@
 import type { Groth16Proof } from "snarkjs";
 
 import { numCards } from "./constants.js";
-import {
-  proveDecryptCardShare,
-  verifyDecryptCardShare,
-} from "./decrypt_card_share.js";
-import {
-  createPermutationMatrix,
-  samplePermutationVector,
-} from "./permutation.js";
-import {
-  proveShuffleEncryptDeck,
-  verifyShuffleEncryptDeck,
-} from "./shuffle_encrypt_deck.js";
-import {
-  type TwistedEdwardsCurve,
-  createJubJub,
-} from "./twisted_edwards_curve.js";
-
+import { proveDecryptCardShare, verifyDecryptCardShare } from "./decrypt_card_share.js";
+import { createPermutationMatrix, samplePermutationVector } from "./permutation.js";
+import { proveShuffleEncryptDeck, verifyShuffleEncryptDeck } from "./shuffle_encrypt_deck.js";
+import { type TwistedEdwardsCurve, createJubJub } from "./twisted_edwards_curve.js";
+export { shuffleEncryptDeckZkey, decryptCardShareZkey } from "./constants.js";
 export type { Groth16Proof } from "snarkjs";
 export { numCards } from "./constants.js";
 
@@ -42,9 +30,7 @@ export class ZKDeck {
       (i) =>
         [
           ...this.curve.pointToStringTuple(this.curve.zero),
-          ...this.curve.pointToStringTuple(
-            this.curve.mulScalarPoint(i + 1, this.curve.generator),
-          ),
+          ...this.curve.pointToStringTuple(this.curve.mulScalarPoint(i + 1, this.curve.generator)),
         ] as EncryptedCard,
     );
   }
@@ -58,9 +44,7 @@ export class ZKDeck {
     return [this.curve.field.toString(p[0]), this.curve.field.toString(p[1])];
   }
 
-  public generateAggregatedPublicKey(
-    publicKeys: PublicKey[],
-  ): AggregatedPublicKey {
+  public generateAggregatedPublicKey(publicKeys: PublicKey[]): AggregatedPublicKey {
     const p = publicKeys.reduce(
       (acc, pk) => this.curve.addPoints(acc, this.curve.point(pk)),
       this.curve.zero,
@@ -80,10 +64,7 @@ export class ZKDeck {
     return proveShuffleEncryptDeck(
       permutationMatrix,
       aggregatedPublicKey,
-      randomVector ||
-        new Array(numCards)
-          .fill(undefined)
-          .map((_) => this.curve.sampleScalar()),
+      randomVector || new Array(numCards).fill(undefined).map((_) => this.curve.sampleScalar()),
       inputDeck,
       this.shuffleEncryptDeckWasm,
       this.shuffleEncryptDeckZkey,
@@ -96,12 +77,7 @@ export class ZKDeck {
     outputDeck: EncryptedDeck,
     proof: Groth16Proof,
   ): Promise<boolean> {
-    return verifyShuffleEncryptDeck(
-      aggregatedPublicKey,
-      inputDeck,
-      outputDeck,
-      proof,
-    );
+    return verifyShuffleEncryptDeck(aggregatedPublicKey, inputDeck, outputDeck, proof);
   }
 
   public async proveDecryptCardShare(
@@ -132,12 +108,7 @@ export class ZKDeck {
     proof: Groth16Proof,
   ): Promise<boolean> {
     const inputPoint = deck[cardIndex]?.slice(0, 2) as [string, string];
-    return verifyDecryptCardShare(
-      publicKey,
-      inputPoint,
-      decryptCardShare,
-      proof,
-    );
+    return verifyDecryptCardShare(publicKey, inputPoint, decryptCardShare, proof);
   }
 
   public decryptCard(

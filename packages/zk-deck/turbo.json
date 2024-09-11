@@ -12,10 +12,7 @@
       "dependsOn": ["circom:check"]
     },
     "circom:build": {
-      "dependsOn": [
-        "circom:build:shuffle-encrypt-deck",
-        "circom:build:decrypt-card-share"
-      ]
+      "dependsOn": ["circom:build:shuffle-encrypt-deck", "circom:build:decrypt-card-share"]
     },
     "circom:build:shuffle-encrypt-deck": {
       "dependsOn": [
@@ -28,10 +25,7 @@
     },
     "circom:build:shuffle-encrypt-deck:compile": {
       "dependsOn": ["circom:build:shuffle-encrypt-deck:mkdir"],
-      "inputs": [
-        "circuits/shuffle_encrypt_deck.circom",
-        "circuits/templates/**"
-      ],
+      "inputs": ["circuits/shuffle_encrypt_deck.circom", "circuits/templates/**"],
       "outputs": ["dist/circuits/shuffle_encrypt_deck/**"]
     },
     "circom:build:decrypt-card-share": {
@@ -49,16 +43,10 @@
       "outputs": ["dist/circuits/decrypt_card_share/**"]
     },
     "circom:check": {
-      "dependsOn": [
-        "circom:check:shuffle-encrypt-deck",
-        "circom:check:decrypt-card-share"
-      ]
+      "dependsOn": ["circom:check:shuffle-encrypt-deck", "circom:check:decrypt-card-share"]
     },
     "circom:check:shuffle-encrypt-deck": {
-      "inputs": [
-        "circuits/shuffle_encrypt_deck.circom",
-        "circuits/templates/**"
-      ]
+      "inputs": ["circuits/shuffle_encrypt_deck.circom", "circuits/templates/**"]
     },
     "circom:check:decrypt-card-share": {
       "inputs": ["circuits/decrypt_card_share.circom", "circuits/templates/**"]
@@ -71,10 +59,7 @@
       ]
     },
     "snarkjs:build:powersoftau": {
-      "dependsOn": [
-        "snarkjs:build:powersoftau:pot14",
-        "snarkjs:build:powersoftau:pot18"
-      ]
+      "dependsOn": ["snarkjs:build:powersoftau:pot14", "snarkjs:build:powersoftau:pot18"]
     },
     "snarkjs:build:powersoftau:pot14": {
       "dependsOn": [
@@ -228,10 +213,7 @@
       "outputs": ["verification_keys/shuffle_encrypt_deck.json"]
     },
     "snarkjs:build:verificationkey:decrypt-card-share": {
-      "dependsOn": [
-        "snarkjs:build:verificationkey:mkdir",
-        "snarkjs:build:zkey:decrypt-card-share"
-      ],
+      "dependsOn": ["snarkjs:build:verificationkey:mkdir", "snarkjs:build:zkey:decrypt-card-share"],
       "inputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"],
       "outputs": ["verification_keys/decrypt_card_share.json"]
     },

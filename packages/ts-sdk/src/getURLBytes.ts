@@ -1,4 +1,7 @@
-async function getUrlBytes(url: string): Promise<Uint8Array> {
+export async function getUrlBytes(
+  url: string,
+  onProgress?: (received: number, total: number) => void,
+): Promise<Uint8Array> {
   const response = await fetch(url);
   if (response.status !== 200) {
     throw new Error(
@@ -29,15 +32,8 @@ async function getUrlBytes(url: string): Promise<Uint8Array> {
     }
     buffer.set(value, lastByte);
     lastByte += value.length;
+    onProgress?.(lastByte, length);
   }
   await reader.releaseLock();
   return buffer;
 }
-
-export const decryptCardShareZkey = await getUrlBytes(
-  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/decrypt_card_share.zkey",
-);
-
-export const shuffleEncryptDeckZkey = await getUrlBytes(
-  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/shuffle_encrypt_deck.zkey",
-);

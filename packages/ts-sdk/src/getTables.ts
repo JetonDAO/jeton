@@ -2,7 +2,7 @@ import { ChipUnits, type TableInfo } from "@src/types/Table";
 
 const tables: TableInfo[] = [
   {
-    id: "tb01",
+    id: "tbb01",
     smallBlind: 1,
     numberOfRaises: 1,
     minPlayers: 3,

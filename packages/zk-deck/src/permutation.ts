@@ -10,16 +10,11 @@ export function samplePermutationVector(n: number): number[] {
   return permutationVector;
 }
 
-export function applyPermutationVector<T>(
-  permutationVector: number[],
-  inputVector: T[],
-): T[] {
+export function applyPermutationVector<T>(permutationVector: number[], inputVector: T[]): T[] {
   return permutationVector.map((i) => inputVector[i] as T);
 }
 
-export function createPermutationMatrix(
-  permutationVector: number[],
-): number[][] {
+export function createPermutationMatrix(permutationVector: number[]): number[][] {
   const n = permutationVector.length;
   return permutationVector.map((index) => {
     const row = new Array(n).fill(0);

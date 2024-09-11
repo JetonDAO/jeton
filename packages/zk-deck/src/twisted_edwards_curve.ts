@@ -1,9 +1,4 @@
-import {
-  type Field,
-  type FieldElement,
-  Scalar,
-  getCurveFromName,
-} from "ffjavascript";
+import { type Field, type FieldElement, Scalar, getCurveFromName } from "ffjavascript";
 
 export type Point = [FieldElement, FieldElement];
 
@@ -35,10 +30,7 @@ export class TwistedEdwardsCurve {
     return this.field.toString(e);
   }
 
-  public point([x, y]:
-    | [string, string]
-    | [bigint, bigint]
-    | [number, number]): Point {
+  public point([x, y]: [string, string] | [bigint, bigint] | [number, number]): Point {
     return [this.element(x), this.element(y)];
   }
 
@@ -78,18 +70,12 @@ export class TwistedEdwardsCurve {
     const f = this.field;
     const beta = f.mul(a[0], b[1]);
     const gamma = f.mul(a[1], b[0]);
-    const delta = f.mul(
-      f.sub(a[1], f.mul(this.edwardsA, a[0])),
-      f.add(b[0], b[1]),
-    );
+    const delta = f.mul(f.sub(a[1], f.mul(this.edwardsA, a[0])), f.add(b[0], b[1]));
     const tau = f.mul(beta, gamma);
     const dtau = f.mul(this.edwardsD, tau);
 
     const x = f.div(f.add(beta, gamma), f.add(f.one, dtau));
-    const y = f.div(
-      f.add(delta, f.sub(f.mul(this.edwardsA, beta), gamma)),
-      f.sub(f.one, dtau),
-    );
+    const y = f.div(f.add(delta, f.sub(f.mul(this.edwardsA, beta), gamma)), f.sub(f.one, dtau));
     return [x, y];
   }
 
