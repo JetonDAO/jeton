@@ -13,7 +13,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
       dappConfig={{
         network: Network.TESTNET,
         mizuwallet: {
-          manifestURL: "http://localhost:3000/mizuwallet-connect-manifest.json",
+          manifestURL: `${window.origin}+/mizuwallet-connect-manifest.json`,
         },
       }}
       onError={(error) => {
