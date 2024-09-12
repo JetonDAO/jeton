@@ -13,6 +13,12 @@ import {
   privateCardsDecryptionHandler,
 } from "./gameEventHandlers";
 
+import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
+//@ts-ignore
+import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
+//@ts-ignore
+import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+
 export const initGame = async (
   address: string,
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>,
@@ -29,6 +35,12 @@ export const initGame = async (
     tableInfo,
     signMessage,
     signAndSubmitTransaction,
+    zkDeckFilesOrUrls: {
+      decryptCardShareWasm,
+      shuffleEncryptDeckWasm,
+      decryptCardShareZkey,
+      shuffleEncryptDeckZkey,
+    },
   });
   state$.game.set(game);
   setGameEventListeners();

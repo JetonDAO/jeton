@@ -5,17 +5,7 @@ import type {
   SignMessageResponse,
 } from "@aptos-labs/wallet-adapter-core";
 
-import {
-  type PublicKey as ElGamalPublicKey,
-  type ZKDeck,
-  createZKDeck,
-  decryptCardShareZkey,
-  shuffleEncryptDeckZkey,
-} from "@jeton/zk-deck";
-//@ts-ignore
-import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
-//@ts-ignore
-import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import { type PublicKey as ElGamalPublicKey, type ZKDeck, createZKDeck } from "@jeton/zk-deck";
 
 import {
   type GameState,
@@ -33,9 +23,16 @@ import {
   type OnChainPrivateCardsSharesData,
   type OnChainShuffledDeckData,
 } from "./OnChainDataSource";
-import { getUrlBytes } from "./getURLBytes";
+import { getUrlBytes, readData } from "./getURLBytes";
 import { type GameEventMap, GameEventTypes } from "./types/GameEvents";
 import { calculatePercentage } from "./utils/calculatePercentage";
+
+export type ZkDeckUrls = {
+  shuffleEncryptDeckWasm: string;
+  decryptCardShareWasm: string;
+  shuffleEncryptDeckZkey: string;
+  decryptCardShareZkey: string;
+};
 
 export type GameConfigs = {
   offChainTransport: offChainTransport;
@@ -44,6 +41,7 @@ export type GameConfigs = {
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>;
   onChainDataSource: OnChainDataSource;
+  zkDeckFilesOrUrls: ZkDeckUrls;
 };
 
 export class Game extends EventEmitter<GameEventMap> {
@@ -83,15 +81,20 @@ export class Game extends EventEmitter<GameEventMap> {
       status: GameStatus.AwaitingStart,
       dealer: 0,
     };
-    this.creatingZKDeck = this.createZKDeck();
+    this.creatingZKDeck = this.createZKDeck(config.zkDeckFilesOrUrls);
   }
 
-  private async createZKDeck() {
-    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await this.downloadZkeyFiles();
+  private async createZKDeck(filesOrUrls: ZkDeckUrls) {
+    const [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] = await this.downloadZkeyFiles(filesOrUrls);
 
     const zkDeck = await createZKDeck(
-      new Uint8Array(shuffleEncryptDeckWasm),
-      new Uint8Array(decryptCardShareWasm),
+      shuffleEncryptDeckWasmBytes,
+      decryptCardShareWasmBytes,
       shuffleEncryptDeckZkeyBytes,
       decryptCardShareZkeyBytes,
     );
@@ -238,14 +241,20 @@ export class Game extends EventEmitter<GameEventMap> {
     this.offChainTransport.subscribe<OffChainEvents>("poker", (data) => {});
   }
 
-  private async downloadZkeyFiles() {
+  private async downloadZkeyFiles(urls: ZkDeckUrls) {
     let decryptCardShareReceived = 0;
     let decryptCardShareTotal: number;
+
     let shuffleEncryptReceived = 0;
     let shuffleEncryptTotal: number;
 
-    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await Promise.all([
-      getUrlBytes(decryptCardShareZkey, (received, total) => {
+    const [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] = await Promise.all([
+      getUrlBytes(urls.decryptCardShareZkey, (received, total) => {
         decryptCardShareReceived = received;
         decryptCardShareTotal = total;
         if (decryptCardShareTotal && shuffleEncryptTotal)
@@ -256,7 +265,7 @@ export class Game extends EventEmitter<GameEventMap> {
             ),
           });
       }),
-      getUrlBytes(shuffleEncryptDeckZkey, (received, total) => {
+      getUrlBytes(urls.shuffleEncryptDeckZkey, (received, total) => {
         shuffleEncryptReceived = received;
         shuffleEncryptTotal = total;
         if (decryptCardShareTotal && shuffleEncryptTotal)
@@ -267,9 +276,15 @@ export class Game extends EventEmitter<GameEventMap> {
             ),
           });
       }),
+      readData(urls.decryptCardShareWasm),
+      readData(urls.shuffleEncryptDeckWasm),
     ]);
-
-    return [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] as const;
+    return [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] as const;
   }
 }
 
