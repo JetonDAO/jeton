@@ -5,7 +5,7 @@ const tables: TableInfo[] = [
     id: "tbb01",
     smallBlind: 1,
     numberOfRaises: 1,
-    minPlayers: 3,
+    minPlayers: 2,
     maxPlayers: 8,
     minBuyIn: 400,
     maxBuyIn: 2000,

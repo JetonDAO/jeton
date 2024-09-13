@@ -2,76 +2,94 @@
 
 export const runtime = "edge";
 
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { GameEventTypes } from "@jeton/ts-sdk";
+import type { Player } from "@jeton/ts-sdk";
+import Modal from "@jeton/ui/Modal";
+import ProgressBar from "@jeton/ui/ProgressBar";
+import { useSelector } from "@legendapp/state/react";
 import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
 import Avatar3 from "@src/assets/images/avatars/avatar-3.png";
 import Avatar4 from "@src/assets/images/avatars/avatar-4.png";
 import Chips from "@src/assets/images/chips/chips-3-stacks.png";
 import TableBackground from "@src/assets/images/table.png";
-import { GameProvider, useGame } from "@src/providers/GameProvider";
 import type { CardName } from "@src/types";
-import { loadCardImage } from "@src/utils/cardLoader";
-import { cn } from "@src/utils/cn";
 import Image, { type StaticImageData } from "next/image";
-import { type ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import Card from "./components/Card";
+import { useSubscribeToGameEvent } from "./components/useSubscribeToGameEvent";
+import { initGame, setTableId } from "./state/actions/gameActions";
+import {
+  selectGamePlayers$,
+  selectIsGameLoading$,
+  selectShufflingPlayer$,
+} from "./state/selectors/gameSelectors";
 
-type PlayerInfo = {
-  name: string;
-  seat: number;
-  avatar: StaticImageData;
-  chips: 20;
-};
+export default function PlayPage({ params }: { params: { id: string } }) {
+  const players = useSelector(selectGamePlayers$());
+  const [toffState, setToffState] = useState(false);
 
-const players: PlayerInfo[] = [
-  {
-    name: "Akbar",
-    seat: 1,
-    avatar: Avatar1,
-    chips: 20,
-  },
-  {
-    name: "Rick",
-    seat: 2,
-    avatar: Avatar2,
-    chips: 20,
-  },
-  {
-    name: "Ahmad",
-    seat: 3,
-    avatar: Avatar3,
-    chips: 20,
-  },
-  {
-    name: "Ali",
-    seat: 4,
-    avatar: Avatar2,
-    chips: 20,
-  },
-  {
-    name: "Mamad",
-    seat: 5,
-    avatar: Avatar4,
-    chips: 20,
-  },
-];
+  const router = useRouter();
+  const { connected, isLoading: isWalletLoading } = useWallet();
 
-export default function PlayPage() {
+  useEffect(() => {
+    if (!isWalletLoading && !connected && toffState) {
+      router.push("/");
+    } else if (!isWalletLoading && !connected) {
+      setTimeout(() => setToffState(true), 100);
+    }
+  }, [isWalletLoading, connected, router, toffState]);
+
   return (
     <>
-      <GameProvider>
-        <Table>
-          {players.map((player) => (
-            <Player key={player.seat} info={player} />
-          ))}
-        </Table>
-        <PlayerActions />
-      </GameProvider>
+      <Table id={params.id}>
+        {players?.map((player, i) => (
+          <PlayerSeat key={player.id} player={player} seat={i + 1} />
+        ))}
+      </Table>
+      <PlayerActions />
+
+      <DownloadModal />
     </>
   );
 }
 
-function Table({ children }: { children: ReactNode }) {
-  const { cardsOnTable } = useGame();
+function DownloadModal() {
+  const { isLoading: isWalletLoading } = useWallet();
+  const [{ percentage }] = useSubscribeToGameEvent(GameEventTypes.DOWNLOAD_PROGRESS) || [
+    { percentage: undefined },
+  ];
+
+  const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
+  if (isLoading)
+    return (
+      <Modal className="w-96 h-52">
+        <div className="flex flex-col items-center gap-1 text-white text-center">
+          {percentage ? <ProgressBar progress={percentage} /> : "Starting download assets..."}
+        </div>
+      </Modal>
+    );
+}
+
+function Table({ id, children }: { id: string; children: ReactNode }) {
+  const {
+    isLoading: isWalletLoading,
+    signMessage,
+    signAndSubmitTransaction,
+    account,
+  } = useWallet();
+
+  useEffect(() => {
+    if (!isWalletLoading && account) {
+      initGame(account.address, signMessage, signAndSubmitTransaction);
+    }
+    setTableId(id);
+  }, [id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
+
+  const cards: CardName[] = ["hearts-J", "clubs-07", "spades-04", "diamonds-09", "spades-09"];
 
   return (
     <div className="flex justify-center p-20 relative -top-10">
@@ -83,7 +101,7 @@ function Table({ children }: { children: ReactNode }) {
       />
       {children}
       <div className="flex absolute top-[35%]">
-        {cardsOnTable.map((cardName) => (
+        {cards.map((cardName) => (
           <Card
             className="scale-50 lg:scale-75 2xl:scale-100 animate-deal"
             key={cardName}
@@ -95,23 +113,23 @@ function Table({ children }: { children: ReactNode }) {
   );
 }
 
-function Player({ info }: { info: PlayerInfo }) {
-  const { currentPlayer } = useGame();
-  const { seat, avatar, name, chips } = info;
-
+function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   const cardsOnTable: CardName[] = ["clubs-02", "clubs-05"];
+  const avatars = [Avatar1, Avatar2, Avatar3, Avatar4];
+  const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+  const shufflingPlayer = useSelector(selectShufflingPlayer$());
 
   return (
-    <div className={`player-position player-${seat}`}>
+    <div className={`player-position player-${seat} justify-center`}>
       <Image
-        src={avatar}
+        src={randomAvatar ?? ""}
         alt="avatar"
-        className={`w-[150px] h-[150px] rounded-full ${
-          currentPlayer === seat ? "border-8 border-green-500" : ""
+        className={`w-[150px] h-[150px] rounded-full border-8 ${
+          shufflingPlayer?.id === player.id ? " border-green-500" : "border-[#b87d5b]"
         }`}
       />
-      {/* <div className="cards">cards</div> */}
       <Image className="chips w-16" src={Chips} alt="chips" />
+
       {seat === 1 && (
         <div className="flex justify-center absolute shrink-0 -right-[180%] bottom-0">
           {cardsOnTable.map((cardName, i) => (
@@ -125,26 +143,21 @@ function Player({ info }: { info: PlayerInfo }) {
           ))}
         </div>
       )}
-      <div className="bg-[#9c6249] text-white text-center rounded-sm shadow-2xl text-sm">
-        {name}
+      <div className="bg-[#b87d5b]  overflow-hidden text-white text-center rounded-sm shadow-2xl text-sm w-32">
+        {player.id}
       </div>
     </div>
   );
 }
 
 function PlayerActions() {
-  const { currentPlayer } = useGame();
-  const isMainSeat = currentPlayer === 1; // main seat;
-
-  if (!isMainSeat) return null;
-
   const playerAction = ["Check", "Raise", "Fold"];
 
   return (
     <div className="flex items-center gap-5 justify-center">
       {playerAction.map((action) => (
         <button
-          className="bg-[#9c6249] py-3 px-6 hover:brightness-90 text-white border-2 border-[#3a3526]"
+          className="bg-[#b87d5b] py-6 px-12 text-lg hover:brightness-90 text-white border-2 border-[#3a3526]"
           key={action}
         >
           {action}
@@ -154,33 +167,6 @@ function PlayerActions() {
   );
 }
 
-function Card({
-  cardName,
-  className,
-}: {
-  cardName: CardName;
-  className?: string;
-}) {
-  const [cardSrc, setCardSrc] = useState<StaticImageData | null>(null);
-
-  useEffect(() => {
-    const fetchCardImage = async () => {
-      try {
-        const image = await loadCardImage(cardName);
-        setCardSrc(image);
-      } catch (error) {
-        console.error(error);
-        setCardSrc(null);
-      }
-    };
-
-    fetchCardImage();
-  }, [cardName]);
-
-  if (!cardSrc) return null;
-
-  return <Image src={cardSrc} alt={cardName} className={cn("shrink-0", className)} />;
-}
 // import { TableComponent } from "./components/Table";
 
 // export default function TablePage({ params }: { params: { id: string } }) {

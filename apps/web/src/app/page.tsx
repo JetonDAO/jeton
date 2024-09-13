@@ -1,16 +1,14 @@
 "use client";
 
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import buttonBackground from "@src/assets/images/button.png";
 import background from "@src/assets/images/main-menu-background.png";
 import WalletAdapterButton from "@src/components/WalletAdapterButton";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 export const runtime = "edge";
 
 export default function Home() {
-  const router = useRouter();
-
   const options = [
     {
       id: 1,
@@ -26,18 +24,9 @@ export default function Home() {
 
   return (
     <>
-      <Image
-        className="w-full h-full object-cover absolute top-0 left-0 -z-40"
-        src={background}
-        alt="background"
-      />
       <div className="text-center bg-orange-300 flex flex-col items-center rounded-lg px-8 py-8 bg-opacity-75">
-        <h1 className="text-2xl text-orange-800 font-bold mb-4">
-          Welcome to Jeton
-        </h1>
-        <p className="mb-8 text-orange-700">
-          Best Opportunity to lose your money
-        </p>
+        <h1 className="text-2xl text-orange-800 font-bold mb-4">Welcome to Jeton</h1>
+        <p className="mb-8 text-orange-700">Best Opportunity to lose your money</p>
         <div className="flex flex-col gap-5 relative z-20">
           {options.map((btn) => (
             <Link
@@ -49,9 +38,7 @@ export default function Home() {
               <Image
                 src={buttonBackground}
                 alt="Button Background"
-                layout="fill"
-                objectFit="cover"
-                className="w-full absolute left-0 top-0 -z-10"
+                className="w-full absolute left-0 top-0 -z-10 object-cover h-full"
               />
               <span className="text-white">{btn.label}</span>
             </Link>
@@ -59,6 +46,15 @@ export default function Home() {
           <WalletAdapterButton />
         </div>
       </div>
+      <Image
+        className="w-full h-full object-cover absolute top-0 left-0 -z-40"
+        src={background}
+        alt="background"
+        priority
+        style={{
+          imageRendering: "pixelated",
+        }}
+      />
     </>
   );
 }
