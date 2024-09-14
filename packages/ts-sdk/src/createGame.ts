@@ -4,9 +4,15 @@ import { OnChainDataSource } from "./OnChainDataSource";
 
 export function createGame(
   options: Partial<
-    Omit<GameConfigs, "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address">
+    Omit<
+      GameConfigs,
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address" | "zkDeckFilesOrUrls"
+    >
   > &
-    Pick<GameConfigs, "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address">,
+    Pick<
+      GameConfigs,
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address" | "zkDeckFilesOrUrls"
+    >,
 ) {
   const finalOptions: GameConfigs = {
     ...options,
