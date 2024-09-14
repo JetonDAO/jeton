@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
-import type { GameState } from ".";
 import { PieSocketTransport } from "./transport";
+import type { CardShareAndProof, GameState } from "./types";
 
 export enum OnChainEventTypes {
   PLAYER_CHECKED_IN = "player-checked-in",
@@ -27,6 +27,7 @@ export type OnChainShuffledDeckData = {
 
 export type OnChainPrivateCardsSharesData = {
   sender: string;
+  proofs: CardShareAndProof[];
 };
 
 type OnChainEventMap = {
@@ -87,10 +88,8 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     this.pieSocketTransport.subscribe(
       OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
       (data: OnChainPrivateCardsSharesData) => {
-        // this is sooo toff
-        if (data.sender === this.playerId) {
-          this.emit(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, data);
-        }
+        //TODO: this is different in transactions
+        this.emit(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, data);
       },
     );
 
@@ -117,9 +116,10 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     });
   }
 
-  async privateCardsDecryptionShare(id: string) {
+  async privateCardsDecryptionShare(id: string, proofs: CardShareAndProof[]) {
     this.pieSocketTransport.publish(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, {
       sender: id,
+      proofs,
     });
   }
 

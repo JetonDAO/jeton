@@ -6,3 +6,4 @@ export * from "./offChainTransport";
 export * from "./GameState";
 export * from "./GameEvents";
 export * from "./HandState";
+export * from "./CardShareAndProof";
