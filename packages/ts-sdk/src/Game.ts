@@ -280,6 +280,9 @@ export class Game extends EventEmitter<GameEventMap> {
       this.handState.finalOutDeck,
       proofsAndSharesOfSecondCard.map((pas) => pas.decryptionCardShare),
     );
+    this.emit(GameEventTypes.RECEIVED_PRIVATE_CARDS, {
+      cards: [firstPrivateCard, secondPrivateCard],
+    });
   }
 
   private async shuffle() {
