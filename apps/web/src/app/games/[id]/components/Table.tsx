@@ -1,7 +1,6 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { GameEventTypes } from "@jeton/ts-sdk";
 import FullPageLoading from "@jeton/ui/FullPageLoading";
 import { useSelector } from "@legendapp/state/react";
 import { useRouter } from "next/navigation";
@@ -9,11 +8,8 @@ import { type FC, useEffect, useState } from "react";
 import { initGame, setTableId } from "../state/actions/gameActions";
 import {
   selectGamePlayers$,
-  selectGameStatus$,
   selectIsGameLoading$,
-  selectShufflingPlayer$,
 } from "../state/selectors/gameSelectors";
-import { useSubscribeToGameEvent } from "./useSubscribeToGameEvent";
 
 type TableComponentProps = {
   id: string;
@@ -22,11 +18,6 @@ type TableComponentProps = {
 export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   const [toffState, setToffState] = useState(false);
   const players = useSelector(selectGamePlayers$());
-  const gameStatus = useSelector(selectGameStatus$());
-  const shufflingPlayer = useSelector(selectShufflingPlayer$());
-  const [{ percentage }] = useSubscribeToGameEvent(GameEventTypes.DOWNLOAD_PROGRESS) || [
-    { percentage: undefined },
-  ];
   const router = useRouter();
   const {
     connected,
@@ -52,24 +43,14 @@ export const TableComponent: FC<TableComponentProps> = ({ id }) => {
   }, [id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
 
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
-  if (isLoading)
-    return (
-      <div>
-        {percentage && <p>downloading... {percentage}%</p>}
-        <FullPageLoading />
-      </div>
-    );
+  if (isLoading) return <FullPageLoading />;
 
   return (
     <div>
-      <p>game state is ${gameStatus}</p>
       <p>this is the actual game page</p>
       <p>players are: </p>
       {players?.map((p) => (
-        <div key={p.id}>
-          <p> player id: {p.id}</p>
-          {p === shufflingPlayer && <span style={{ color: "red" }}>shuffling</span>}
-        </div>
+        <p key={p.id}> player id: {p.id}</p>
       ))}
     </div>
   );

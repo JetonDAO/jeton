@@ -1,15 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { type MouseEventHandler, useCallback, useEffect, useRef } from "react";
-import { cn } from "../libs/utils";
 
-export default function Modal({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+export default function Modal({ children }: { children: React.ReactNode }) {
   const overlay = useRef(null);
   const wrapper = useRef(null);
   const router = useRouter();
@@ -42,15 +35,12 @@ export default function Modal({
   return (
     <div
       ref={overlay}
-      className="fixed z-50 inset-0 flex justify-center items-center bg-black/0 animate-fadeIn"
+      className="fixed z-10 left-0 right-0 top-0 bottom-0 mx-auto bg-black/60"
       onClick={onClick}
     >
       <div
         ref={wrapper}
-        className={cn(
-          `absolute rounded-2xl p-10 bg-[url("/images/wood-pattern-light.png")] bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b]`,
-          className,
-        )}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6"
       >
         {children}
       </div>
