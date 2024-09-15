@@ -16,7 +16,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/types/audio.d.ts"
+    "src/types/audio.d.ts",
+    "addCacheUrls.mts"
   ],
   "exclude": ["node_modules"],
   "types": ["@cloudflare/workers-types/2024-07-29"]
