@@ -4,25 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:service-worker": "tsx ./addCacheUrls.mts",
-    "build:service-worker": "tsx ./addCacheUrls.mts",
     "build": "next build",
     "next-on-pages": "npx @cloudflare/next-on-pages",
     "start": "next start"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.2",
-    "@aptos-labs/wallet-adapter-ant-design": "^3.0.13",
-    "@aptos-labs/wallet-adapter-react": "^3.6.2",
     "@jeton/ts-sdk": "*",
     "@jeton/ui": "*",
-    "@jeton/zk-deck": "*",
+    "@aptos-labs/wallet-adapter-ant-design": "^3.0.13",
+    "@aptos-labs/wallet-adapter-react": "^3.6.2",
     "@legendapp/state": "^3.0.0-alpha.29",
     "next": "^14.2.8",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tsx": "^4.19.1"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.2",

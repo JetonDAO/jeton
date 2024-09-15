@@ -1,19 +1,10 @@
 import type { Metadata } from "next";
-import { Press_Start_2P } from "next/font/google";
-import Script from "next/script";
 
 import "./globals.css";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 
 import "@jeton/ui/styles.css";
 import { WalletProvider } from "@src/components/WalletProvider";
-
-const pressStart2P = Press_Start_2P({
-  weight: "400",
-  style: "normal",
-  display: "swap",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Jeton DAO",
@@ -30,16 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={pressStart2P.className}>
+      <body>
         <WalletProvider>
-          <div
-            className={`relative bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden h-[100dvh] w-[100dvw] z-50 flex items-center justify-center`}
-          >
-            {children}
-            <div>{modal}</div>
-          </div>
+          <div>{children}</div>
+          <div>{modal}</div>
         </WalletProvider>
-        <Script src="/register-service-worker.js" />
       </body>
     </html>
   );

@@ -14,7 +14,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "file-loader": "^6.2.0",
     "husky": "^9.1.4",
     "lint-staged": "^15.2.8",
     "turbo": "^2.0.12",
@@ -27,6 +26,8 @@
   "packageManager": "npm@10.8.2",
   "workspaces": ["apps/*", "packages/*"],
   "lint-staged": {
-    "*": ["biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"]
+    "*": [
+      "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+    ]
   }
 }
