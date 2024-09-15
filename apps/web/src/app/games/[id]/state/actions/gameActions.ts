@@ -48,7 +48,7 @@ export const initGame = async (
   const entryGameState = await game.checkIn(1000);
   state$.gameState.players.set(entryGameState.players.map((p) => p));
   state$.gameState.status.set(entryGameState.status);
-  state$.gameState.dealer.set(entryGameState.players[entryGameState.dealer ?? -1]);
+  state$.gameState.dealer.set(entryGameState.players[entryGameState.dealer]);
   state$.loading.set(false);
   state$.initializing.set(false);
 };

@@ -14,7 +14,6 @@ import {
 } from "@jeton/zk-deck";
 
 import {
-  type EntryGameState,
   type GameState,
   GameStatus,
   type HandState,
@@ -67,7 +66,7 @@ export class Game extends EventEmitter<GameEventMap> {
 
   private creatingZKDeck: Promise<void>;
 
-  private gameState: EntryGameState;
+  private gameState: GameState;
 
   private handState: HandState;
 
@@ -299,7 +298,7 @@ export class Game extends EventEmitter<GameEventMap> {
     this.onChainDataSource.shuffledDeck(this.playerId, proof, outputDeck);
   }
 
-  public async checkIn(buyIn: number): Promise<EntryGameState> {
+  public async checkIn(buyIn: number): Promise<GameState> {
     await this.creatingZKDeck;
     this.gameState = await this.callCheckInContract(buyIn);
 
