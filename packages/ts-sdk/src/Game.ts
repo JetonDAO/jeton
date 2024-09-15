@@ -6,16 +6,12 @@ import type {
 } from "@aptos-labs/wallet-adapter-core";
 
 import {
+  type DecryptionCardShare,
   type PublicKey as ElGamalPublicKey,
+  type Groth16Proof,
   type ZKDeck,
   createZKDeck,
-  decryptCardShareZkey,
-  shuffleEncryptDeckZkey,
 } from "@jeton/zk-deck";
-//@ts-ignore
-import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
-//@ts-ignore
-import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
 
 import {
   type EntryGameState,
@@ -26,6 +22,7 @@ import {
   type offChainTransport,
 } from "@src/types";
 import type { OffChainEvents } from "@src/types/OffChainEvents";
+import { CardShareProofSource } from "./CardShareProofSource";
 import {
   type OnChainDataSource,
   OnChainEventTypes,
@@ -34,9 +31,16 @@ import {
   type OnChainPrivateCardsSharesData,
   type OnChainShuffledDeckData,
 } from "./OnChainDataSource";
-import { getUrlBytes } from "./getURLBytes";
+import { getUrlBytes, readData } from "./getURLBytes";
 import { type GameEventMap, GameEventTypes } from "./types/GameEvents";
 import { calculatePercentage } from "./utils/calculatePercentage";
+
+export type ZkDeckUrls = {
+  shuffleEncryptDeckWasm: string;
+  decryptCardShareWasm: string;
+  shuffleEncryptDeckZkey: string;
+  decryptCardShareZkey: string;
+};
 
 export type GameConfigs = {
   offChainTransport: offChainTransport;
@@ -45,6 +49,7 @@ export type GameConfigs = {
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>;
   onChainDataSource: OnChainDataSource;
+  zkDeckFilesOrUrls: ZkDeckUrls;
 };
 
 export class Game extends EventEmitter<GameEventMap> {
@@ -84,15 +89,20 @@ export class Game extends EventEmitter<GameEventMap> {
       status: GameStatus.AwaitingStart,
       dealer: 0,
     };
-    this.creatingZKDeck = this.createZKDeck();
+    this.creatingZKDeck = this.createZKDeck(config.zkDeckFilesOrUrls);
   }
 
-  private async createZKDeck() {
-    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await this.downloadZkeyFiles();
+  private async createZKDeck(filesOrUrls: ZkDeckUrls) {
+    const [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] = await this.downloadZkeyFiles(filesOrUrls);
 
     const zkDeck = await createZKDeck(
-      new Uint8Array(shuffleEncryptDeckWasm),
-      new Uint8Array(decryptCardShareWasm),
+      shuffleEncryptDeckWasmBytes,
+      decryptCardShareWasmBytes,
       shuffleEncryptDeckZkeyBytes,
       decryptCardShareZkeyBytes,
     );
@@ -112,7 +122,13 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private receivedPrivateCardsShares = (data: OnChainPrivateCardsSharesData) => {
-    // TODO:
+    if (!this.handState.privateCardShareProofs)
+      throw new Error("CardShareProofSource must already be present");
+    this.handState.privateCardShareProofs.addProofs(data.sender, data.proofs);
+    const myPrivateCardIndexes = this.myPrivateCardIndexes;
+    if (this.handState.privateCardShareProofs.receivedAllProofsFor(myPrivateCardIndexes)) {
+      this.decryptMyPrivateCards();
+    }
   };
 
   private playerShuffledDeck = (data: OnChainShuffledDeckData) => {
@@ -145,8 +161,27 @@ export class Game extends EventEmitter<GameEventMap> {
     return this.playerId === this.gameState.players[this.gameState.dealer]?.id;
   }
 
+  get numberOfPlayers() {
+    return this.gameState.players.length;
+  }
+
+  private get myDistanceFromDealer() {
+    const myIndex = this.gameState.players.findIndex((p) => p.id === this.playerId);
+    const dealerIndex = this.gameState.dealer;
+    if (myIndex >= dealerIndex) {
+      return myIndex - dealerIndex;
+    }
+    return myIndex + (this.numberOfPlayers - dealerIndex);
+  }
+
+  private get myPrivateCardIndexes() {
+    return [this.myDistanceFromDealer * 2, this.myDistanceFromDealer * 2 + 1] as const;
+  }
+
   private gameStarted = (data: OnChainGameStartedData) => {
-    this.handState = {};
+    this.handState = {
+      privateCardShareProofs: new CardShareProofSource(this.gameState.players),
+    };
     // TODO: check if we are in the right state
     this.gameState.status = GameStatus.Shuffle;
     this.gameState.dealer = data.dealerIndex;
@@ -192,9 +227,60 @@ export class Game extends EventEmitter<GameEventMap> {
     this.emit(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayer);
   };
 
-  private createAndSharePrivateKeyShares() {
-    // TODO: create private shares
-    this.onChainDataSource.privateCardsDecryptionShare(this.playerId);
+  private async createAndSharePrivateKeyShares() {
+    if (!this.elGamalSecretKey) throw new Error("elGamal secret key should be present");
+    if (!this.zkDeck) throw new Error("zkDeck should be present");
+    if (!this.handState.privateCardShareProofs)
+      throw new Error("CardShareProofSource must already be present");
+
+    this.handState.finalOutDeck = await this.onChainDataSource.queryLastOutDeck(this.tableInfo.id);
+    const numberOfCardsToCreateShareFor = this.numberOfPlayers * 2;
+
+    const proofPromises: Promise<{
+      proof: Groth16Proof;
+      decryptionCardShare: DecryptionCardShare;
+    }>[] = [];
+    for (let i = 0; i < numberOfCardsToCreateShareFor; i += 1) {
+      proofPromises.push(
+        this.zkDeck.proveDecryptCardShare(this.elGamalSecretKey, i, this.handState.finalOutDeck),
+      );
+    }
+    const proofsAndShares = (await Promise.all(proofPromises)).map((s, i) =>
+      Object.assign({ cardIndex: i }, s),
+    );
+
+    this.handState.privateCardShareProofs.addProofs(this.playerId, proofsAndShares);
+
+    const myPrivateCardsIndexes = this.myPrivateCardIndexes;
+    const proofsToSend = proofsAndShares.filter(
+      (pas) => !myPrivateCardsIndexes.includes(pas.cardIndex),
+    );
+    this.onChainDataSource.privateCardsDecryptionShare(this.playerId, proofsToSend);
+  }
+
+  private decryptMyPrivateCards() {
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    if (!this.handState.privateCardShareProofs)
+      throw new Error("CardShareProofSource must already be present");
+    if (!this.handState.finalOutDeck) throw new Error("finalOutDeck must be present");
+
+    const [firstCardIndex, secondCardIndex] = this.myPrivateCardIndexes;
+    const proofsAndSharesOfFirstCard =
+      this.handState.privateCardShareProofs.getProofsFor(firstCardIndex);
+    const proofsAndSharesOfSecondCard =
+      this.handState.privateCardShareProofs.getProofsFor(secondCardIndex);
+
+    const firstPrivateCard = this.zkDeck?.decryptCard(
+      firstCardIndex,
+      this.handState.finalOutDeck,
+      proofsAndSharesOfFirstCard.map((pas) => pas.decryptionCardShare),
+    );
+
+    const secondPrivateCard = this.zkDeck?.decryptCard(
+      secondCardIndex,
+      this.handState.finalOutDeck,
+      proofsAndSharesOfSecondCard.map((pas) => pas.decryptionCardShare),
+    );
   }
 
   private async shuffle() {
@@ -239,14 +325,20 @@ export class Game extends EventEmitter<GameEventMap> {
     this.offChainTransport.subscribe<OffChainEvents>("poker", (data) => {});
   }
 
-  private async downloadZkeyFiles() {
+  private async downloadZkeyFiles(urls: ZkDeckUrls) {
     let decryptCardShareReceived = 0;
     let decryptCardShareTotal: number;
+
     let shuffleEncryptReceived = 0;
     let shuffleEncryptTotal: number;
 
-    const [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] = await Promise.all([
-      getUrlBytes(decryptCardShareZkey, (received, total) => {
+    const [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] = await Promise.all([
+      getUrlBytes(urls.decryptCardShareZkey, (received, total) => {
         decryptCardShareReceived = received;
         decryptCardShareTotal = total;
         if (decryptCardShareTotal && shuffleEncryptTotal)
@@ -257,7 +349,7 @@ export class Game extends EventEmitter<GameEventMap> {
             ),
           });
       }),
-      getUrlBytes(shuffleEncryptDeckZkey, (received, total) => {
+      getUrlBytes(urls.shuffleEncryptDeckZkey, (received, total) => {
         shuffleEncryptReceived = received;
         shuffleEncryptTotal = total;
         if (decryptCardShareTotal && shuffleEncryptTotal)
@@ -268,35 +360,14 @@ export class Game extends EventEmitter<GameEventMap> {
             ),
           });
       }),
+      readData(urls.decryptCardShareWasm),
+      readData(urls.shuffleEncryptDeckWasm),
     ]);
-
-    return [decryptCardShareZkeyBytes, shuffleEncryptDeckZkeyBytes] as const;
+    return [
+      decryptCardShareZkeyBytes,
+      shuffleEncryptDeckZkeyBytes,
+      decryptCardShareWasmBytes,
+      shuffleEncryptDeckWasmBytes,
+    ] as const;
   }
 }
-
-/*
-proposed events for the game:
-
-event checkedIn {players, balances, bets, gameState}
-
-event playersChanged {players}
-or
-event playerCheckedIn {player, place, ...}
-event playerCheckOut {player, place, ...}
-
-event gameStateChanged {gameState: 'started' | 'paused'}
-event handStarted {}
-event Shuffle{}
-event ShuffleFinished{}
-
-event bettingRoundStarted {round: 'pre-flop', 'flop', 'turn', 'river'}
-event betPlaced{player, bets, balances, }
-or
-event betPlaced{player, fullGameState }
-event bettingRoundFinished{round}
-
-
-event PrivateCardsOpened {cards}
-
-event communityCardsOpened {round: 'flop', 'turn', 'river', cards}
-*/

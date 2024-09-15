@@ -7,6 +7,7 @@ export enum GameEventTypes {
   HAND_STARTED = "hand-started",
   PLAYER_SHUFFLING = "player-shuffling",
   PRIVATE_CARD_DECRYPTION_STARTED = "private-card-decryption-started",
+  RECEIVED_PRIVATE_CARDS = "received-private-cards",
 }
 
 export type DownloadProgressEvent = {
@@ -23,9 +24,14 @@ export type HandStartedEvent = {
   dealer: Player;
 };
 
+// TODO: inconsistent namings
 export type playerShufflingEvent = Player;
 
 export type PrivateCardDecryptionStarted = Record<string, never>;
+
+export type ReceivedPrivateCardsEvent = {
+  cards: [number, number];
+};
 
 export type GameEvents =
   | DownloadProgressEvent
@@ -42,4 +48,5 @@ export type GameEventMap = {
   [GameEventTypes.HAND_STARTED]: [HandStartedEvent];
   [GameEventTypes.PLAYER_SHUFFLING]: [playerShufflingEvent];
   [GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED]: [PrivateCardDecryptionStarted];
+  [GameEventTypes.RECEIVED_PRIVATE_CARDS]: [ReceivedPrivateCardsEvent];
 };

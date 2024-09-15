@@ -16,6 +16,7 @@
     "tailwind-merge": "^2.5.2",
     "@jeton/ts-sdk": "*",
     "@jeton/ui": "*",
+    "@jeton/zk-deck": "*",
     "@aptos-labs/wallet-adapter-ant-design": "^3.0.13",
     "@aptos-labs/wallet-adapter-react": "^3.6.2",
     "@legendapp/state": "^3.0.0-alpha.29",

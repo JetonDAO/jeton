@@ -34,6 +34,36 @@ export async function getUrlBytes(
     lastByte += value.length;
     onProgress?.(lastByte, length);
   }
-  await reader.releaseLock();
+  reader.releaseLock();
+  return buffer;
+}
+
+export async function readData(url: string) {
+  const response = await fetch(url);
+  if (response.status !== 200) {
+    throw new Error(
+      `could not get wasm file from ${url}, response status is ${response.statusText}`,
+    );
+  }
+  if (!response.body) throw new Error(`could not get wasm file form ${url}, response has no body`);
+
+  const reader = response.body.getReader();
+
+  let length = 0;
+  const chunks: Uint8Array[] = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    chunks.push(value);
+    length += value.length;
+  }
+  let lastByte = 0;
+  const buffer = new Uint8Array(length);
+  for (const chunk of chunks) {
+    buffer.set(chunk, lastByte);
+    lastByte += chunk.length;
+  }
   return buffer;
 }
