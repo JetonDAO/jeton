@@ -1,9 +1,7 @@
 import type { CardName } from "@src/types";
 import type { StaticImageData } from "next/image";
 
-export const loadCardImage = async (
-  cardName: CardName,
-): Promise<StaticImageData> => {
+export const loadCardImage = async (cardName: CardName): Promise<StaticImageData> => {
   try {
     const image = await import(`/src/assets/images/cards/card-${cardName}.png`);
 
