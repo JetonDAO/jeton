@@ -18,7 +18,7 @@ import type { CardName } from "@src/types";
 import Image, { type StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "./components/Card";
 import { useSubscribeToGameEvent } from "./components/useSubscribeToGameEvent";
 import { initGame, setTableId } from "./state/actions/gameActions";
@@ -44,16 +44,22 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   }, [isWalletLoading, connected, router, toffState]);
 
   return (
-    <>
+    <div className="w-full flex rounded-2xl flex-col relative items-center justify-center py-2 -z-40">
       <Table id={params.id}>
-        {players?.map((player, i) => (
-          <PlayerSeat key={player.id} player={player} seat={i + 1} />
-        ))}
+        {new Array(9)
+          .fill({
+            id: "mhs",
+            balance: 12,
+            bet: 12,
+          })
+          .map((player, i) => (
+            <PlayerSeat key={player.id} player={player} seat={i + 1} />
+          ))}
       </Table>
       <PlayerActions />
 
-      <DownloadModal />
-    </>
+      {/* <DownloadModal /> */}
+    </div>
   );
 }
 
@@ -92,22 +98,27 @@ function Table({ id, children }: { id: string; children: ReactNode }) {
   const cards: CardName[] = ["hearts-J", "clubs-07", "spades-04", "diamonds-09", "spades-09"];
 
   return (
-    <div className="flex justify-center p-20 relative -top-10">
-      <Image
-        priority
-        className="h-full w-full object-contain -z-40 scale-125"
-        src={TableBackground}
-        alt="table"
-      />
-      {children}
-      <div className="flex absolute top-[35%]">
-        {cards.map((cardName) => (
-          <Card
-            className="scale-50 lg:scale-75 2xl:scale-100 animate-deal"
-            key={cardName}
-            cardName={cardName}
+    <div className="flex justify-center w-full h-full pt-2 md:py-5">
+      <div className="relative flex justify-center items-center w-full h-full">
+        <div className="h-full-z-40 md:scale-x-100 max-w-[70dvh] md:scale-y-100 md:scale-100 w-full md:max-w-[90dvw] xl:max-w-[75dvw] md:max-h-[70dvh] duration-500 scale-x-150 scale-y-150 sm:scale-y-125 relative bottom-10 md:bottom-12 md:right-0">
+          <Image
+            priority
+            className="object-fill w-full h-full rotate-90 md:rotate-0"
+            src={TableBackground}
+            alt="table"
           />
-        ))}
+          {children}
+        </div>
+
+        <div className="absolute flex top-[25%] md:top-[35%] flex-col md:flex-row">
+          {cards.map((cardName) => (
+            <Card
+              className="xl:w-24 2xl:w-28 animate-deal w-12 sm:w-16"
+              key={cardName}
+              cardName={cardName}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -116,22 +127,23 @@ function Table({ id, children }: { id: string; children: ReactNode }) {
 function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   const cardsOnTable: CardName[] = ["clubs-02", "clubs-05"];
   const avatars = [Avatar1, Avatar2, Avatar3, Avatar4];
-  const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  const randomAvatar = useMemo(() => avatars[Math.floor(Math.random() * avatars.length)], [seat]);
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
 
   return (
-    <div className={`player-position player-${seat} justify-center`}>
+    <div className={`seat-position seat-${seat} items-center flex flex-col`}>
       <Image
         src={randomAvatar ?? ""}
         alt="avatar"
-        className={`w-[150px] h-[150px] rounded-full border-8 ${
+        className={`md:w-28 xl:w-40 aspect-square grow-0 w-10 sm:w-14 rounded-full shrink-0 border-2 md:border-8 ${
           shufflingPlayer?.id === player.id ? " border-green-500" : "border-[#b87d5b]"
         }`}
       />
-      <Image className="chips w-16" src={Chips} alt="chips" />
+      <Image className="chips w-16 hidden" src={Chips} alt="chips" />
 
       {seat === 1 && (
-        <div className="flex justify-center absolute shrink-0 -right-[180%] bottom-0">
+        <div className=" justify-center hidden absolute shrink-0 -right-[180%] bottom-0">
           {cardsOnTable.map((cardName, i) => (
             <Card
               className={
@@ -143,8 +155,8 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
           ))}
         </div>
       )}
-      <div className="bg-[#b87d5b]  overflow-hidden text-white text-center rounded-sm shadow-2xl text-sm w-32">
-        {player.id}
+      <div className="bg-[#b87d5b] overflow-hidden text-xs text-white text-center rounded-sm shadow-2xl md:text-sm w-16 md:w-32">
+        {player.id} {seat}
       </div>
     </div>
   );
@@ -154,10 +166,10 @@ function PlayerActions() {
   const playerAction = ["Check", "Raise", "Fold"];
 
   return (
-    <div className="flex items-center gap-5 justify-center">
+    <div className="gap-5 left-5 right-5 fixed bottom-5 grid grid-cols-3">
       {playerAction.map((action) => (
         <button
-          className="bg-[#b87d5b] py-6 px-12 text-lg hover:brightness-90 text-white border-2 border-[#3a3526]"
+          className="bg-[#b87d5b] w-full py-4 text-lg hover:brightness-90 text-white border-2 border-[#3a3526]"
           key={action}
         >
           {action}

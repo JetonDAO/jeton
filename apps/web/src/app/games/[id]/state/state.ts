@@ -1,4 +1,4 @@
-import type { Game, GameState, GameStatus, Player } from "@jeton/ts-sdk";
+import { type Game, type GameState, GameStatus, type Player } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
 //TODO: should I save game here?
@@ -15,7 +15,7 @@ export const state$: Observable<State> = observable<State>({
   initializing: false,
   gameState: {
     players: [],
-    status: null,
-    dealer: null,
+    status: GameStatus.AwaitingStart,
+    dealer: {} as Player,
   },
 });

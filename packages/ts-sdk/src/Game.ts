@@ -18,6 +18,7 @@ import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
 import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
 
 import {
+  type EntryGameState,
   type GameState,
   GameStatus,
   type HandState,
@@ -61,7 +62,7 @@ export class Game extends EventEmitter<GameEventMap> {
 
   private creatingZKDeck: Promise<void>;
 
-  private gameState: GameState;
+  private gameState: EntryGameState;
 
   private handState: HandState;
 
@@ -212,7 +213,7 @@ export class Game extends EventEmitter<GameEventMap> {
     this.onChainDataSource.shuffledDeck(this.playerId, proof, outputDeck);
   }
 
-  public async checkIn(buyIn: number): Promise<GameState> {
+  public async checkIn(buyIn: number): Promise<EntryGameState> {
     await this.creatingZKDeck;
     this.gameState = await this.callCheckInContract(buyIn);
 

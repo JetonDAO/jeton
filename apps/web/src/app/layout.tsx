@@ -32,12 +32,10 @@ export default function RootLayout({
       <body className={pressStart2P.className}>
         <WalletProvider>
           <div
-            className={`relative bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] min-h-screen z-50 flex items-center justify-center`}
+            className={`relative bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden h-[100dvh] w-[100dvw] z-50 flex items-center justify-center`}
           >
-            <div className="w-full flex aspect-video max-h-screen rounded-2xl flex-col relative items-center justify-center py-2 -z-40">
-              <div>{children}</div>
-              <div>{modal}</div>
-            </div>
+            {children}
+            <div>{modal}</div>
           </div>
         </WalletProvider>
       </body>

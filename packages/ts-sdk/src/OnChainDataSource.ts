@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import type { GameState } from ".";
+import type { EntryGameState, GameState } from ".";
 import { PieSocketTransport } from "./transport";
 
 export enum OnChainEventTypes {
@@ -38,7 +38,7 @@ type OnChainEventMap = {
 
 export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
   pieSocketTransport: PieSocketTransport;
-  gameState: GameState = { players: [], dealer: 0, status: 0 };
+  gameState: EntryGameState = { players: [], dealer: 0, status: 0 };
   playerId = "";
   outDeck?: EncryptedDeck;
 
@@ -64,7 +64,7 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     );
     this.pieSocketTransport.subscribe(
       "game-state",
-      (data: { receiver: string; state: GameState }) => {
+      (data: { receiver: string; state: EntryGameState }) => {
         if (data.receiver === address) {
           this.gameState = data.state;
         }
