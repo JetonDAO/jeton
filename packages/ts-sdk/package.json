@@ -36,9 +36,11 @@
   },
   "dependencies": {
     "events": "^3.3.0",
-    "piesocket-js": "^5.1.0"
+    "piesocket-js": "^5.1.0",
+    "@jeton/zk-deck": "*"
   },
   "peerDependencies": {
-    "@aptos-labs/wallet-adapter-core": "^4.16.0"
+    "@aptos-labs/wallet-adapter-core": "^4.16.0",
+    "@jeton/zk-deck": "*"
   }
 }

@@ -1,7 +1,17 @@
-import type { Game, GameState } from "@jeton/ts-sdk";
+import {
+  type GameState as EntryGameState,
+  type Game,
+  GameStatus,
+  type Player,
+} from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
-interface State {
+type GameState = Omit<EntryGameState, "dealer"> & {
+  dealer?: Player;
+  shufflingPlayer?: Player;
+};
+//TODO: should I save game here?
+export interface State {
   tableId?: string;
   loading: boolean;
   initializing: boolean;
@@ -12,4 +22,9 @@ interface State {
 export const state$: Observable<State> = observable<State>({
   loading: true,
   initializing: false,
+  gameState: {
+    players: [],
+    status: GameStatus.AwaitingStart,
+    dealer: {} as Player,
+  },
 });

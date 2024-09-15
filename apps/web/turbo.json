@@ -3,11 +3,23 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["next-on-pages"],
+      "dependsOn": ["build:service-worker", "next-on-pages"],
       "outputs": [".vercel/**"]
     },
     "next-on-pages": {
+      "dependsOn": ["build:service-worker", "^build"],
       "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "dev": {
+      "dependsOn": ["dev:service-worker"]
+    },
+    "build:service-worker": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/sw.template.js"],
+      "outputs": ["public/sw.js"]
+    },
+    "dev:service-worker": {
+      "cache": false
     }
   }
 }

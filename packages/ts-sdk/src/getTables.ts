@@ -2,10 +2,10 @@ import { ChipUnits, type TableInfo } from "@src/types/Table";
 
 const tables: TableInfo[] = [
   {
-    id: "tb01",
+    id: "tbc01",
     smallBlind: 1,
     numberOfRaises: 1,
-    minPlayers: 3,
+    minPlayers: 2,
     maxPlayers: 8,
     minBuyIn: 400,
     maxBuyIn: 2000,

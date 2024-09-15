@@ -6,12 +6,12 @@ export function createGame(
   options: Partial<
     Omit<
       GameConfigs,
-      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address"
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address" | "zkDeckFilesOrUrls"
     >
   > &
     Pick<
       GameConfigs,
-      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address"
+      "tableInfo" | "signMessage" | "signAndSubmitTransaction" | "address" | "zkDeckFilesOrUrls"
     >,
 ) {
   const finalOptions: GameConfigs = {
