@@ -1,3 +1,245 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.seat-position,
+.chips,
+.cards {
+  position: absolute;
+}
+
+.seat-1 {
+  bottom: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.seat-1 .cards,
+.seat-1 .chips {
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.seat-2 {
+  bottom: -13%;
+  left: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-2 .cards,
+.seat-2 .chips {
+  top: -35%;
+  left: 0%;
+  transform: translate(50%);
+}
+
+.seat-3 {
+  top: 55%;
+  left: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-3 .cards,
+.seat-3 .chips {
+  bottom: 50%;
+  right: -40%;
+  transform: translate(50%);
+}
+
+.seat-4 {
+  top: 25%;
+  left: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-4 .cards,
+.seat-4 .chips {
+  bottom: -20%;
+  right: -60%;
+  transform: translate(-50%);
+}
+
+.seat-5 {
+  top: -10%;
+  left: 23%;
+  transform: translateY(-50%);
+}
+
+.seat-5 .cards,
+.seat-5 .chips {
+  bottom: -45%;
+  right: 10%;
+  transform: translate(-50%);
+}
+
+.seat-6 {
+  top: -10%;
+  right: 23%;
+  transform: translateY(-50%);
+}
+
+.seat-6 .cards,
+.seat-6 .chips {
+  bottom: -45%;
+  right: 20%;
+  transform: translate(-50%);
+}
+
+.seat-7 {
+  top: 25%;
+  right: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-7 .cards,
+.seat-7 .chips {
+  bottom: -10%;
+  left: -40%;
+  transform: translate(-50%);
+}
+
+.seat-8 {
+  top: 55%;
+  right: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-8 .cards,
+.seat-8 .chips {
+  bottom: 60%;
+  left: -50%;
+  transform: translate(-50%);
+}
+
+.seat-9 {
+  bottom: -13%;
+  right: 18%;
+  transform: translateY(-50%);
+}
+
+.seat-9 .cards,
+.seat-9 .chips {
+  top: -50%;
+  left: 20%;
+  transform: translate(-50%);
+}
+
+@media (min-width: 768px) {
+  .seat-1 {
+    bottom: 0%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat-1 .cards,
+  .seat-1 .chips {
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat-2 {
+    bottom: -13%;
+    left: 17%;
+    transform: translateY(-50%);
+  }
+
+  .seat-2 .cards,
+  .seat-2 .chips {
+    top: -35%;
+    right: 10%;
+    transform: translate(50%);
+  }
+
+  .seat-3 {
+    top: 70%;
+    left: -5%;
+    transform: translateY(-50%);
+  }
+
+  .seat-3 .cards,
+  .seat-3 .chips {
+    bottom: 50%;
+    right: -40%;
+    transform: translate(50%);
+  }
+
+  .seat-4 {
+    top: 30%;
+    left: -5%;
+    transform: translateY(-50%);
+  }
+
+  .seat-4 .cards,
+  .seat-4 .chips {
+    bottom: -20%;
+    right: -60%;
+    transform: translate(-50%);
+  }
+
+  .seat-5 {
+    top: 10%;
+    left: 17%;
+    transform: translateY(-50%);
+  }
+
+  .seat-5 .cards,
+  .seat-5 .chips {
+    bottom: -45%;
+    right: 10%;
+    transform: translate(-50%);
+  }
+
+  .seat-6 {
+    top: 10%;
+    right: 15%;
+    transform: translateY(-50%);
+  }
+
+  .seat-6 .cards,
+  .seat-6 .chips {
+    bottom: -45%;
+    right: 20%;
+    transform: translate(-50%);
+  }
+
+  .seat-7 {
+    top: 30%;
+    right: -5%;
+    transform: translateY(-50%);
+  }
+
+  .seat-7 .cards,
+  .seat-7 .chips {
+    bottom: -10%;
+    left: -40%;
+    transform: translate(-50%);
+  }
+
+  .seat-8 {
+    top: 70%;
+    right: -5%;
+    transform: translateY(-50%);
+  }
+
+  .seat-8 .cards,
+  .seat-8 .chips {
+    bottom: 60%;
+    left: -50%;
+    transform: translate(-50%);
+  }
+
+  .seat-9 {
+    bottom: -13%;
+    right: 11%;
+    transform: translateY(-50%);
+  }
+
+  .seat-9 .cards,
+  .seat-9 .chips {
+    top: -50%;
+    left: 20%;
+    transform: translate(-50%);
+  }
+}

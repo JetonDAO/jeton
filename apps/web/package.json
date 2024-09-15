@@ -9,6 +9,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.27.0",
+    "clsx": "^2.1.1",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0",
+    "tailwind-merge": "^2.5.2",
     "@jeton/ts-sdk": "*",
     "@jeton/ui": "*",
     "@jeton/zk-deck": "*",

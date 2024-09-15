@@ -2,7 +2,20 @@ import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config) => {
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.(mp3|ogg)$/i,
+      use: [
+        {
+          loader: "file-loader",
+          options: {
+            name: "[path][name].[ext]",
+            publicPath: "/_next/static/audio/",
+            outputPath: "static/audio/",
+          },
+        },
+      ],
+    });
     config.module.rules.push({
       test: /\.wasm/,
       type: "asset/resource",

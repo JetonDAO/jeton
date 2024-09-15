@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
+import type { GameState } from ".";
 import { PieSocketTransport } from "./transport";
-import type { CardShareAndProof, GameState } from "./types";
+import type { CardShareAndProof } from "./types";
 
 export enum OnChainEventTypes {
   PLAYER_CHECKED_IN = "player-checked-in",
