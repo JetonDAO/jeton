@@ -3,10 +3,10 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["circom:build", "typescript:build"]
+      "dependsOn": ["circom:build", "typescript:build", "move:build"]
     },
     "test": {
-      "dependsOn": ["mocha:test"]
+      "dependsOn": ["mocha:test", "move:test"]
     },
     "check": {
       "dependsOn": ["circom:check"]
@@ -185,7 +185,7 @@
       "outputs": ["dist/zkeys/decrypt_card_share/setup.zkey"]
     },
     "snarkjs:build:zkey:decrypt-card-share:contribute": {
-      "dependsOn": ["snarkjs:build:zkey:decrypt-card-share:setup"],
+      "dependsOn": ["snarkjs:bui--package-dirld:zkey:decrypt-card-share:setup"],
       "inputs": ["dist/zkeys/decrypt_card_share/setup.zkey"],
       "outputs": ["dist/zkeys/decrypt_card_share/contribute.zkey"]
     },
@@ -216,6 +216,13 @@
       "dependsOn": ["snarkjs:build:verificationkey:mkdir", "snarkjs:build:zkey:decrypt-card-share"],
       "inputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"],
       "outputs": ["verification_keys/decrypt_card_share.json"]
+    },
+    "move:build": {
+      "inputs": ["contracts/sources/**", "contracts/Move.toml"],
+      "outputs": ["contracts/build/**"]
+    },
+    "move:test": {
+      "inputs": ["contracts/sources/**", "contracts/Move.toml"]
     },
     "typescript:build": {
       "dependsOn": ["circom:build"],
