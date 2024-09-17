@@ -1,60 +1,96 @@
-"use client";
-
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import buttonBackground from "@src/assets/images/button.png";
-import background from "@src/assets/images/main-menu-background.png";
-import WalletAdapterButton from "@src/components/WalletAdapterButton";
 import Image from "next/image";
-import Link from "next/link";
-export const runtime = "edge";
 
-export default function Home() {
-  const options = [
-    {
-      id: 1,
-      label: "Play",
-      url: "/setup",
-    },
-    {
-      id: 2,
-      label: "Settings",
-      url: "/",
-    },
-  ];
-
+export default function LandingPage() {
   return (
-    <>
-      <div className="text-center bg-orange-300 flex flex-col items-center rounded-lg px-8 py-8 bg-opacity-75">
-        <h1 className="text-2xl text-orange-800 font-bold mb-4">Welcome to Jeton</h1>
-        <p className="mb-8 text-orange-700">Best Opportunity to lose your money</p>
-        <div className="flex flex-col gap-5 relative z-20">
-          {options.map((btn) => (
-            <Link
-              href={btn.url}
-              key={btn.id}
-              style={{ backgroundImage: buttonBackground.src }}
-              className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 overflow-hidden"
+    <div className="flex flex-col min-h-screen w-full">
+      <header>
+        <nav className="flex justify-between items-center p-5 bg-opacity-40 border border-white bg-[#b87d5b] text-white m-5 rounded-2xl">
+          <div className="text-2xl font-bold">Jeton</div>
+          <ul className="flex space-x-8">
+            <li>
+              <a href="#about" className="hover:text-gray-400">
+                About
+              </a>
+            </li>
+            <li>
+              <a href="#features" className="hover:text-gray-400">
+                Features
+              </a>
+            </li>
+            <li>
+              <a href="#how-it-works" className="hover:text-gray-400">
+                How It Works
+              </a>
+            </li>
+            <li>
+              <a href="#contact" className="hover:text-gray-400">
+                Contact
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <main className="flex-grow text-center py-20 text-white max-w-5xl mx-auto">
+        {/* <Image
+          width={80}
+          height={80}
+          className="w-40 aspect-square"
+          src="/images/logo.png"
+          alt="Logo"
+        /> */}
+        <h1 className="text-5xl font-bold mb-6 leading-[4rem]">Jeton: Decentralized Poker Game</h1>
+        <p className="text-xl mb-10 leading-9">
+          Experience the thrill of a decentralized poker game, where fairness is guaranteed. Cards
+          are shuffled securely by players, ensuring transparency and security in every hand.
+        </p>
+        <a
+          href="/games"
+          className="bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-lg text-xl"
+        >
+          Play Now
+        </a>
+      </main>
+
+      <footer className="p-5 bg-[#b87d5b] bg-opacity-40 m-5 rounded-2xl text-white py-8">
+        <div className="container mx-auto text-center">
+          <div className="mb-4">
+            <a
+              href="https://facebook.com"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Image
-                src={buttonBackground}
-                alt="Button Background"
-                className="w-full absolute left-0 top-0 -z-10 object-cover h-full"
-              />
-              <span className="text-white">{btn.label}</span>
-            </Link>
-          ))}
-          <WalletAdapterButton />
+              <i className="fab fa-facebook-f" /> Facebook
+            </a>
+            <a
+              href="https://twitter.com"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="fab fa-twitter" /> Twitter
+            </a>
+            <a
+              href="https://instagram.com"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="fab fa-instagram" /> Instagram
+            </a>
+            <a
+              href="https://linkedin.com"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="fab fa-linkedin" /> LinkedIn
+            </a>
+          </div>
+          <p className="text-white">© 2024 Jeton. All rights reserved.</p>
         </div>
-      </div>
-      <Image
-        className="w-full h-full object-cover absolute top-0 left-0 -z-40"
-        src={background}
-        alt="background"
-        priority
-        style={{
-          imageRendering: "pixelated",
-        }}
-      />
-    </>
+      </footer>
+    </div>
   );
 }
