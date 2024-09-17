@@ -1,3 +1,4 @@
+import type { BettingActions, BettingRounds } from "./Betting";
 import type { Player } from "./Player";
 
 export enum GameEventTypes {
@@ -8,6 +9,8 @@ export enum GameEventTypes {
   PLAYER_SHUFFLING = "player-shuffling",
   PRIVATE_CARD_DECRYPTION_STARTED = "private-card-decryption-started",
   RECEIVED_PRIVATE_CARDS = "received-private-cards",
+  AWAITING_BET = "awaiting-bet",
+  PLAYER_PLACED_BET = "player-placed-bet",
 }
 
 export type DownloadProgressEvent = {
@@ -33,13 +36,30 @@ export type ReceivedPrivateCardsEvent = {
   cards: [number, number];
 };
 
+export type AwaitingBetEvent = {
+  bettingRound: BettingRounds;
+  pot: number[];
+  bettingPlayer: Player;
+};
+
+export type PlayerPlacedBetEvent = {
+  player: Player;
+  potBeforeBet: number[];
+  potAfterBet: number[];
+  betAction: BettingActions;
+  //my player available options
+};
+
 export type GameEvents =
   | DownloadProgressEvent
   | CheckInEvent
   | NewPlayerCheckedInEvent
   | HandStartedEvent
   | playerShufflingEvent
-  | PrivateCardDecryptionStarted;
+  | PrivateCardDecryptionStarted
+  | ReceivedPrivateCardsEvent
+  | AwaitingBetEvent
+  | PlayerPlacedBetEvent;
 
 export type GameEventMap = {
   [GameEventTypes.DOWNLOAD_PROGRESS]: [DownloadProgressEvent];
@@ -49,4 +69,6 @@ export type GameEventMap = {
   [GameEventTypes.PLAYER_SHUFFLING]: [playerShufflingEvent];
   [GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED]: [PrivateCardDecryptionStarted];
   [GameEventTypes.RECEIVED_PRIVATE_CARDS]: [ReceivedPrivateCardsEvent];
+  [GameEventTypes.AWAITING_BET]: [AwaitingBetEvent];
+  [GameEventTypes.PLAYER_PLACED_BET]: [PlayerPlacedBetEvent];
 };
