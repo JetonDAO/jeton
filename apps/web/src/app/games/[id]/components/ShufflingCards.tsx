@@ -2,63 +2,54 @@ import CardBackground from "@src/assets/images/cards/card-back.png";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-// Helper function to wait for a specific amount of time
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const FlowerAnimation = () => {
-  const totalCards = 32; // Number of cards
+const ShufflingCards = () => {
+  const totalCards = 32;
   const [open, setOpen] = useState(false);
   const [opened, setOpened] = useState(false);
 
-  // Precompute the angles for each card
   const angles = useMemo(() => {
     const step = 360 / totalCards;
-    return Array.from({ length: totalCards }, (_, index) => step * index); // Each card's rotation angle
+    return Array.from({ length: totalCards }, (_, index) => step * index);
   }, []);
 
-  // Precompute the positions for each card
   const positions = useMemo(() => {
     let left = 0;
     const margin = 0.2;
     return Array.from({ length: totalCards }, (_, index) => {
       const position = { left: left, zIndex: index };
-      left += margin; // Increment left by margin for stacking
+      left += margin;
       return position;
     });
   }, []);
 
-  // Flower animation loop with async/await
   useEffect(() => {
     const animationLoop = setInterval(() => {
       flowerAnimation();
-    }, 4000); // Run the animation every 4 seconds
-    return () => clearInterval(animationLoop); // Clean up on unmount
+    }, 4000);
+    return () => clearInterval(animationLoop);
   }, []);
 
-  // Flower animation function using async/await
   const flowerAnimation = async () => {
-    await openAllCards(); // Open all cards
-    await delay(1000); // Wait 1 second
-    await closeAllCards(); // Close all cards
-    await delay(1000); // Wait 1 second
-    resetCards(); // Reset all cards
+    await openAllCards();
+    await delay(1000);
+    await closeAllCards();
+    await delay(1000);
+    resetCards();
   };
 
-  // Open all cards
   const openAllCards = async () => {
     setOpen(true);
-    await delay(1000); // Wait for the opening animation to complete
-    setOpened(true);
+    await delay(1000);
   };
 
-  // Close all cards
   const closeAllCards = async () => {
     setOpen(false);
-    await delay(300); // Wait for the closing animation to complete
+    await delay(300);
     setOpened(false);
   };
 
-  // Reset all cards
   const resetCards = () => {
     setOpen(false);
     setOpened(false);
@@ -86,4 +77,4 @@ const FlowerAnimation = () => {
   );
 };
 
-export default FlowerAnimation;
+export default ShufflingCards;

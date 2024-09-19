@@ -2,24 +2,27 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen w-full">
-      <header>
-        <nav className="flex justify-between items-center p-5 bg-opacity-40 border border-white bg-[#b87d5b] text-white m-5 rounded-2xl">
-          <div className="text-2xl font-bold">Jeton</div>
+    <div
+      className={`relative bg-[url("/images/pixel-wooden-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden sm:h-[100dvh] w-[100dvw] z-50 flex items-center justify-center flex-col min-h-screen`}
+    >
+      <header className="w-full bg-black/20">
+        <nav className="flex justify-between items-center p-5  text-white">
+          <Image
+            width={80}
+            height={80}
+            className="w-14 aspect-square"
+            src="/images/logo.png"
+            alt="Logo"
+          />
           <ul className="flex space-x-8">
             <li>
               <a href="#about" className="hover:text-gray-400">
-                About
+                Docs
               </a>
             </li>
             <li>
               <a href="#features" className="hover:text-gray-400">
-                Features
-              </a>
-            </li>
-            <li>
-              <a href="#how-it-works" className="hover:text-gray-400">
-                How It Works
+                User Manual
               </a>
             </li>
             <li>
@@ -31,64 +34,56 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      <main className="flex-grow text-center py-20 text-white max-w-5xl mx-auto">
-        {/* <Image
-          width={80}
-          height={80}
-          className="w-40 aspect-square"
-          src="/images/logo.png"
-          alt="Logo"
-        /> */}
-        <h1 className="text-5xl font-bold mb-6 leading-[4rem]">Jeton: Decentralized Poker Game</h1>
-        <p className="text-xl mb-10 leading-9">
+      <main className="flex-grow justify-center text-center w-full  text-white items-center flex flex-col ">
+        <h1 className="text-5xl font-bold mb-6 leading-relaxed">
+          Jeton
+          <br />
+          Decentralized Poker Game
+        </h1>
+        <p className="text-xl mb-10 leading-9 max-w-5xl text-balance">
           Experience the thrill of a decentralized poker game, where fairness is guaranteed. Cards
           are shuffled securely by players, ensuring transparency and security in every hand.
         </p>
-        <a
-          href="/games"
-          className="bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-lg text-xl"
-        >
+        <a href="/games" className="nes-btn is-primary text-white py-3 px-8 rounded-lg text-xl">
           Play Now
         </a>
       </main>
 
-      <footer className="p-5 bg-[#b87d5b] bg-opacity-40 m-5 rounded-2xl text-white py-8">
-        <div className="container mx-auto text-center">
+      <footer className="p-5 text-white w-full bg-black/30 py-8">
+        <div className="flex flex-wrap justify-between mx-auto text-center items-center">
           <div className="mb-4">
             <a
-              href="https://facebook.com"
+              href="https://x.com/JetonDAO"
               className="mx-2 hover:text-gray-400 text-white"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="fab fa-facebook-f" /> Facebook
+              <i className="nes-icon twitter is-large" />
             </a>
+
             <a
-              href="https://twitter.com"
+              href="https://youtube.com/jetonDAO"
               className="mx-2 hover:text-gray-400 text-white"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="fab fa-twitter" /> Twitter
+              <i className="nes-icon youtube is-large" />
             </a>
+
             <a
-              href="https://instagram.com"
+              href="https://github.com/jetonDAO"
               className="mx-2 hover:text-gray-400 text-white"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="fab fa-instagram" /> Instagram
-            </a>
-            <a
-              href="https://linkedin.com"
-              className="mx-2 hover:text-gray-400 text-white"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i className="fab fa-linkedin" /> LinkedIn
+              <i className="nes-icon github is-large" />
             </a>
           </div>
-          <p className="text-white">© 2024 Jeton. All rights reserved.</p>
+          <section className="flex items-start">
+            <div className="nes-balloon from-right">
+              <p className="text-black">© 2024 Jeton. All rights reserved.</p>
+            </div>
+          </section>
         </div>
       </footer>
     </div>

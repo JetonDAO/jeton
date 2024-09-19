@@ -1,3 +1,5 @@
+@import "nes.css/css/nes.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,8 +12,8 @@
 
 @media (min-width: 768px) {
   .seat-1 {
-    top: 80%;
-    left: 45%;
+    top: 80% !important;
+    left: 50% !important;
     transform: translateX(-50%);
   }
 
@@ -23,7 +25,7 @@
   }
 
   .seat-2 {
-    top: 90%;
+    top: 90% !important;
     left: 18%;
     transform: translateY(-50%);
   }
@@ -127,8 +129,8 @@
   }
 
   .seat-dealer {
-    top: -5% !important;
-    left: 45% !important;
+    top: -5%;
+    left: 45%;
     transform: translate(0);
   }
 }
