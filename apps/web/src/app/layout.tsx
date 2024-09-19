@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Press_Start_2P } from "next/font/google";
+import Script from "next/script";
 
 import "./globals.css";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
@@ -34,6 +35,7 @@ export default function RootLayout({
           {children}
           <div>{modal}</div>
         </WalletProvider>
+        <Script src="/register-service-worker.js" />
       </body>
     </html>
   );
