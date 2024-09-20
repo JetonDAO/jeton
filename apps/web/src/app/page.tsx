@@ -1,60 +1,91 @@
-"use client";
-
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import buttonBackground from "@src/assets/images/button.png";
-import background from "@src/assets/images/main-menu-background.png";
-import WalletAdapterButton from "@src/components/WalletAdapterButton";
 import Image from "next/image";
-import Link from "next/link";
-export const runtime = "edge";
 
-export default function Home() {
-  const options = [
-    {
-      id: 1,
-      label: "Play",
-      url: "/setup",
-    },
-    {
-      id: 2,
-      label: "Settings",
-      url: "/",
-    },
-  ];
-
+export default function LandingPage() {
   return (
-    <>
-      <div className="text-center bg-orange-300 flex flex-col items-center rounded-lg px-8 py-8 bg-opacity-75">
-        <h1 className="text-2xl text-orange-800 font-bold mb-4">Welcome to Jeton</h1>
-        <p className="mb-8 text-orange-700">Best Opportunity to lose your money</p>
-        <div className="flex flex-col gap-5 relative z-20">
-          {options.map((btn) => (
-            <Link
-              href={btn.url}
-              key={btn.id}
-              style={{ backgroundImage: buttonBackground.src }}
-              className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 overflow-hidden"
+    <div
+      className={`relative bg-[url("/images/pixel-wooden-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden sm:h-[100dvh] w-[100dvw] z-50 flex items-center justify-center flex-col min-h-screen`}
+    >
+      <header className="w-full bg-black/20">
+        <nav className="flex justify-between items-center p-5  text-white">
+          <Image
+            width={80}
+            height={80}
+            className="w-14 aspect-square"
+            src="/images/logo.png"
+            alt="Logo"
+          />
+          <ul className="flex space-x-8">
+            <li>
+              <a href="#about" className="hover:text-gray-400">
+                Docs
+              </a>
+            </li>
+            <li>
+              <a href="#features" className="hover:text-gray-400">
+                User Manual
+              </a>
+            </li>
+            <li>
+              <a href="#contact" className="hover:text-gray-400">
+                Contact
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <main className="flex-grow justify-center text-center w-full  text-white items-center flex flex-col ">
+        <h1 className="text-5xl font-bold mb-6 leading-relaxed">
+          Jeton
+          <br />
+          Decentralized Poker Game
+        </h1>
+        <p className="text-xl mb-10 leading-9 max-w-5xl text-balance">
+          Experience the thrill of a decentralized poker game, where fairness is guaranteed. Cards
+          are shuffled securely by players, ensuring transparency and security in every hand.
+        </p>
+        <a href="/games" className="nes-btn is-primary text-white py-3 px-8 rounded-lg text-xl">
+          Play Now
+        </a>
+      </main>
+
+      <footer className="p-5 text-white w-full bg-black/30 py-8">
+        <div className="flex flex-wrap justify-between mx-auto text-center items-center">
+          <div className="mb-4">
+            <a
+              href="https://x.com/JetonDAO"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Image
-                src={buttonBackground}
-                alt="Button Background"
-                className="w-full absolute left-0 top-0 -z-10 object-cover h-full"
-              />
-              <span className="text-white">{btn.label}</span>
-            </Link>
-          ))}
-          <WalletAdapterButton />
+              <i className="nes-icon twitter is-large" />
+            </a>
+
+            <a
+              href="https://youtube.com/jetonDAO"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="nes-icon youtube is-large" />
+            </a>
+
+            <a
+              href="https://github.com/jetonDAO"
+              className="mx-2 hover:text-gray-400 text-white"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="nes-icon github is-large" />
+            </a>
+          </div>
+          <section className="flex items-start">
+            <div className="nes-balloon from-right">
+              <p className="text-black">© 2024 Jeton. All rights reserved.</p>
+            </div>
+          </section>
         </div>
-      </div>
-      <Image
-        className="w-full h-full object-cover absolute top-0 left-0 -z-40"
-        src={background}
-        alt="background"
-        priority
-        style={{
-          imageRendering: "pixelated",
-        }}
-      />
-    </>
+      </footer>
+    </div>
   );
 }

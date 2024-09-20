@@ -32,12 +32,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={pressStart2P.className}>
         <WalletProvider>
-          <div
-            className={`relative bg-[url("/images/wood-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden h-[100dvh] w-[100dvw] z-50 flex items-center justify-center`}
-          >
-            {children}
-            <div>{modal}</div>
-          </div>
+          {children}
+          <div>{modal}</div>
         </WalletProvider>
         <Script src="/register-service-worker.js" />
       </body>

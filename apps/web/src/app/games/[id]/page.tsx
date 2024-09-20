@@ -6,20 +6,23 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GameEventTypes } from "@jeton/ts-sdk";
 import type { Player } from "@jeton/ts-sdk";
 import Modal from "@jeton/ui/Modal";
-import ProgressBar from "@jeton/ui/ProgressBar";
 import { useSelector } from "@legendapp/state/react";
+import cardDealSound from "@src/assets/audio/card-place.mp3";
 import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
 import Avatar3 from "@src/assets/images/avatars/avatar-3.png";
 import Avatar4 from "@src/assets/images/avatars/avatar-4.png";
 import Chips from "@src/assets/images/chips/chips-3-stacks.png";
+import Flower from "@src/assets/images/decorations/flower.png";
 import TableBackground from "@src/assets/images/table.png";
+import { useAudio } from "@src/hooks/useAudio";
 import type { CardName } from "@src/types";
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Card from "./components/Card";
+import ShufflingCards from "./components/ShufflingCards";
 import { useSubscribeToGameEvent } from "./components/useSubscribeToGameEvent";
 import { initGame, setTableId } from "./state/actions/gameActions";
 import {
@@ -44,21 +47,17 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   }, [isWalletLoading, connected, router, toffState]);
 
   return (
-    <div className="w-full flex rounded-2xl flex-col relative items-center justify-center py-2 -z-40">
+    <div
+      className={`flex flex-col relative items-center justify-center py-2 bg-[url("/images/pixel-wooden-pattern.png")] bg-repeat bg-center bg-[length:120px_120px] overflow-hidden h-[100dvh] w-[100dvw] z-50 min-h-screen`}
+    >
       <Table id={params.id}>
-        {new Array(9)
-          .fill({
-            id: "mhs",
-            balance: 12,
-            bet: 12,
-          })
-          .map((player, i) => (
-            <PlayerSeat key={player.id} player={player} seat={i + 1} />
-          ))}
+        {players?.map((player, i) => (
+          <PlayerSeat key={player.id} player={player} seat={i + 1} />
+        ))}
       </Table>
+      <Image className="absolute right-0 scale-75" src={Flower} alt="flower" />
       <PlayerActions />
-
-      {/* <DownloadModal /> */}
+      <DownloadModal />
     </div>
   );
 }
@@ -72,15 +71,23 @@ function DownloadModal() {
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
   if (isLoading)
     return (
-      <Modal className="w-96 h-52">
+      <Modal className="w-96 h-52 animate-grow-in">
         <div className="flex flex-col items-center gap-1 text-white text-center">
-          {percentage ? <ProgressBar progress={percentage} /> : "Starting download assets..."}
+          {percentage ? (
+            <>
+              <progress className="nes-progress is-success" value={percentage} max={100} />
+              {`%${percentage}`}
+            </>
+          ) : (
+            "Starting download assets..."
+          )}
         </div>
       </Modal>
     );
 }
 
 function Table({ id, children }: { id: string; children: ReactNode }) {
+  const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const {
     isLoading: isWalletLoading,
     signMessage,
@@ -98,27 +105,28 @@ function Table({ id, children }: { id: string; children: ReactNode }) {
   const cards: CardName[] = ["hearts-J", "clubs-07", "spades-04", "diamonds-09", "spades-09"];
 
   return (
-    <div className="flex justify-center w-full h-full pt-2 md:py-5">
-      <div className="relative flex justify-center items-center w-full h-full">
-        <div className="h-full-z-40 md:scale-x-100 max-w-[70dvh] md:scale-y-100 md:scale-100 w-full md:max-w-[90dvw] xl:max-w-[75dvw] md:max-h-[70dvh] duration-500 scale-x-150 scale-y-150 sm:scale-y-125 relative bottom-10 md:bottom-12 md:right-0">
-          <Image
-            priority
-            className="object-fill w-full h-full rotate-90 md:rotate-0"
-            src={TableBackground}
-            alt="table"
-          />
-          {children}
-        </div>
+    <div className="flex justify-center items-center w-full h-full">
+      <div className="h-full-z-40 md:scale-x-100 max-w-[70dvh] md:scale-y-100 md:scale-100 w-full md:max-w-[90dvw] xl:max-w-[75dvw] md:max-h-[70dvh] duration-500 scale-x-150 scale-y-150 sm:scale-y-125 relative md:right-0 flex items-center justify-center">
+        <Image
+          priority
+          className="object-fill w-full h-full rotate-90 md:rotate-0 md:max-h-[70dvh]"
+          src={TableBackground}
+          alt="table"
+        />
 
-        <div className="absolute flex top-[25%] md:top-[35%] flex-col md:flex-row">
-          {cards.map((cardName) => (
-            <Card
-              className="xl:w-24 2xl:w-28 animate-deal w-12 sm:w-16"
-              key={cardName}
-              cardName={cardName}
-            />
-          ))}
-        </div>
+        {children}
+      </div>
+
+      {shufflingPlayer?.id && <ShufflingCards />}
+
+      <div className="absolute flex ">
+        {/* {cards.map((cardName) => (
+          <Card
+            className="xl:w-24 2xl:w-28 animate-deal w-12 sm:w-16"
+            key={cardName}
+            cardName={cardName}
+          />
+        ))} */}
       </div>
     </div>
   );
@@ -131,19 +139,39 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   const randomAvatar = useMemo(() => avatars[Math.floor(Math.random() * avatars.length)], [seat]);
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
 
+  // mock shuffling for testing
+  // const [dealerSeat, setDealerSeat] = useState(1);
+
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     const dealerInterval = setInterval(() => {
+  //       setDealerSeat((prevSeat) => (prevSeat < 9 ? prevSeat + 1 : 1));
+  //     }, 3000);
+
+  //     return () => clearInterval(dealerInterval);
+  //   }, 2000);
+
+  //   return () => clearTimeout(timeout);
+  // }, []);
+
   return (
-    <div className={`seat-position seat-${seat} items-center flex flex-col`}>
+    <div
+      data-dealer={true}
+      className={`seat-position items-center flex shrink-0 md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
+        shufflingPlayer?.id === player.id ? "seat-dealer scale-110 group" : `seat-${seat}`
+      }`}
+    >
       <Image
         src={randomAvatar ?? ""}
         alt="avatar"
-        className={`md:w-28 xl:w-40 aspect-square grow-0 w-10 sm:w-14 rounded-full shrink-0 border-2 md:border-8 ${
-          shufflingPlayer?.id === player.id ? " border-green-500" : "border-[#b87d5b]"
+        className={`w-full aspect-square grow-0 group-data-[dealer=true]:border-green-500 group-data-[dealer=true]:animate-bounce sm:w-14 rounded-full shrink-0 border-2 md:border-8 ${
+          shufflingPlayer?.id === player.id ? " " : "border-transparent"
         }`}
       />
       <Image className="chips w-16 hidden" src={Chips} alt="chips" />
 
       {seat === 1 && (
-        <div className=" justify-center hidden absolute shrink-0 -right-[180%] bottom-0">
+        <div className="justify-center hidden absolute shrink-0 -right-[180%] bottom-0">
           {cardsOnTable.map((cardName, i) => (
             <Card
               className={
@@ -155,7 +183,7 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
           ))}
         </div>
       )}
-      <div className="bg-[#b87d5b] overflow-hidden text-xs text-white text-center rounded-sm shadow-2xl md:text-sm w-16 md:w-32">
+      <div className="bg-[#b87d5b] shrink-0 line-clamp-1 relative sm:bottom-2 flex justify-center text-[8px] text-white text-center rounded-sm shadow-2xl md:text-sm w-16 md:w-32">
         {player.id} {seat}
       </div>
     </div>
@@ -178,9 +206,3 @@ function PlayerActions() {
     </div>
   );
 }
-
-// import { TableComponent } from "./components/Table";
-
-// export default function TablePage({ params }: { params: { id: string } }) {
-//   return <TableComponent id={params.id} />;
-// }

@@ -26,7 +26,7 @@ export default function GameJoinModal() {
   }
 
   return (
-    <Modal>
+    <Modal className="animate-scaleUp">
       <div className="text-white text-2xl pb-10">Join a game</div>
       {gameTables.length > 0 ? (
         <ul className="text-white border flex flex-col p-2 bg-[#b87d5b]">

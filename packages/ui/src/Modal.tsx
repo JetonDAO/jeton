@@ -42,7 +42,7 @@ export default function Modal({
   return (
     <div
       ref={overlay}
-      className="fixed z-50 inset-0 flex justify-center items-center bg-black/0 animate-fadeIn"
+      className="fixed z-50 inset-0 flex justify-center items-center animate-fadeIn"
       onClick={onClick}
     >
       <div

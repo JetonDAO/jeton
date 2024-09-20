@@ -72,7 +72,7 @@ export default function GameCreateModal() {
   }
 
   return (
-    <Modal>
+    <Modal className="animate-scaleUp">
       <form onSubmit={handleSubmit}>
         <div className="text-white text-lg mb-5">Create a New Game</div>
         <div className="flex flex-col gap-3">
