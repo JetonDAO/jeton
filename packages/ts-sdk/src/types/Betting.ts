@@ -1,26 +1,26 @@
 import type { Player } from "./Player";
 
 export enum BettingRounds {
-  PRE_FLOP = 0,
-  FLOP,
-  TURN,
-  RIVER,
+  PRE_FLOP = "pre-flop",
+  FLOP = "flop",
+  TURN = "turn",
+  RIVER = "river",
 }
 
 export enum PlacingBettingActions {
-  CHECK_CALL = 0,
-  FOLD,
-  RAISE,
+  CHECK_CALL = "check-call",
+  FOLD = "fold",
+  RAISE = "raise",
 }
 
 export enum BettingActions {
-  CHECK = 0,
-  CALL,
-  RAISE,
-  FOLD,
-  ALL_IN,
-  SMALL_BLIND,
-  BIG_BLIND,
+  CHECK = "check",
+  CALL = "call",
+  RAISE = "raise",
+  FOLD = "fold",
+  ALL_IN = "all-in",
+  SMALL_BLIND = "small-blind",
+  BIG_BLIND = "big-blind",
 }
 
 export interface BettingRound {

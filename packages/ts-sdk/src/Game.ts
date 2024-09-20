@@ -19,12 +19,14 @@ import {
   type GameState,
   GameStatus,
   type HandState,
-  PlacingBettingActions,
+  type PlacingBettingActions,
   type Player,
+  PlayerStatus,
   type TableInfo,
   type offChainTransport,
 } from "@src/types";
 import type { OffChainEvents } from "@src/types/OffChainEvents";
+import { BettingManager } from "./BettingManager";
 import { CardShareProofSource } from "./CardShareProofSource";
 import {
   type OnChainDataSource,
@@ -85,9 +87,8 @@ export class Game extends EventEmitter<GameEventMap> {
     this.offChainTransport = config.offChainTransport;
     this.tableInfo = config.tableInfo;
     this.onChainDataSource = config.onChainDataSource;
-    this.handState = { pot: [], foldedPlayers: [], allIns: [] };
+    this.handState = { pot: [] };
     this.addOnChainListeners();
-    // TODO
     this.gameState = {
       players: [],
       status: GameStatus.AwaitingStart,
@@ -162,44 +163,6 @@ export class Game extends EventEmitter<GameEventMap> {
     return this.gameState.players[nextPlayerIndex];
   }
 
-  private getNextBettingPlayer(currentPlayerId: string, action: BettingActions) {
-    if (!this.handState.bettingRound)
-      throw new Error("getNextBettingPlayer called outside of betting round");
-    const numberOfPlayers = this.gameState.players.length;
-    const playerIndex = this.gameState.players.findIndex((p) => p.id === currentPlayerId);
-
-    let nextPlayerIndex = (playerIndex + 1) % numberOfPlayers;
-    if (playerIndex === -1) throw new Error("could not find requested player");
-    let nextPlayer = this.gameState.players[nextPlayerIndex];
-    if (!nextPlayer) throw new Error("array out of bound");
-
-    if (action === BettingActions.SMALL_BLIND || action === BettingActions.BIG_BLIND) {
-      return nextPlayer;
-    }
-
-    const afterLastToBet = this.handState.bettingRound.afterLastToBet;
-    while (!this.isActive(nextPlayer)) {
-      nextPlayerIndex = (nextPlayerIndex + 1) % numberOfPlayers;
-      nextPlayer = this.gameState.players[nextPlayerIndex];
-      if (!nextPlayer) throw new Error("array out of bound");
-      if (nextPlayer === afterLastToBet) return null;
-    }
-    if (nextPlayer === afterLastToBet) return null;
-    return nextPlayer;
-  }
-
-  public didFold(player: Player) {
-    return this.handState.foldedPlayers.includes(player);
-  }
-
-  public isAllIn(player: Player) {
-    return this.handState.allIns.includes(player);
-  }
-
-  public isActive(player: Player) {
-    return !this.didFold(player) && !this.isAllIn(player);
-  }
-
   private amIDealer() {
     return this.playerId === this.gameState.players[this.gameState.dealer]?.id;
   }
@@ -228,11 +191,15 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private gameStarted = (data: OnChainGameStartedData) => {
+    for (const playerId of data.players) {
+      const player = this.gameState.players.find((p) => p.id === playerId);
+      if (!player) throw new Error("state mismatch: player must have existed");
+      player.status = PlayerStatus.active;
+    }
+
     this.handState = {
       pot: [0],
-      foldedPlayers: [],
       privateCardShareProofs: new CardShareProofSource(this.gameState.players),
-      allIns: [],
     };
     // TODO: check if we are in the right state
     this.gameState.status = GameStatus.Shuffle;
@@ -255,6 +222,7 @@ export class Game extends EventEmitter<GameEventMap> {
       id: data.address,
       balance: data.buyIn,
       elGamalPublicKey: data.elGamalPublicKey,
+      status: PlayerStatus.sittingOut,
     };
     this.gameState?.players.push(newPlayer);
 
@@ -279,30 +247,26 @@ export class Game extends EventEmitter<GameEventMap> {
     this.emit(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayer);
   };
 
-  private get raiseAmount() {
-    if (!this.handState.bettingRound) throw new Error("betting round is not defined");
-    return [BettingRounds.PRE_FLOP, BettingRounds.FLOP].includes(this.handState.bettingRound.round)
-      ? this.tableInfo.smallBlind * 2
-      : this.tableInfo.smallBlind * 4;
-  }
-
   private receivedPlayerBet = (data: OnChainPlayerPlacedBetData) => {
     const sender = this.gameState.players.find((p) => p.id === data.player);
     if (!sender) throw new Error("sender of bet does not exist in game players!!");
-    if (data.bettingRound !== this.handState.bettingRound?.round)
+    if (data.bettingRound !== this.handState.bettingManager?.activeRound)
       throw new Error("state mismatch between received event and game state");
 
-    // TODO: check validity of action
     const potBeforeBet = Array.from(this.handState.pot);
-    this.calculateNewBettingState(data.action, sender);
+    this.handState.pot = this.handState.bettingManager.receivedBet(data.action, sender);
     this.emit(GameEventTypes.PLAYER_PLACED_BET, {
       player: sender,
       betAction: data.action,
       potBeforeBet,
       potAfterBet: Array.from(this.handState.pot),
     });
-    const nextPlayer = this.getNextBettingPlayer(sender.id, data.action);
-    if (!nextPlayer) {
+    const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
+    const numberOfActivePlayers = this.gameState.players.reduce(
+      (n, p) => (p.status === PlayerStatus.active ? n + 1 : n),
+      0,
+    );
+    if (!nextPlayer || numberOfActivePlayers <= 1) {
       // TODO: betting round finished
       console.log("betting round finished");
       return;
@@ -317,20 +281,10 @@ export class Game extends EventEmitter<GameEventMap> {
       });
     }
     // i am big blind no need to get the bet from ui I just send it
-    if (nextPlayer.id === this.playerId && data.action === BettingActions.SMALL_BLIND) {
-      this.sendBet(BettingActions.BIG_BLIND);
-    } else if (
-      nextPlayer.id === this.playerId &&
-      this.handState.bettingRound.selfPlayerBettingState.preemptivelyPlacedBet
-    ) {
-      const actualAction = this.convertBet(
-        this.handState.bettingRound.selfPlayerBettingState.preemptivelyPlacedBet,
-      );
-      this.handState.bettingRound.selfPlayerBettingState.preemptivelyPlacedBet = null;
-      this.handState.bettingRound.selfPlayerBettingState.alreadySentForRound = true;
-      this.sendBet(actualAction);
-    } else if (nextPlayer.id === this.playerId) {
-      this.handState.bettingRound.selfPlayerBettingState.awaitingBetPlacement = true;
+    if (data.action === BettingActions.SMALL_BLIND) {
+      this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet, BettingActions.BIG_BLIND);
+    } else {
+      this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet);
     }
   };
 
@@ -395,169 +349,37 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private initBettingRound(round: BettingRounds) {
-    // TODO: active Players
     // edge case: small blind or big blind don't have enough money
     // so is sitting out
+    this.handState.bettingManager = new BettingManager(
+      this.gameState.players,
+      this.gameState.players[this.gameState.dealer] as Player,
+      this.tableInfo,
+      this.myPlayer,
+    );
 
-    const lastToBetIndex =
-      (round === BettingRounds.PRE_FLOP ? this.gameState.dealer + 3 : this.gameState.dealer + 1) %
-      this.gameState.players.length;
-
-    this.handState.bettingRound = {
-      active: true,
-      round,
-      bets: this.gameState.players.reduce<Record<string, number>>((bets, player) => {
-        bets[player.id] = 0;
-        return bets;
-      }, {}),
-      afterLastToBet: this.gameState.players[lastToBetIndex] as Player,
-      numberOfRaises: 0,
-      selfPlayerBettingState: {
-        alreadySentForRound: false,
-        awaitingBetPlacement: false,
-      },
-    };
-    const isItMyTurn = this.myDistanceFromDealer === 1;
+    const isItMyTurn = this.handState.bettingManager.nextBettingPlayer === this.myPlayer;
     if (!isItMyTurn) return;
 
     // then I'm small blind
     if (round === BettingRounds.PRE_FLOP) {
       this.sendBet(BettingActions.SMALL_BLIND);
     }
-    // TODO:
   }
 
-  private sendBet(action: BettingActions) {
-    if (!this.handState.bettingRound) throw new Error("bet called outside of betting round");
-    this.onChainDataSource.bet(this.handState.bettingRound.round, action);
-  }
+  private sendBet = (action: BettingActions) => {
+    if (!this.handState.bettingManager?.activeRound)
+      throw new Error("bet called outside of betting round");
+    this.onChainDataSource.bet(this.handState.bettingManager.activeRound, action);
+  };
 
   public placeBet(action: PlacingBettingActions) {
-    if (!this.handState.bettingRound) throw new Error("Not in betting round");
-    if (!this.isActive(this.myPlayer))
+    if (!this.handState.bettingManager?.active) throw new Error("Not in betting round");
+    if (this.myPlayer.status !== PlayerStatus.active)
       throw new Error(
         "You are not an active player (either folded or all in) therefore cannot place a bet",
       );
-    if (this.handState.bettingRound?.selfPlayerBettingState.alreadySentForRound)
-      throw new Error("already set bet can't bet now");
-    if (this.handState.bettingRound?.selfPlayerBettingState.awaitingBetPlacement) {
-      this.handState.bettingRound.selfPlayerBettingState.preemptivelyPlacedBet = null;
-      this.handState.bettingRound.selfPlayerBettingState.alreadySentForRound = true;
-      this.sendBet(this.convertBet(action));
-    } else {
-      this.handState.bettingRound.selfPlayerBettingState.preemptivelyPlacedBet = action;
-    }
-  }
-
-  private convertBet(action: PlacingBettingActions): BettingActions {
-    if (!this.handState.bettingRound) throw new Error("called outside of betting round");
-    const alreadyBettedAmount = this.handState.bettingRound.bets[this.playerId];
-    if (!alreadyBettedAmount) throw new Error("should not be undefined");
-    switch (action) {
-      case PlacingBettingActions.FOLD:
-        return BettingActions.FOLD;
-      // biome-ignore lint/suspicious/noFallthroughSwitchClause: <explanation>
-      case PlacingBettingActions.RAISE: {
-        const expectedAmount =
-          (this.handState.bettingRound.numberOfRaises + 1) * this.raiseAmount - alreadyBettedAmount;
-        if (
-          this.handState.bettingRound.numberOfRaises < this.tableInfo.numberOfRaises &&
-          expectedAmount < this.myPlayer.balance
-        ) {
-          return BettingActions.RAISE;
-        }
-      }
-      case PlacingBettingActions.CHECK_CALL: {
-        if (!alreadyBettedAmount) throw new Error("should not be undefined");
-        const expectedAmount =
-          this.handState.bettingRound.numberOfRaises * this.raiseAmount - alreadyBettedAmount;
-        if (expectedAmount === 0) return BettingActions.CHECK;
-        if (expectedAmount > this.myPlayer.balance) return BettingActions.ALL_IN;
-        return BettingActions.CALL;
-      }
-    }
-  }
-
-  private calculateNewBettingState(action: BettingActions, sender: Player) {
-    if (!this.handState.bettingRound) throw new Error("must be present");
-    switch (action) {
-      case BettingActions.FOLD:
-        this.handState.foldedPlayers.push(sender);
-        break;
-      case BettingActions.SMALL_BLIND: {
-        const amount = this.tableInfo.smallBlind * 2;
-        this.handState.bettingRound.bets[sender.id] += amount;
-        sender.balance -= amount;
-        this.handState.pot = this.reconstructPot();
-        break;
-      }
-      case BettingActions.BIG_BLIND: {
-        const amount = this.tableInfo.smallBlind * 2;
-        this.handState.bettingRound.numberOfRaises += 1;
-        this.handState.bettingRound.bets[sender.id] += amount;
-        sender.balance -= amount;
-        this.handState.pot = this.reconstructPot();
-        break;
-      }
-      case BettingActions.CHECK:
-        break;
-      // biome-ignore lint/suspicious/noFallthroughSwitchClause: <explanation>
-      case BettingActions.RAISE:
-        this.handState.bettingRound.numberOfRaises += 1;
-        this.handState.bettingRound.afterLastToBet = sender;
-      case BettingActions.CALL: {
-        const totalRaisedAmount = this.handState.bettingRound.numberOfRaises * this.raiseAmount;
-        const amountNeededToCall =
-          totalRaisedAmount - (this.handState.bettingRound.bets[sender.id] as number);
-
-        this.handState.bettingRound.bets[sender.id] += amountNeededToCall;
-        sender.balance -= amountNeededToCall;
-        this.handState.pot = this.reconstructPot();
-        break;
-      }
-      case BettingActions.ALL_IN: {
-        this.handState.bettingRound.bets[sender.id] += sender.balance;
-        sender.balance = 0;
-        this.handState.allIns.push(sender);
-        this.handState.pot = this.reconstructPot();
-        break;
-      }
-      default:
-        throw new Error("Unreachable Code");
-    }
-    if (sender.balance < 0) throw new Error("player balance should not be less than 0");
-  }
-
-  private reconstructPot() {
-    const bets = this.handState.bettingRound?.bets;
-    if (!bets) throw new Error("bets should not be undefined");
-    const copiedBets = Object.assign({}, bets);
-    const allInPlayers = this.handState.allIns.sort(
-      (p1, p2) => (bets[p1.id] as number) - (bets[p2.id] as number),
-    );
-
-    const newPot = [];
-    for (const allInPlayer of allInPlayers) {
-      if (copiedBets[allInPlayer.id] === 0) continue;
-      let sidePot = 0;
-      for (const [id, bet] of Object.entries(copiedBets)) {
-        if (bet > 0 && bet < (bets[allInPlayer.id] as number)) {
-          sidePot += bet;
-          copiedBets[id] = 0;
-        } else if (bet > 0) {
-          sidePot += bets[allInPlayer.id] as number;
-          copiedBets[id] -= bets[allInPlayer.id] as number;
-        }
-      }
-      newPot.push(sidePot);
-    }
-    let finalPot = 0;
-    for (const bet of Object.values(copiedBets)) {
-      finalPot += bet;
-    }
-    newPot.push(finalPot);
-
-    return newPot;
+    this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet, action);
   }
 
   private async shuffle() {
