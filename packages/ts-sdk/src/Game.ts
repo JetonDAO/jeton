@@ -14,19 +14,26 @@ import {
 } from "@jeton/zk-deck";
 
 import {
+  BettingActions,
+  BettingRounds,
   type GameState,
   GameStatus,
   type HandState,
+  type PlacingBettingActions,
+  type Player,
+  PlayerStatus,
   type TableInfo,
   type offChainTransport,
 } from "@src/types";
 import type { OffChainEvents } from "@src/types/OffChainEvents";
+import { BettingManager } from "./BettingManager";
 import { CardShareProofSource } from "./CardShareProofSource";
 import {
   type OnChainDataSource,
   OnChainEventTypes,
   type OnChainGameStartedData,
   type OnChainPlayerCheckedInData,
+  type OnChainPlayerPlacedBetData,
   type OnChainPrivateCardsSharesData,
   type OnChainShuffledDeckData,
 } from "./OnChainDataSource";
@@ -80,9 +87,8 @@ export class Game extends EventEmitter<GameEventMap> {
     this.offChainTransport = config.offChainTransport;
     this.tableInfo = config.tableInfo;
     this.onChainDataSource = config.onChainDataSource;
-    this.handState = {};
+    this.handState = { pot: [] };
     this.addOnChainListeners();
-    // TODO
     this.gameState = {
       players: [],
       status: GameStatus.AwaitingStart,
@@ -118,6 +124,7 @@ export class Game extends EventEmitter<GameEventMap> {
       OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
       this.receivedPrivateCardsShares,
     );
+    this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
   }
 
   private receivedPrivateCardsShares = (data: OnChainPrivateCardsSharesData) => {
@@ -160,8 +167,14 @@ export class Game extends EventEmitter<GameEventMap> {
     return this.playerId === this.gameState.players[this.gameState.dealer]?.id;
   }
 
-  get numberOfPlayers() {
+  public get numberOfPlayers() {
     return this.gameState.players.length;
+  }
+
+  public get myPlayer() {
+    const player = this.gameState.players.find((p) => p.id === this.playerId);
+    if (!player) throw new Error("my player does not exist");
+    return player;
   }
 
   private get myDistanceFromDealer() {
@@ -178,7 +191,14 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private gameStarted = (data: OnChainGameStartedData) => {
+    for (const playerId of data.players) {
+      const player = this.gameState.players.find((p) => p.id === playerId);
+      if (!player) throw new Error("state mismatch: player must have existed");
+      player.status = PlayerStatus.active;
+    }
+
     this.handState = {
+      pot: [0],
       privateCardShareProofs: new CardShareProofSource(this.gameState.players),
     };
     // TODO: check if we are in the right state
@@ -202,6 +222,7 @@ export class Game extends EventEmitter<GameEventMap> {
       id: data.address,
       balance: data.buyIn,
       elGamalPublicKey: data.elGamalPublicKey,
+      status: PlayerStatus.sittingOut,
     };
     this.gameState?.players.push(newPlayer);
 
@@ -224,6 +245,43 @@ export class Game extends EventEmitter<GameEventMap> {
     }
 
     this.emit(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayer);
+  };
+
+  private receivedPlayerBet = (data: OnChainPlayerPlacedBetData) => {
+    const sender = this.gameState.players.find((p) => p.id === data.player);
+    if (!sender) throw new Error("sender of bet does not exist in game players!!");
+    if (data.bettingRound !== this.handState.bettingManager?.activeRound)
+      throw new Error("state mismatch between received event and game state");
+
+    const potBeforeBet = Array.from(this.handState.pot);
+    this.handState.pot = this.handState.bettingManager.receivedBet(data.action, sender);
+    this.emit(GameEventTypes.PLAYER_PLACED_BET, {
+      player: sender,
+      betAction: data.action,
+      potBeforeBet,
+      potAfterBet: Array.from(this.handState.pot),
+    });
+    const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
+    if (!nextPlayer) {
+      // TODO: betting round finished
+      console.log("betting round finished");
+      return;
+    }
+
+    // don't send awaiting bet to ui for small and big blind
+    if (data.action !== BettingActions.BIG_BLIND && data.action !== BettingActions.SMALL_BLIND) {
+      this.emit(GameEventTypes.AWAITING_BET, {
+        bettingRound: data.bettingRound,
+        bettingPlayer: nextPlayer,
+        pot: this.handState.pot,
+      });
+    }
+    // i am big blind no need to get the bet from ui I just send it
+    if (data.action === BettingActions.SMALL_BLIND) {
+      this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet, BettingActions.BIG_BLIND);
+    } else {
+      this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet);
+    }
   };
 
   private async createAndSharePrivateKeyShares() {
@@ -283,6 +341,54 @@ export class Game extends EventEmitter<GameEventMap> {
     this.emit(GameEventTypes.RECEIVED_PRIVATE_CARDS, {
       cards: [firstPrivateCard, secondPrivateCard],
     });
+    this.initBettingRound(BettingRounds.PRE_FLOP);
+  }
+
+  private initBettingRound(round: BettingRounds) {
+    this.handState.bettingManager = new BettingManager(
+      this.gameState.players,
+      this.gameState.players[this.gameState.dealer] as Player,
+      this.tableInfo,
+      this.myPlayer,
+    );
+
+    const nextBettingPlayer = this.handState.bettingManager.nextBettingPlayer;
+    if (nextBettingPlayer === null) {
+      //TODO round finished
+      return;
+    }
+    const isItMyTurn = nextBettingPlayer === this.myPlayer;
+    // don't send event for small blind
+    if (round !== BettingRounds.PRE_FLOP) {
+      this.emit(GameEventTypes.AWAITING_BET, {
+        bettingRound: round,
+        bettingPlayer: nextBettingPlayer,
+        pot: this.handState.pot,
+      });
+    }
+    if (!isItMyTurn) return;
+
+    // then I'm small blind
+    if (round === BettingRounds.PRE_FLOP) {
+      this.sendBet(BettingActions.SMALL_BLIND);
+      return;
+    }
+    this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet);
+  }
+
+  private sendBet = (action: BettingActions) => {
+    if (!this.handState.bettingManager?.activeRound)
+      throw new Error("bet called outside of betting round");
+    this.onChainDataSource.bet(this.handState.bettingManager.activeRound, action);
+  };
+
+  public placeBet(action: PlacingBettingActions) {
+    if (!this.handState.bettingManager?.active) throw new Error("Not in betting round");
+    if (this.myPlayer.status !== PlayerStatus.active)
+      throw new Error(
+        "You are not an active player (either folded or all in) therefore cannot place a bet",
+      );
+    this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet, action);
   }
 
   private async shuffle() {
@@ -293,7 +399,6 @@ export class Game extends EventEmitter<GameEventMap> {
     const inputDeck = this.amIDealer()
       ? this.zkDeck.initialEncryptedDeck
       : await this.onChainDataSource.queryLastOutDeck(this.tableInfo.id);
-    const st = new Date();
     const { proof, outputDeck } = await this.zkDeck.proveShuffleEncryptDeck(
       aggregatedPublicKey,
       inputDeck,

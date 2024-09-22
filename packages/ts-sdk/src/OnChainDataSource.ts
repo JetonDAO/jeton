@@ -1,15 +1,23 @@
 import { EventEmitter } from "events";
 import type { GameState } from ".";
 import { PieSocketTransport } from "./transport";
-import type { CardShareAndProof } from "./types";
+import {
+  type BettingActions,
+  type BettingRounds,
+  type CardShareAndProof,
+  GameStatus,
+  PlayerStatus,
+} from "./types";
+
+import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Groth16Proof } from "@jeton/zk-deck";
 
 export enum OnChainEventTypes {
   PLAYER_CHECKED_IN = "player-checked-in",
   GAME_STARTED = "game-started",
   SHUFFLED_DECK = "shuffled-deck",
   PRIVATE_CARDS_SHARES_RECEIVED = "private-cards-shares",
+  PLAYER_PLACED_BET = "player-placed-bet",
 }
-import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Groth16Proof } from "@jeton/zk-deck";
 
 export type OnChainPlayerCheckedInData = {
   buyIn: number;
@@ -31,16 +39,23 @@ export type OnChainPrivateCardsSharesData = {
   proofs: CardShareAndProof[];
 };
 
+export type OnChainPlayerPlacedBetData = {
+  bettingRound: BettingRounds;
+  action: BettingActions;
+  player: string;
+};
+
 type OnChainEventMap = {
   [OnChainEventTypes.PLAYER_CHECKED_IN]: [OnChainPlayerCheckedInData];
   [OnChainEventTypes.GAME_STARTED]: [OnChainGameStartedData];
   [OnChainEventTypes.SHUFFLED_DECK]: [OnChainShuffledDeckData];
   [OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED]: [OnChainPrivateCardsSharesData];
+  [OnChainEventTypes.PLAYER_PLACED_BET]: [OnChainPlayerPlacedBetData];
 };
 
 export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
   pieSocketTransport: PieSocketTransport;
-  gameState: GameState = { players: [], dealer: 0, status: 0 };
+  gameState: GameState = { players: [], dealer: 0, status: GameStatus.AwaitingStart };
   playerId = "";
   outDeck?: EncryptedDeck;
 
@@ -93,12 +108,19 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
         this.emit(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, data);
       },
     );
+    this.pieSocketTransport.subscribe(
+      OnChainEventTypes.PLAYER_PLACED_BET,
+      (data: OnChainPlayerPlacedBetData) => {
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, data);
+      },
+    );
 
     if (this.gameState.players.length === 0) {
       this.gameState.players.push({
         id: address,
         balance: buyIn,
         elGamalPublicKey,
+        status: PlayerStatus.active,
       });
     }
     this.pieSocketTransport.publish(OnChainEventTypes.PLAYER_CHECKED_IN, {
@@ -121,6 +143,14 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     this.pieSocketTransport.publish(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, {
       sender: id,
       proofs,
+    });
+  }
+
+  async bet(round: BettingRounds, action: BettingActions) {
+    this.pieSocketTransport.publish(OnChainEventTypes.PLAYER_PLACED_BET, {
+      bettingRound: round,
+      action,
+      player: this.playerId,
     });
   }
 
