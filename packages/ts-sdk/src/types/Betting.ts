@@ -18,7 +18,6 @@ export enum BettingActions {
   CALL = "call",
   RAISE = "raise",
   FOLD = "fold",
-  ALL_IN = "all-in",
   SMALL_BLIND = "small-blind",
   BIG_BLIND = "big-blind",
 }

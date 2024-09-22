@@ -14,13 +14,15 @@ export class BettingManager {
   roundBets: Record<string, number>;
   lastRaised: Player | null;
   numberOfRaisesInRound: number;
-  bigBlindPlaced: boolean;
   selfBettingState: {
     self: Player;
     preemptivelyPlacedBet?: PlacingBettingActions | null;
     alreadySentForRound: boolean;
   };
   lastBettingPlayer: Player | null;
+  lastAction: BettingActions | null;
+  smallBlind?: Player;
+  bigBlind?: Player;
 
   constructor(
     public players: Player[],
@@ -37,8 +39,8 @@ export class BettingManager {
       this.previousBets[player.id] = 0;
     }
     this.numberOfRaisesInRound = 0;
-    this.bigBlindPlaced = false;
     this.lastBettingPlayer = null;
+    this.lastAction = null;
     this.selfBettingState = {
       self: selfPlayer,
       alreadySentForRound: false,
@@ -53,45 +55,51 @@ export class BettingManager {
     this.selfBettingState.preemptivelyPlacedBet = null;
     this.lastRaised = null;
     this.lastBettingPlayer = null;
+    this.lastAction = null;
     if (round === BettingRounds.PRE_FLOP) {
-      this.bigBlindPlaced = false;
+      this.smallBlind = this.nextActivePlayer(this.dealer);
+      this.bigBlind = this.nextActivePlayer(this.smallBlind);
     }
     if (round !== BettingRounds.PRE_FLOP) {
       for (const [id, bet] of Object.entries(this.roundBets)) {
+        if (this.previousBets[id] === undefined) throw new Error("Unexpected Error");
         this.previousBets[id] += bet;
         this.roundBets[id] = 0;
       }
     }
-    // TODO: handle bets
   }
 
   public get nextBettingPlayer() {
-    if (!this.lastBettingPlayer) {
-      return this.nextActivePlayer(this.dealer);
+    const lastBettingPlayerIndex = this.players.findIndex(
+      (p) => p === (this.lastBettingPlayer ?? this.dealer),
+    );
+    if (lastBettingPlayerIndex === -1) throw new Error("player does not exist");
+    let nextPlayerIndex = (lastBettingPlayerIndex + 1) % this.players.length;
+    let nextPlayer = this.players[nextPlayerIndex] as Player;
+    let previousPlayer = this.lastBettingPlayer;
+    while (true) {
+      if (
+        !this.lastRaised &&
+        this.activeRound !== BettingRounds.PRE_FLOP &&
+        previousPlayer === this.dealer
+      )
+        return null;
+      if (
+        !this.lastRaised &&
+        this.activeRound === BettingRounds.PRE_FLOP &&
+        this.lastAction !== BettingActions.BIG_BLIND &&
+        this.lastBettingPlayer === this.bigBlind
+      )
+        return null;
+      if (nextPlayer === this.lastRaised) return null;
+      if (nextPlayer.status === PlayerStatus.active) break;
+      nextPlayerIndex = (nextPlayerIndex + 1) % this.players.length;
+      previousPlayer = nextPlayer;
+      nextPlayer = this.players[nextPlayerIndex] as Player;
+      if (nextPlayerIndex === lastBettingPlayerIndex)
+        throw new Error("there are no active players");
     }
-    const nextActivePlayer = this.nextActivePlayer(this.lastBettingPlayer);
-    if (
-      !this.lastRaised &&
-      this.activeRound !== BettingRounds.PRE_FLOP &&
-      this.lastBettingPlayer === this.dealer
-    )
-      return null;
-    if (
-      !this.lastRaised &&
-      this.activeRound === BettingRounds.PRE_FLOP &&
-      this.bigBlindPlaced &&
-      this.lastBettingPlayer === this.bigBlind
-    )
-      return null;
-    if (nextActivePlayer === this.lastRaised) return null;
-    return nextActivePlayer;
-  }
-
-  public get bigBlind() {
-    // TODO: edge case: small and big blind are not active (sitting out)!
-    const dealerIndex = this.players.findIndex((p) => p === this.dealer);
-    const bigBlindIndex = (dealerIndex + 2) % this.players.length;
-    return this.players[bigBlindIndex];
+    return nextPlayer;
   }
 
   public nextActivePlayer(player: Player) {
@@ -108,19 +116,49 @@ export class BettingManager {
   }
 
   public receivedBet(action: BettingActions, player: Player) {
-    // TODO: is action valid
-    if (player !== this.nextBettingPlayer)
-      throw new Error("State mismatch received a bet out of turn");
+    this.validateBet(action, player);
     if (player === this.selfBettingState.self) {
       this.selfBettingState.alreadySentForRound = false;
     }
-    if (action === BettingActions.BIG_BLIND) {
-      this.bigBlindPlaced = true;
-    }
+    this.lastAction = action;
     this.lastBettingPlayer = player;
     this.calculateNewBettingState(action, player);
     const pot = this.reconstructPot();
     return pot;
+  }
+
+  private validateBet(action: BettingActions, player: Player) {
+    if (player !== this.nextBettingPlayer)
+      throw new Error("State mismatch received a bet out of turn");
+    if (player.status !== PlayerStatus.active) throw new Error("only active players can bet");
+    if (
+      action === BettingActions.SMALL_BLIND &&
+      (player !== this.smallBlind ||
+        this.activeRound !== BettingRounds.PRE_FLOP ||
+        this.lastAction != null)
+    )
+      throw new Error("Received invalid small blind");
+    if (
+      action === BettingActions.BIG_BLIND &&
+      (player !== this.bigBlind ||
+        this.activeRound !== BettingRounds.PRE_FLOP ||
+        this.lastAction !== BettingActions.SMALL_BLIND)
+    )
+      throw new Error("Received invalid big blind");
+    // illegal raise:
+    if (
+      action === BettingActions.RAISE &&
+      (this.numberOfRaisesInRound === this.tableInfo.numberOfRaises ||
+        (this.roundBets[player.id] as number) + player.balance <
+          (this.numberOfRaisesInRound + 1) * this.raiseAmount)
+    )
+      throw new Error("received an illegal raise");
+
+    if (
+      action === BettingActions.CHECK &&
+      (this.roundBets[player.id] as number) !== this.numberOfRaisesInRound * this.raiseAmount
+    )
+      throw new Error("received an illegal check");
   }
 
   private calculateNewBettingState(action: BettingActions, sender: Player) {
@@ -129,15 +167,21 @@ export class BettingManager {
         sender.status = PlayerStatus.folded;
         break;
       case BettingActions.SMALL_BLIND: {
-        const amount = this.tableInfo.smallBlind;
-        this.roundBets[sender.id] += amount;
+        const sb = this.tableInfo.smallBlind;
+        const amount = sb > sender.balance ? sender.balance : sb;
+        if (sb > sender.balance) sender.status = PlayerStatus.allIn;
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        this.roundBets[sender.id]! += amount;
         sender.balance -= amount;
         break;
       }
       case BettingActions.BIG_BLIND: {
-        const amount = this.tableInfo.smallBlind * 2;
+        const bb = this.tableInfo.smallBlind * 2;
+        const amount = bb > sender.balance ? sender.balance : bb;
+        if (bb > sender.balance) sender.status = PlayerStatus.allIn;
         this.numberOfRaisesInRound += 1;
-        this.roundBets[sender.id] += amount;
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        this.roundBets[sender.id]! += amount;
         sender.balance -= amount;
         break;
       }
@@ -146,21 +190,17 @@ export class BettingManager {
       // biome-ignore lint/suspicious/noFallthroughSwitchClause: <explanation>
       case BettingActions.RAISE:
         this.numberOfRaisesInRound += 1;
-        if (this.numberOfRaisesInRound > this.tableInfo.numberOfRaises)
-          throw new Error("received an illegal raise");
         this.lastRaised = sender;
       case BettingActions.CALL: {
         const totalRaisedAmount = this.numberOfRaisesInRound * this.raiseAmount;
         const amountNeededToCall = totalRaisedAmount - (this.roundBets[sender.id] as number);
+        const finalAmount =
+          sender.balance > amountNeededToCall ? amountNeededToCall : sender.balance;
 
-        this.roundBets[sender.id] += amountNeededToCall;
-        sender.balance -= amountNeededToCall;
-        break;
-      }
-      case BettingActions.ALL_IN: {
-        this.roundBets[sender.id] += sender.balance;
-        sender.balance = 0;
-        sender.status = PlayerStatus.allIn;
+        if (sender.balance <= amountNeededToCall) sender.status = PlayerStatus.allIn;
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
+        this.roundBets[sender.id]! += finalAmount;
+        sender.balance -= finalAmount;
         break;
       }
       default:
@@ -179,17 +219,19 @@ export class BettingManager {
       .filter((p) => p.status === PlayerStatus.allIn)
       .sort((p1, p2) => (copiedBets[p1.id] as number) - (copiedBets[p2.id] as number));
 
-    const newPot = [];
+    const newPot: number[] = [];
     for (const allInPlayer of allInPlayers) {
       if (copiedBets[allInPlayer.id] === 0) continue;
       let sidePot = 0;
+      const allInBet = copiedBets[allInPlayer.id] as number;
       for (const [id, bet] of Object.entries(copiedBets)) {
-        if (bet > 0 && bet < (copiedBets[allInPlayer.id] as number)) {
+        if (bet > 0 && bet < allInBet) {
           sidePot += bet;
           copiedBets[id] = 0;
         } else if (bet > 0) {
-          sidePot += copiedBets[allInPlayer.id] as number;
-          copiedBets[id] -= copiedBets[allInPlayer.id] as number;
+          sidePot += allInBet;
+          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          copiedBets[id]! -= allInBet;
         }
       }
       newPot.push(sidePot);
@@ -198,7 +240,7 @@ export class BettingManager {
     for (const bet of Object.values(copiedBets)) {
       finalPot += bet;
     }
-    newPot.push(finalPot);
+    if (finalPot !== 0) newPot.push(finalPot);
 
     return newPot;
   }
@@ -212,7 +254,7 @@ export class BettingManager {
 
   private convertBet(action: PlacingBettingActions): BettingActions {
     const alreadyBettedAmount = this.roundBets[this.selfBettingState.self.id];
-    if (!alreadyBettedAmount) throw new Error("should not be undefined");
+    if (alreadyBettedAmount == null) throw new Error("should not be undefined");
     switch (action) {
       case PlacingBettingActions.FOLD:
         return BettingActions.FOLD;
@@ -228,10 +270,8 @@ export class BettingManager {
         }
       }
       case PlacingBettingActions.CHECK_CALL: {
-        if (!alreadyBettedAmount) throw new Error("should not be undefined");
         const expectedAmount = this.numberOfRaisesInRound * this.raiseAmount - alreadyBettedAmount;
         if (expectedAmount === 0) return BettingActions.CHECK;
-        if (expectedAmount > this.selfBettingState.self.balance) return BettingActions.ALL_IN;
         return BettingActions.CALL;
       }
     }

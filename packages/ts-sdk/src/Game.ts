@@ -262,11 +262,7 @@ export class Game extends EventEmitter<GameEventMap> {
       potAfterBet: Array.from(this.handState.pot),
     });
     const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
-    const numberOfActivePlayers = this.gameState.players.reduce(
-      (n, p) => (p.status === PlayerStatus.active ? n + 1 : n),
-      0,
-    );
-    if (!nextPlayer || numberOfActivePlayers <= 1) {
+    if (!nextPlayer) {
       // TODO: betting round finished
       console.log("betting round finished");
       return;
@@ -349,8 +345,6 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private initBettingRound(round: BettingRounds) {
-    // edge case: small blind or big blind don't have enough money
-    // so is sitting out
     this.handState.bettingManager = new BettingManager(
       this.gameState.players,
       this.gameState.players[this.gameState.dealer] as Player,
@@ -358,13 +352,28 @@ export class Game extends EventEmitter<GameEventMap> {
       this.myPlayer,
     );
 
-    const isItMyTurn = this.handState.bettingManager.nextBettingPlayer === this.myPlayer;
+    const nextBettingPlayer = this.handState.bettingManager.nextBettingPlayer;
+    if (nextBettingPlayer === null) {
+      //TODO round finished
+      return;
+    }
+    const isItMyTurn = nextBettingPlayer === this.myPlayer;
+    // don't send event for small blind
+    if (round !== BettingRounds.PRE_FLOP) {
+      this.emit(GameEventTypes.AWAITING_BET, {
+        bettingRound: round,
+        bettingPlayer: nextBettingPlayer,
+        pot: this.handState.pot,
+      });
+    }
     if (!isItMyTurn) return;
 
     // then I'm small blind
     if (round === BettingRounds.PRE_FLOP) {
       this.sendBet(BettingActions.SMALL_BLIND);
+      return;
     }
+    this.handState.bettingManager.sendOrKeepSelfBet(this.sendBet);
   }
 
   private sendBet = (action: BettingActions) => {

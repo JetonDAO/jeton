@@ -1,7 +1,13 @@
 import { EventEmitter } from "events";
 import type { GameState } from ".";
 import { PieSocketTransport } from "./transport";
-import type { BettingActions, BettingRounds, CardShareAndProof } from "./types";
+import {
+  type BettingActions,
+  type BettingRounds,
+  type CardShareAndProof,
+  GameStatus,
+  PlayerStatus,
+} from "./types";
 
 import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Groth16Proof } from "@jeton/zk-deck";
 
@@ -49,7 +55,7 @@ type OnChainEventMap = {
 
 export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
   pieSocketTransport: PieSocketTransport;
-  gameState: GameState = { players: [], dealer: 0, status: 0 };
+  gameState: GameState = { players: [], dealer: 0, status: GameStatus.AwaitingStart };
   playerId = "";
   outDeck?: EncryptedDeck;
 
@@ -114,6 +120,7 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
         id: address,
         balance: buyIn,
         elGamalPublicKey,
+        status: PlayerStatus.active,
       });
     }
     this.pieSocketTransport.publish(OnChainEventTypes.PLAYER_CHECKED_IN, {
