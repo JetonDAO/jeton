@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import type { GameState } from ".";
+import type { GameState, PublicCardRounds } from ".";
 import { PieSocketTransport } from "./transport";
 import {
   type BettingActions,
@@ -17,6 +17,7 @@ export enum OnChainEventTypes {
   SHUFFLED_DECK = "shuffled-deck",
   PRIVATE_CARDS_SHARES_RECEIVED = "private-cards-shares",
   PLAYER_PLACED_BET = "player-placed-bet",
+  PUBLIC_CARDS_SHARES_RECEIVED = "public-cards-shares",
 }
 
 export type OnChainPlayerCheckedInData = {
@@ -45,12 +46,19 @@ export type OnChainPlayerPlacedBetData = {
   player: string;
 };
 
+export type OnChainPublicCardsSharesData = {
+  sender: string;
+  proofs: CardShareAndProof[];
+  round: PublicCardRounds;
+};
+
 type OnChainEventMap = {
   [OnChainEventTypes.PLAYER_CHECKED_IN]: [OnChainPlayerCheckedInData];
   [OnChainEventTypes.GAME_STARTED]: [OnChainGameStartedData];
   [OnChainEventTypes.SHUFFLED_DECK]: [OnChainShuffledDeckData];
   [OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED]: [OnChainPrivateCardsSharesData];
   [OnChainEventTypes.PLAYER_PLACED_BET]: [OnChainPlayerPlacedBetData];
+  [OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED]: [OnChainPublicCardsSharesData];
 };
 
 export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
@@ -114,6 +122,13 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
         this.emit(OnChainEventTypes.PLAYER_PLACED_BET, data);
       },
     );
+    this.pieSocketTransport.subscribe(
+      OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED,
+      (data: OnChainPublicCardsSharesData) => {
+        //TODO: this is different in transactions
+        this.emit(OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED, data);
+      },
+    );
 
     if (this.gameState.players.length === 0) {
       this.gameState.players.push({
@@ -151,6 +166,18 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
       bettingRound: round,
       action,
       player: this.playerId,
+    });
+  }
+
+  async publicCardsDecryptionShare(
+    id: string,
+    proofs: CardShareAndProof[],
+    round: PublicCardRounds,
+  ) {
+    this.pieSocketTransport.publish(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, {
+      sender: id,
+      proofs,
+      round,
     });
   }
 

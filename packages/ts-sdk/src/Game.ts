@@ -22,6 +22,7 @@ import {
   type PlacingBettingActions,
   type Player,
   PlayerStatus,
+  PublicCardRounds,
   type TableInfo,
   type offChainTransport,
 } from "@src/types";
@@ -35,11 +36,17 @@ import {
   type OnChainPlayerCheckedInData,
   type OnChainPlayerPlacedBetData,
   type OnChainPrivateCardsSharesData,
+  type OnChainPublicCardsSharesData,
   type OnChainShuffledDeckData,
 } from "./OnChainDataSource";
 import { getUrlBytes, readData } from "./getURLBytes";
-import { type GameEventMap, GameEventTypes } from "./types/GameEvents";
+import {
+  type GameEventMap,
+  GameEventTypes,
+  type ReceivedPublicCardsEvent,
+} from "./types/GameEvents";
 import { calculatePercentage } from "./utils/calculatePercentage";
+import { getGameStatus, getNextBettingRound, getNextPublicCardRound } from "./utils/convertTypes";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -124,8 +131,22 @@ export class Game extends EventEmitter<GameEventMap> {
       OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
       this.receivedPrivateCardsShares,
     );
+    this.onChainDataSource.on(
+      OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED,
+      this.receivedPublicCardsShares,
+    );
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
   }
+
+  private receivedPublicCardsShares = (data: OnChainPublicCardsSharesData) => {
+    if (!this.handState.privateCardShareProofs)
+      throw new Error("CardShareProofSource must already be present");
+    const cardIndexes = this.getCardIndexForRound(data.round);
+    this.handState.privateCardShareProofs.addProofs(data.sender, data.proofs);
+    if (this.handState.privateCardShareProofs.receivedAllProofsFor(cardIndexes)) {
+      this.decryptPublicCards(data.round, cardIndexes);
+    }
+  };
 
   private receivedPrivateCardsShares = (data: OnChainPrivateCardsSharesData) => {
     if (!this.handState.privateCardShareProofs)
@@ -168,7 +189,7 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   public get numberOfPlayers() {
-    return this.gameState.players.length;
+    return this.gameState.players.filter((p) => p.status !== PlayerStatus.sittingOut).length;
   }
 
   public get myPlayer() {
@@ -188,6 +209,27 @@ export class Game extends EventEmitter<GameEventMap> {
 
   private get myPrivateCardIndexes() {
     return [this.myDistanceFromDealer * 2, this.myDistanceFromDealer * 2 + 1] as const;
+  }
+
+  public getCardIndexForRound(round: PublicCardRounds) {
+    const lastPrivateCardIndex = this.numberOfPlayers * 2;
+    let cardIndexes: number[];
+    switch (round) {
+      case PublicCardRounds.FLOP:
+        cardIndexes = [
+          lastPrivateCardIndex + 1,
+          lastPrivateCardIndex + 2,
+          lastPrivateCardIndex + 3,
+        ];
+        break;
+      case PublicCardRounds.TURN:
+        cardIndexes = [lastPrivateCardIndex + 4];
+        break;
+      case PublicCardRounds.RIVER:
+        cardIndexes = [lastPrivateCardIndex + 5];
+        break;
+    }
+    return cardIndexes;
   }
 
   private gameStarted = (data: OnChainGameStartedData) => {
@@ -262,9 +304,15 @@ export class Game extends EventEmitter<GameEventMap> {
       potAfterBet: Array.from(this.handState.pot),
     });
     const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
-    if (!nextPlayer) {
+    const nextPublicCardRound = getNextPublicCardRound(data.bettingRound);
+    if (nextPlayer === null && nextPublicCardRound !== null) {
       // TODO: betting round finished
+      this.createAndSharePublicKeyShares(nextPublicCardRound);
       console.log("betting round finished");
+      return;
+    }
+    if (nextPlayer === null) {
+      //TODO: showdown
       return;
     }
 
@@ -290,21 +338,9 @@ export class Game extends EventEmitter<GameEventMap> {
     if (!this.handState.privateCardShareProofs)
       throw new Error("CardShareProofSource must already be present");
 
-    this.handState.finalOutDeck = await this.onChainDataSource.queryLastOutDeck(this.tableInfo.id);
-    const numberOfCardsToCreateShareFor = this.numberOfPlayers * 2;
+    const cardIndexes = Array.from(new Array(this.numberOfPlayers * 2).keys());
 
-    const proofPromises: Promise<{
-      proof: Groth16Proof;
-      decryptionCardShare: DecryptionCardShare;
-    }>[] = [];
-    for (let i = 0; i < numberOfCardsToCreateShareFor; i += 1) {
-      proofPromises.push(
-        this.zkDeck.proveDecryptCardShare(this.elGamalSecretKey, i, this.handState.finalOutDeck),
-      );
-    }
-    const proofsAndShares = (await Promise.all(proofPromises)).map((s, i) =>
-      Object.assign({ cardIndex: i }, s),
-    );
+    const proofsAndShares = await this.createDecryptionShareProofsFor(cardIndexes);
 
     this.handState.privateCardShareProofs.addProofs(this.playerId, proofsAndShares);
 
@@ -315,29 +351,69 @@ export class Game extends EventEmitter<GameEventMap> {
     this.onChainDataSource.privateCardsDecryptionShare(this.playerId, proofsToSend);
   }
 
-  private decryptMyPrivateCards() {
-    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+  private async createDecryptionShareProofsFor(indexes: number[]) {
+    if (!this.elGamalSecretKey) throw new Error("elGamal secret key should be present");
+    if (!this.zkDeck) throw new Error("zkDeck should be present");
+    if (!this.handState.finalOutDeck) {
+      this.handState.finalOutDeck = await this.onChainDataSource.queryLastOutDeck(
+        this.tableInfo.id,
+      );
+    }
+    const proofPromises: Promise<{
+      proof: Groth16Proof;
+      decryptionCardShare: DecryptionCardShare;
+    }>[] = [];
+    for (const index of indexes) {
+      proofPromises.push(
+        this.zkDeck.proveDecryptCardShare(
+          this.elGamalSecretKey,
+          index,
+          this.handState.finalOutDeck,
+        ),
+      );
+    }
+    const proofsAndShares = (await Promise.all(proofPromises)).map((s, i) =>
+      Object.assign({ cardIndex: indexes[i] as number }, s),
+    );
+    return proofsAndShares;
+  }
+
+  private async createAndSharePublicKeyShares(round: PublicCardRounds) {
     if (!this.handState.privateCardShareProofs)
       throw new Error("CardShareProofSource must already be present");
+
+    const cardIndexes = this.getCardIndexForRound(round);
+    const proofsAndShares = await this.createDecryptionShareProofsFor(cardIndexes);
+    this.handState.privateCardShareProofs.addProofs(this.playerId, proofsAndShares);
+    this.onChainDataSource.publicCardsDecryptionShare(this.playerId, proofsAndShares, round);
+  }
+
+  private decryptCard(index: number) {
+    if (!this.handState.privateCardShareProofs) throw new Error("invalid call");
     if (!this.handState.finalOutDeck) throw new Error("finalOutDeck must be present");
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    const proofsAndSharesOfCard = this.handState.privateCardShareProofs.getProofsFor(index);
+    return this.zkDeck.decryptCard(
+      index,
+      this.handState.finalOutDeck,
+      proofsAndSharesOfCard.map((pas) => pas.decryptionCardShare),
+    );
+  }
 
+  private decryptPublicCards(round: PublicCardRounds, indexes: number[]) {
+    const publicCards = indexes.map((index) => this.decryptCard(index));
+    this.emit(GameEventTypes.RECEIVED_PUBLIC_CARDS, {
+      round,
+      cards: publicCards,
+    } as ReceivedPublicCardsEvent);
+    this.initBettingRound(getNextBettingRound(round));
+  }
+
+  private decryptMyPrivateCards() {
     const [firstCardIndex, secondCardIndex] = this.myPrivateCardIndexes;
-    const proofsAndSharesOfFirstCard =
-      this.handState.privateCardShareProofs.getProofsFor(firstCardIndex);
-    const proofsAndSharesOfSecondCard =
-      this.handState.privateCardShareProofs.getProofsFor(secondCardIndex);
+    const firstPrivateCard = this.decryptCard(firstCardIndex);
+    const secondPrivateCard = this.decryptCard(secondCardIndex);
 
-    const firstPrivateCard = this.zkDeck?.decryptCard(
-      firstCardIndex,
-      this.handState.finalOutDeck,
-      proofsAndSharesOfFirstCard.map((pas) => pas.decryptionCardShare),
-    );
-
-    const secondPrivateCard = this.zkDeck?.decryptCard(
-      secondCardIndex,
-      this.handState.finalOutDeck,
-      proofsAndSharesOfSecondCard.map((pas) => pas.decryptionCardShare),
-    );
     this.emit(GameEventTypes.RECEIVED_PRIVATE_CARDS, {
       cards: [firstPrivateCard, secondPrivateCard],
     });
@@ -345,16 +421,26 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private initBettingRound(round: BettingRounds) {
-    this.handState.bettingManager = new BettingManager(
-      this.gameState.players,
-      this.gameState.players[this.gameState.dealer] as Player,
-      this.tableInfo,
-      this.myPlayer,
-    );
+    this.gameState.status = getGameStatus(round);
+    if (round === BettingRounds.PRE_FLOP) {
+      this.handState.bettingManager = new BettingManager(
+        this.gameState.players,
+        this.gameState.players[this.gameState.dealer] as Player,
+        this.tableInfo,
+        this.myPlayer,
+      );
+    }
+    if (!this.handState.bettingManager) throw new Error("illegal call of rounds");
+    this.handState.bettingManager.startRound(round);
 
     const nextBettingPlayer = this.handState.bettingManager.nextBettingPlayer;
+    const nextPublicCardRound = getNextPublicCardRound(round);
+    if (nextBettingPlayer === null && nextPublicCardRound !== null) {
+      this.createAndSharePublicKeyShares(nextPublicCardRound);
+      return;
+    }
     if (nextBettingPlayer === null) {
-      //TODO round finished
+      //TODO: showdown
       return;
     }
     const isItMyTurn = nextBettingPlayer === this.myPlayer;
