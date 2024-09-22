@@ -15,7 +15,7 @@
     },
     "build:service-worker": {
       "dependsOn": ["^build"],
-      "inputs": ["src/sw.template.js"],
+      "inputs": ["src/sw.template.js", "addCacheUrls.mts"],
       "outputs": ["public/sw.js"]
     },
     "dev:service-worker": {

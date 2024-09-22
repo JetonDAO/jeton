@@ -4,7 +4,7 @@ import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
 const SWFile = readFileSync("./src/sw.template.js", "utf-8");
 
 const modifiedSWFile = SWFile.replace(
-  "'<urlPlaceHolder>'",
+  '"<urlPlaceHolder>"',
   `"${decryptCardShareZkey}", "${shuffleEncryptDeckZkey}"`,
 );
 
