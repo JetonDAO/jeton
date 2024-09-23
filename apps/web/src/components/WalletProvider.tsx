@@ -6,6 +6,8 @@ import { Network } from "@aptos-labs/ts-sdk";
 import type { PropsWithChildren } from "react";
 
 export const WalletProvider = ({ children }: PropsWithChildren) => {
+  const baseApiUrl = process.env.BASE_URL;
+
   //TODO network setup
   return (
     <AptosWalletAdapterProvider
@@ -15,7 +17,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         network: Network.TESTNET,
         aptosConnectDappId: "b76e8b1d-3fe8-442a-b254-47b2dcff3f2a",
         mizuwallet: {
-          manifestURL: `${window.origin}+/mizuwallet-connect-manifest.json`,
+          manifestURL: `${baseApiUrl}+/mizuwallet-connect-manifest.json`,
         },
       }}
       onError={(error) => {

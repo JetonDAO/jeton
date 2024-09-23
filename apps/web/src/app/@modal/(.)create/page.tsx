@@ -52,37 +52,6 @@ export default function GameCreateModal() {
     setLoading(true);
 
     try {
-      //TODO read contract address from env
-      //TODO check create table model and and the smart contract function's inputs
-      //TODO update buy in amount and action timeout and num_seets
-      const submitCreateTableTransaction = await signAndSubmitTransaction({
-        sender: account?.address,
-        data: {
-          function:
-            "0x24e807c6edb8e2ff4964d27e0254d5cb1e388fdf342652a34adbb564dea9d7fe::texas_holdem::create_table",
-          // functionArguments: [1000,
-          //   576,
-          //   96000,
-          //   20,
-          //   1,
-          //   2,
-          //   3,
-          //   3,],
-          functionArguments: [
-            1000,
-            formValues.minBuyIn,
-            formValues.maxBuyIn,
-            20,
-            formValues.smallBlind,
-            formValues.numberOfRaises,
-            3,
-            formValues.minPlayers,
-          ],
-        },
-      });
-
-      console.log(submitCreateTableTransaction);
-
       const tableInfo = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,
@@ -92,6 +61,8 @@ export default function GameCreateModal() {
         formValues.maxBuyIn,
         formValues.waitingBlocks,
         formValues.chipUnit,
+        account?.address,
+        signAndSubmitTransaction,
       );
 
       router.push(`/games/${tableInfo.id}`);
