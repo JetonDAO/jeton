@@ -4,9 +4,6 @@ import { type Groth16Proof, groth16 } from "snarkjs";
 import decryptCardShareVerificationKey from "#verificationkey:decrypt-card-share.json";
 import { numTripleBits } from "./constants.js";
 
-const decryptCardShareZkey =
-  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/decrypt_card_share.zkey";
-
 export async function proveDecryptCardShare(
   secretKey: bigint,
   publicKey: [string, string],

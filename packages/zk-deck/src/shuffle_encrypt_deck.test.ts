@@ -3,43 +3,46 @@ import chaiAsPromised from "chai-as-promised";
 import { before, describe, test } from "mocha";
 use(chaiAsPromised);
 
+import { buildBls12381 } from "ffjavascript";
+
 import { numCards } from "./constants.js";
+import { JubJub, type Point } from "./jubjub.js";
 import {
   applyPermutationVector,
   createPermutationMatrix,
   samplePermutationVector,
 } from "./permutation.js";
 import { proveShuffleEncryptDeck, verifyShuffleEncryptDeck } from "./shuffle_encrypt_deck.js";
-import { type Point, type TwistedEdwardsCurve, createJubJub } from "./twisted_edwards_curve.js";
 
 import { shuffleEncryptDeckZkey } from "./zkey.test.js";
 const shuffleEncrypDeckWasm =
   "./dist/circuits/shuffle_encrypt_deck/shuffle_encrypt_deck_js/shuffle_encrypt_deck.wasm";
 
 describe("shuffle encrypt deck", () => {
-  let curve: TwistedEdwardsCurve;
+  let jubjub: JubJub;
   before(async () => {
-    curve = await createJubJub();
+    const bls12381 = await buildBls12381(true);
+    jubjub = new JubJub(bls12381.Fr);
   });
 
   test("should prove and verify shuffle_encrypt_deck", async () => {
-    const aggregatedPublicKeyValue = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
-    const aggregatedPublicKey = curve.pointToStringTuple(aggregatedPublicKeyValue);
+    const aggregatedPublicKeyValue = jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator);
+    const aggregatedPublicKey = jubjub.toStringTuple(aggregatedPublicKeyValue);
     const permutationVector = samplePermutationVector(numCards);
     const permutationMatrix = createPermutationMatrix(permutationVector);
-    const randomVector = new Array(numCards).fill(undefined).map((_) => curve.sampleScalar());
+    const randomVector = new Array(numCards).fill(undefined).map((_) => jubjub.sampleScalar());
     const inputDeckValues = new Array(numCards)
       .fill(undefined)
       .map(
         (_) =>
           [
-            curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
-            curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
+            jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator),
+            jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator),
           ] as [Point, Point],
       );
     const inputDeck = inputDeckValues.map(
       ([p1, p2]) =>
-        [...curve.pointToStringTuple(p1), ...curve.pointToStringTuple(p2)] as [
+        [...jubjub.toStringTuple(p1), ...jubjub.toStringTuple(p2)] as [
           string,
           string,
           string,
@@ -50,16 +53,19 @@ describe("shuffle encrypt deck", () => {
       .map(
         ([p1, p2], i) =>
           [
-            curve.addPoints(p1, curve.mulScalarPoint(randomVector[i] as bigint, curve.generator)),
-            curve.addPoints(
+            jubjub.addPoints(
+              p1,
+              jubjub.mulScalarPoint(randomVector[i] as bigint, jubjub.generator),
+            ),
+            jubjub.addPoints(
               p2,
-              curve.mulScalarPoint(randomVector[i] as bigint, aggregatedPublicKeyValue),
+              jubjub.mulScalarPoint(randomVector[i] as bigint, aggregatedPublicKeyValue),
             ),
           ] as [Point, Point],
       )
       .map(
         ([p1, p2]) =>
-          [...curve.pointToStringTuple(p1), ...curve.pointToStringTuple(p2)] as [
+          [...jubjub.toStringTuple(p1), ...jubjub.toStringTuple(p2)] as [
             string,
             string,
             string,
@@ -81,23 +87,19 @@ describe("shuffle encrypt deck", () => {
   });
 
   test("should not generate proof if permutation matrix is invalid", async () => {
-    const aggregatedPublicKey = curve.pointToStringTuple(
-      curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
+    const aggregatedPublicKey = jubjub.toStringTuple(
+      jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator),
     );
     const permutationVector = samplePermutationVector(numCards);
     const permutationMatrix = createPermutationMatrix(permutationVector);
-    const randomVector = new Array(numCards).fill(undefined).map((_) => curve.sampleScalar());
+    const randomVector = new Array(numCards).fill(undefined).map((_) => jubjub.sampleScalar());
     const inputDeck = new Array(numCards)
       .fill(undefined)
       .map(
         (_) =>
           [
-            ...curve.pointToStringTuple(
-              curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
-            ),
-            ...curve.pointToStringTuple(
-              curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
-            ),
+            ...jubjub.toStringTuple(jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator)),
+            ...jubjub.toStringTuple(jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator)),
           ] as [string, string, string, string],
       );
 

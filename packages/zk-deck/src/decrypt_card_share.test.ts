@@ -1,26 +1,29 @@
 import { expect } from "chai";
 import { before, describe, test } from "mocha";
 
+import { buildBls12381 } from "ffjavascript";
+
 import { proveDecryptCardShare, verifyDecryptCardShare } from "./decrypt_card_share.js";
-import { type TwistedEdwardsCurve, createJubJub } from "./twisted_edwards_curve.js";
+import { JubJub } from "./jubjub.js";
 
 import { decryptCardShareZkey } from "./zkey.test.js";
 const decryptCardShareWasm =
   "./dist/circuits/decrypt_card_share/decrypt_card_share_js/decrypt_card_share.wasm";
 
 describe("decrypt card share", () => {
-  let curve: TwistedEdwardsCurve;
+  let jubjub: JubJub;
   before(async () => {
-    curve = await createJubJub();
+    const bls12381 = await buildBls12381(true);
+    jubjub = new JubJub(bls12381.Fr);
   });
 
   test("should prove and verify decrypt_card_share", async () => {
-    const secretKey = curve.sampleScalar();
-    const publicKey = curve.pointToStringTuple(curve.mulScalarPoint(secretKey, curve.generator));
-    const inputPointValue = curve.mulScalarPoint(curve.sampleScalar(), curve.generator);
-    const inputPoint = curve.pointToStringTuple(inputPointValue);
-    const expectedOutputPoint = curve.pointToStringTuple(
-      curve.mulScalarPoint(secretKey, inputPointValue),
+    const secretKey = jubjub.sampleScalar();
+    const publicKey = jubjub.toStringTuple(jubjub.mulScalarPoint(secretKey, jubjub.generator));
+    const inputPointValue = jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator);
+    const inputPoint = jubjub.toStringTuple(inputPointValue);
+    const expectedOutputPoint = jubjub.toStringTuple(
+      jubjub.mulScalarPoint(secretKey, inputPointValue),
     );
 
     const { proof, outputPoint } = await proveDecryptCardShare(
@@ -35,12 +38,12 @@ describe("decrypt card share", () => {
   });
 
   test("should not generate proof if publicKey does not match secretKey", async () => {
-    const secretKey = curve.sampleScalar();
-    const publicKey = curve.pointToStringTuple(
-      curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
+    const secretKey = jubjub.sampleScalar();
+    const publicKey = jubjub.toStringTuple(
+      jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator),
     );
-    const inputPoint = curve.pointToStringTuple(
-      curve.mulScalarPoint(curve.sampleScalar(), curve.generator),
+    const inputPoint = jubjub.toStringTuple(
+      jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator),
     );
 
     await expect(
