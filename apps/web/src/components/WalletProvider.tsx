@@ -8,7 +8,7 @@ import type { PropsWithChildren } from "react";
 export const WalletProvider = ({ children }: PropsWithChildren) => {
   const baseApiUrl = process.env.BASE_URL;
 
-  //TODO network setup
+  //TODO network setup and base_url
   return (
     <AptosWalletAdapterProvider
       autoConnect={true}
@@ -17,7 +17,7 @@ export const WalletProvider = ({ children }: PropsWithChildren) => {
         network: Network.TESTNET,
         aptosConnectDappId: "b76e8b1d-3fe8-442a-b254-47b2dcff3f2a",
         mizuwallet: {
-          manifestURL: `${baseApiUrl}+/mizuwallet-connect-manifest.json`,
+          manifestURL: "https://dev.jeton.pages.dev/mizuwallet-connect-manifest.json",
         },
       }}
       onError={(error) => {
