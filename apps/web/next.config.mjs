@@ -20,7 +20,9 @@ const nextConfig = {
       test: /\.wasm/,
       type: "asset/resource",
     });
-
+    // config.externals.push({
+    //   "node:crypto": "crypto",
+    // });
     return config;
   },
 };

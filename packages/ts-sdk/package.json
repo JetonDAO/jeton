@@ -39,6 +39,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^1.28.0",
     "@jeton/zk-deck": "*",
     "events": "^3.3.0",
     "piesocket-js": "^5.1.0"

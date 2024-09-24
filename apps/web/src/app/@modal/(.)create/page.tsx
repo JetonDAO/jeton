@@ -1,5 +1,6 @@
 "use client";
 
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { ChipUnits, type TableInfo, createTable } from "@jeton/ts-sdk";
 import Modal from "@jeton/ui/Modal";
 import { usePathname, useRouter } from "next/navigation";
@@ -33,6 +34,8 @@ const INPUT_FIELDS = [
 export default function GameCreateModal() {
   const [loading, setLoading] = useState(false);
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_VALUES);
+  const { account, signAndSubmitTransaction } = useWallet();
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -58,6 +61,8 @@ export default function GameCreateModal() {
         formValues.maxBuyIn,
         formValues.waitingBlocks,
         formValues.chipUnit,
+        account?.address,
+        signAndSubmitTransaction,
       );
 
       router.push(`/games/${tableInfo.id}`);

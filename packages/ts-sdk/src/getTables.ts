@@ -1,5 +1,5 @@
 import { ChipUnits, type TableInfo } from "@src/types/Table";
-
+import { aptos } from "@src/utils/aptos";
 const tables: TableInfo[] = [
   {
     id: "tbc01",
@@ -37,8 +37,27 @@ export const createTable = async (
   maxBuyIn: number,
   waitingBlocks: number,
   chipUnit: ChipUnits,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  accountAddress: any,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
 ): Promise<TableInfo> => {
-  //const id = `tb${Math.floor(Math.random() * 100)}`;
+  //TODO read contract address from env
+  //TODO check create table model and and the smart contract function's inputs
+  //TODO update buy in amount and action timeout and num_seets
+  const submitCreateTableTransactionHash = await signAndSubmitTransaction({
+    sender: accountAddress,
+    data: {
+      function:
+        "0x24e807c6edb8e2ff4964d27e0254d5cb1e388fdf342652a34adbb564dea9d7fe::texas_holdem::create_table",
+      functionArguments: [1000, minBuyIn, maxBuyIn, 20, smallBlind, numberOfRaises, 3, minPlayers],
+    },
+  });
+  console.log("submitCreateTableTransactionHash", submitCreateTableTransactionHash);
+  const tableObject = await aptos.waitForTransaction({
+    transactionHash: submitCreateTableTransactionHash.hash,
+  });
+  console.log("table_object", tableObject);
   const id = "tb00";
   const newTable = {
     id,
