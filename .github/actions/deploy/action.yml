@@ -26,8 +26,8 @@ runs:
       shell: bash
       env:
         PIESOCKET_API_KEY: ${{ inputs.piesocket-api-key }}
-        BASE_URL: ${{ inputs.base-url }}
-        CONTRACTS_ADDR: ${{ inputs.contracts-addr }}
+        NEXT_PUBLIC_BASE_URL: ${{ inputs.base-url }}
+        NEXT_PUBLIC_CONTRACTS_ADDR: ${{ inputs.contracts-addr }}
       run: npm run build
     - name: Deploy To Cloudflare
       id: deploy

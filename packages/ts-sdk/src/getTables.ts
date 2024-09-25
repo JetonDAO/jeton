@@ -1,5 +1,7 @@
+import { MoveStructId } from "@aptos-labs/ts-sdk";
 import { ChipUnits, type TableInfo } from "@src/types/Table";
 import { aptos } from "@src/utils/aptos";
+import { contractCreateTable, contractTableCreatedEventType, contractTableType } from "./contracts";
 const tables: TableInfo[] = [
   {
     id: "tbc01",
@@ -18,12 +20,46 @@ const tables: TableInfo[] = [
  * should read different table parameters (probably from a contract) and return a list of them
  * @returns {TableInfo[]}
  */
+//TODO apply pagination for getModuleEventsByEventType
 export const getTablesInfo = async (): Promise<TableInfo[]> => {
+  const result = await aptos.getModuleEventsByEventType({
+    eventType: contractTableCreatedEventType,
+  });
+
+  for (const event of result) {
+    const tableObjectAddress = event.data.table_object.inner;
+    const tableObjectResource = await aptos.getAccountResource({
+      accountAddress: tableObjectAddress,
+      resourceType: contractTableType,
+    });
+    console.log(tableObjectResource);
+
+    // const tableInfo :TableInfo = {
+    //   id: ,
+    //   smallBlind: ,
+    //   numberOfRaises: ,
+    //   minPlayers: ,
+    //   maxPlayers: ,
+    //   minBuyIn; ,
+    //   maxBuyIn: ,
+    //   waitingBlocks:
+    // }
+    //TODO map add @tableObjectResource
+  }
+
   return tables;
 };
 
 export const getTableInfo = async (id: string): Promise<TableInfo> => {
+  //TODO refactor table logic
+
+  // const tableObjectResource = await aptos.getAccountResource({
+  //   accountAddress: id,
+  //   resourceType: contractTableType,
+  // });
+  // console.log(tableObjectResource);
   const table = (await getTablesInfo()).find((table) => table.id === id);
+
   if (!table) throw new Error("table does not exist");
   return table;
 };
@@ -48,9 +84,17 @@ export const createTable = async (
   const submitCreateTableTransactionHash = await signAndSubmitTransaction({
     sender: accountAddress,
     data: {
-      function:
-        "0x24e807c6edb8e2ff4964d27e0254d5cb1e388fdf342652a34adbb564dea9d7fe::texas_holdem::create_table",
-      functionArguments: [1000, minBuyIn, maxBuyIn, 20, smallBlind, numberOfRaises, 3, minPlayers],
+      function: contractCreateTable,
+      functionArguments: [
+        1000,
+        minBuyIn,
+        maxBuyIn,
+        2 * 60,
+        smallBlind,
+        numberOfRaises,
+        8,
+        minPlayers,
+      ],
     },
   });
   console.log("submitCreateTableTransactionHash", submitCreateTableTransactionHash);
