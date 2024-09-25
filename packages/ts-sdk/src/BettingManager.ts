@@ -303,4 +303,23 @@ export class BettingManager {
     }
     return false;
   }
+
+  public get selfLegalActions(): PlacingBettingActions[] {
+    if (!this.active) return [];
+    const self = this.selfBettingState.self;
+    if (self.status === PlayerStatus.folded || self.status === PlayerStatus.sittingOut) return [];
+    const actions = [PlacingBettingActions.FOLD, PlacingBettingActions.CHECK_CALL];
+    if (self.status === PlayerStatus.allIn) return actions;
+    const alreadyBettedAmount = this.roundBets[this.selfBettingState.self.id];
+    if (alreadyBettedAmount == null) throw new Error("should not be undefined");
+    const expectedAmount =
+      (this.numberOfRaisesInRound + 1) * this.raiseAmount - alreadyBettedAmount;
+    if (
+      this.numberOfRaisesInRound < this.tableInfo.numberOfRaises &&
+      expectedAmount < this.selfBettingState.self.balance
+    ) {
+      actions.push(PlacingBettingActions.RAISE);
+    }
+    return actions;
+  }
 }

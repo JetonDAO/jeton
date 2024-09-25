@@ -8,10 +8,12 @@ import { GameEventTypes, createGame, getTableInfo } from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
 import {
+  awaitingPlayerBetHandler,
   handStartedHandler,
   newPlayerCheckedInHandler,
   playerShufflingHandler,
   privateCardsDecryptionHandler,
+  receivedPrivateCardHandler,
 } from "./gameEventHandlers";
 
 import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
@@ -60,6 +62,9 @@ function setGameEventListeners() {
   game.addListener?.(GameEventTypes.HAND_STARTED, handStartedHandler);
   game.addListener?.(GameEventTypes.PLAYER_SHUFFLING, playerShufflingHandler);
   game.addListener?.(GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED, privateCardsDecryptionHandler);
+  game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
+  game.addListener?.(GameEventTypes.AWAITING_BET, awaitingPlayerBetHandler);
+  game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
 }
 
 export const setTableId = (id: string) => {
