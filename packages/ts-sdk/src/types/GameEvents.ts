@@ -1,5 +1,5 @@
 import type { PublicCardRounds } from ".";
-import type { BettingActions, BettingRounds } from "./Betting";
+import type { BettingActions, BettingRounds, PlacingBettingActions } from "./Betting";
 import type { Player } from "./Player";
 
 export enum GameEventTypes {
@@ -51,14 +51,16 @@ export type AwaitingBetEvent = {
   bettingRound: BettingRounds;
   pot: number[];
   bettingPlayer: Player;
+  availableActions: PlacingBettingActions[];
 };
 
 export type PlayerPlacedBetEvent = {
+  bettingRound: BettingRounds;
   player: Player;
   potBeforeBet: number[];
   potAfterBet: number[];
   betAction: BettingActions;
-  //my player available options
+  availableActions: PlacingBettingActions[];
 };
 
 export type GameEvents =

@@ -298,10 +298,12 @@ export class Game extends EventEmitter<GameEventMap> {
     const potBeforeBet = Array.from(this.handState.pot);
     this.handState.pot = this.handState.bettingManager.receivedBet(data.action, sender);
     this.emit(GameEventTypes.PLAYER_PLACED_BET, {
+      bettingRound: data.bettingRound,
       player: sender,
       betAction: data.action,
       potBeforeBet,
       potAfterBet: Array.from(this.handState.pot),
+      availableActions: this.handState.bettingManager.selfLegalActions,
     });
     const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
     const nextPublicCardRound = getNextPublicCardRound(data.bettingRound);
@@ -322,6 +324,7 @@ export class Game extends EventEmitter<GameEventMap> {
         bettingRound: data.bettingRound,
         bettingPlayer: nextPlayer,
         pot: this.handState.pot,
+        availableActions: this.handState.bettingManager.selfLegalActions,
       });
     }
     // i am big blind no need to get the bet from ui I just send it
@@ -450,6 +453,7 @@ export class Game extends EventEmitter<GameEventMap> {
         bettingRound: round,
         bettingPlayer: nextBettingPlayer,
         pot: this.handState.pot,
+        availableActions: this.handState.bettingManager.selfLegalActions,
       });
     }
     if (!isItMyTurn) return;
