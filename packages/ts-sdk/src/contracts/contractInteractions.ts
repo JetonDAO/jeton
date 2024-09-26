@@ -54,7 +54,6 @@ export const createTableObject = async (
     transactionHash: submitCreateTableTransactionHash.hash,
   });
 
-  // biome-ignore lint/style/noNonNullAssertion: <explanation>
   const tableObjectAddress = transactionData.changes.find((change) =>
     isWriteSetChangeWriteResource(change),
   )!.address;
