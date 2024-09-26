@@ -1,0 +1,186 @@
+module zk_deck::zk_deck {
+    use std::option;
+    use std::option::Option;
+    use std::vector;
+    use zk_deck::groth16;
+    use zk_deck::jubjub;
+
+    public fun check_public_key(
+        public_key: &vector<u8>,
+    ) {
+        assert!(jubjub::in_curve(&jubjub::deserialize(public_key)));
+    }
+
+    public fun generate_aggregated_public_key(
+        public_keys: &vector<vector<u8>>,
+    ): vector<u8> {
+        let aggregated_public_key = jubjub::zero();
+        for (i in 0..vector::length(public_keys)) {
+            let bytes = vector::borrow(public_keys, i);
+            let public_key = jubjub::deserialize(bytes);
+            aggregated_public_key = jubjub::add(&aggregated_public_key, &public_key);
+        };
+        jubjub::serialize(&aggregated_public_key)
+    }
+
+    public fun new_encrypted_deck(): vector<u8> {
+        let one = jubjub::one();
+        let acc = jubjub::zero();
+        let zero_bytes = jubjub::serialize(&acc);
+        let deck = vector::empty<u8>();
+        for (i in 0..52) {
+            acc = jubjub::add(&acc, &one);
+            vector::append(&mut deck, copy zero_bytes);
+            vector::append(&mut deck, jubjub::serialize(&acc));
+        };
+        deck
+    }
+
+    public fun verify_shuffle_encrypt_deck(
+        aggregated_public_key: &vector<u8>,
+        input_deck: &vector<u8>,
+        output_deck: &vector<u8>,
+        proof: &vector<u8>,
+    ): bool {
+        let alpha = x"{{shuffleEncryptDeck.alpha}}";
+        let beta = x"{{shuffleEncryptDeck.beta}}";
+        let gamma = x"{{shuffleEncryptDeck.gamma}}";
+        let delta = x"{{shuffleEncryptDeck.delta}}";
+        let ic = vector[{{#each shuffleEncryptDeck.ic}}
+            x"{{this}}",{{/each}}
+        ];
+
+        let public_signals = vector::empty<u8>();
+        vector::append(&mut public_signals, *output_deck);
+        vector::append(&mut public_signals, *aggregated_public_key);
+        vector::append(&mut public_signals, *input_deck);
+
+        groth16::verify(&alpha, &beta, &gamma, &delta, &ic, &public_signals, proof)
+    }
+
+    public fun new_decrypt_card_share(): vector<u8> {
+        jubjub::serialize(&jubjub::zero())
+    }
+
+    public fun verify_decrypt_card_share(
+        public_key: &vector<u8>,
+        cardIndex: u64,
+        deck: &vector<u8>,
+        decrypt_card_share: &vector<u8>,
+        proof: &vector<u8>,
+    ): bool {
+        let alpha = x"{{decryptCardShare.alpha}}";
+        let beta = x"{{decryptCardShare.beta}}";
+        let gamma = x"{{decryptCardShare.gamma}}";
+        let delta = x"{{decryptCardShare.delta}}";
+        let ic = vector[{{#each decryptCardShare.ic}}
+            x"{{this}}",{{/each}}
+        ];
+
+        let public_signals = vector::empty<u8>();
+        vector::append(&mut public_signals, *decrypt_card_share);
+        vector::append(&mut public_signals, *public_key);
+        vector::append(
+            &mut public_signals,
+            vector::slice(deck, cardIndex * 128, cardIndex * 128 + 64),
+        );
+
+        groth16::verify(&alpha, &beta, &gamma, &delta, &ic, &public_signals, proof)
+    }
+
+    public fun aggregate_decrypt_card_share(
+        share1: &vector<u8>,
+        share2: &vector<u8>,
+    ): vector<u8> {
+        jubjub::serialize(
+            &jubjub::add(
+                &jubjub::deserialize(share1),
+                &jubjub::deserialize(share2),
+            )
+        )
+    }
+
+    public fun decrypt_card(
+        cardIndex:u64,
+        deck: &vector<u8>,
+        decrypt_card_share: &vector<u8>,
+    ): Option<u8> {
+        let point1 = jubjub::deserialize(
+            &vector::slice(deck, 128 * cardIndex + 64, 128 * cardIndex + 128),
+        );
+        let point2 = jubjub::deserialize(
+            decrypt_card_share,
+        );
+        let card = jubjub::sub(&point1, &point2);
+
+        let one = jubjub::one();
+        let acc = jubjub::zero();
+        for (i in 0..52) {
+            acc = jubjub::add(&acc, &one);
+            if (jubjub::eq(&acc, &card)) {
+                return option::some(i)
+            };
+        };
+        option::none<u8>()
+    }
+
+    #[test]
+    fun test_2_party_deck() {
+        let num_players = 2;
+        let public_keys = vector[{{#each test.publicKeys}}
+            x"{{this}}",{{/each}}
+        ];
+        let aggregated_public_key = x"{{test.aggregatedPublicKey}}";
+        let encrypted_decks = vector[{{#each test.encryptedDecks}}
+            x"{{this}}",{{/each}}
+        ];
+        let encrypt_proofs = vector[{{#each test.encryptProofs}}
+            x"{{this}}",{{/each}}
+        ];
+        let decrypt_card_shares = vector[{{#each test.decryptCardShares}}
+            vector[{{#each this}}
+                x"{{this}}",{{/each}}
+            ],{{/each}}
+        ];
+        let decrypt_proofs = vector[{{#each test.decryptProofs}}
+            vector[{{#each this}}
+                x"{{this}}",{{/each}}
+            ],{{/each}}
+        ];
+        let output_deck = vector[{{#each test.outputDeck}}
+            {{this}}u8,{{/each}}
+        ];
+
+        assert!(generate_aggregated_public_key(&public_keys) == aggregated_public_key);
+
+        let deck = new_encrypted_deck();
+        for (i in 0..num_players) {
+            assert!(
+                verify_shuffle_encrypt_deck(
+                    &aggregated_public_key,
+                    &deck,
+                    &encrypted_decks[i],
+                    &encrypt_proofs[i],
+                ),
+            );
+            deck = encrypted_decks[i];
+        };
+
+        for (i in 0..52) {
+            let share = new_decrypt_card_share();
+            for (j in 0..num_players) {
+                assert!(
+                    verify_decrypt_card_share(
+                        &public_keys[j],
+                        i,
+                        &deck,
+                        &decrypt_card_shares[i][j],
+                        &decrypt_proofs[i][j],
+                    ),
+                );
+                share = aggregate_decrypt_card_share(&share, &decrypt_card_shares[i][j]);
+            };
+            assert!(option::destroy_some(decrypt_card(i, &deck, &share)) == output_deck[i]);
+        };
+    }
+}

@@ -7,7 +7,11 @@ import { JubJub } from "./jubjub.js";
 import { createPermutationMatrix, samplePermutationVector } from "./permutation.js";
 import { proveShuffleEncryptDeck, verifyShuffleEncryptDeck } from "./shuffle_encrypt_deck.js";
 
-export { numCards } from "./constants.js";
+export {
+  decryptCardShareZkeyURL,
+  shuffleEncryptDeckZkeyURL,
+  numCards,
+} from "./constants.js";
 export type SecretKey = bigint;
 export type PublicKey = Uint8Array;
 export type AggregatedPublicKey = Uint8Array;

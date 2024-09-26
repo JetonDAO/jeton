@@ -3,7 +3,6 @@ module zk_deck::jubjub {
     use aptos_std::crypto_algebra;
     use aptos_std::crypto_algebra::Element;
     use std::option;
-    use std::option::Option;
     use std::vector;
 
     struct Point has drop {
@@ -37,23 +36,17 @@ module zk_deck::jubjub {
         bytes
     }
 
-    public fun deserialize(bytes: &vector<u8>): Option<Point> {
+    public fun deserialize(bytes: &vector<u8>): Point {
         let maybe_x = crypto_algebra::deserialize<Fr, FormatFrMsb>(
             &vector::slice(bytes, 0, 32),
         );
-        if (option::is_none(&maybe_x)) {
-            return option::none<Point>()
-        };
         let maybe_y = crypto_algebra::deserialize<Fr, FormatFrMsb>(
             &vector::slice(bytes, 32, 64),
         );
-        if (option::is_none(&maybe_y)) {
-            return option::none<Point>()
-        };
-        option::some(Point {
+        Point {
             x: option::destroy_some(maybe_x),
             y: option::destroy_some(maybe_y),
-        })
+        }
     }
 
     public fun zero(): Point {
@@ -64,10 +57,8 @@ module zk_deck::jubjub {
     }
 
     public fun one(): Point {
-        option::destroy_some(
-            deserialize(
-                &x"11dafe5d23e1218086a365b99fbf3d3be72f6afd7d1f72623e6b071492d1122b1d523cf1ddab1a1793132e78c866c0c33e26ba5cc220fed7cc3f870e59d292aa"
-            )
+        deserialize(
+            &x"11dafe5d23e1218086a365b99fbf3d3be72f6afd7d1f72623e6b071492d1122b1d523cf1ddab1a1793132e78c866c0c33e26ba5cc220fed7cc3f870e59d292aa"
         )
     }
 

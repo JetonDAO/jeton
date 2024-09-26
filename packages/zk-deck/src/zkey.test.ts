@@ -1,3 +1,8 @@
+import {
+  decryptCardShareZkeyURL,
+  shuffleEncryptDeckZkeyURL,
+} from "./constants.js";
+
 async function getUrlBytes(url: string): Promise<Uint8Array> {
   const response = await fetch(url);
   if (response.status !== 200) {
@@ -34,10 +39,7 @@ async function getUrlBytes(url: string): Promise<Uint8Array> {
   return buffer;
 }
 
-export const decryptCardShareZkey = await getUrlBytes(
-  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/decrypt_card_share.zkey",
-);
-
+export const decryptCardShareZkey = await getUrlBytes(decryptCardShareZkeyURL);
 export const shuffleEncryptDeckZkey = await getUrlBytes(
-  "https://pub-1f3741fa9e934be4a24cfe1d391d2163.r2.dev/shuffle_encrypt_deck.zkey",
+  shuffleEncryptDeckZkeyURL,
 );

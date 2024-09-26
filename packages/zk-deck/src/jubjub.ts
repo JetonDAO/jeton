@@ -1,4 +1,4 @@
-import { type Fr, type FrElement, Scalar, buildBls12381 } from "ffjavascript";
+import { type Fr, type FrElement, Scalar } from "ffjavascript";
 
 export type Point = [FrElement, FrElement];
 

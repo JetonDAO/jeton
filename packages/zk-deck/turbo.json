@@ -55,7 +55,8 @@
       "dependsOn": [
         "snarkjs:build:powersoftau",
         "snarkjs:build:zkey",
-        "snarkjs:build:verificationkey"
+        "snarkjs:build:verificationkey",
+        "snarkjs:build:contract"
       ]
     },
     "snarkjs:build:powersoftau": {
@@ -216,6 +217,19 @@
       "dependsOn": ["snarkjs:build:verificationkey:mkdir", "snarkjs:build:zkey:decrypt-card-share"],
       "inputs": ["dist/zkeys/decrypt_card_share_contribute.zkey"],
       "outputs": ["verification_keys/decrypt_card_share.json"]
+    },
+    "snarkjs:build:contract": {
+      "dependsOn": [
+        "snarkjs:build:verificationkey:shuffle-encrypt-deck",
+        "snarkjs:build:verificationkey:decrypt-card-share"
+      ],
+      "inputs": [
+        "verification_keys/shuffle_encrypt_deck.json",
+        "verification_keys/decrypt_card_share.json",
+        "scripts/gen_zk_deck_contract.ts",
+        "scripts/zk_deck.move.hbs"
+      ],
+      "outputs": ["contracts/sources/zk_deck.move"]
     },
     "move:build": {
       "inputs": ["contracts/sources/**", "contracts/Move.toml"],
