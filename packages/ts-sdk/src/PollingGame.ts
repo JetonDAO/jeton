@@ -16,7 +16,7 @@ import {
 
 import { getUrlBytes, readData } from "./getURLBytes";
 
-import type { TableInfo } from "./types";
+import { GameStatus, type TableInfo } from "./types";
 
 import type { PollingDataSource } from "./PollingDataSource";
 import {
@@ -53,6 +53,7 @@ export class PollingGame extends EventEmitter {
   private zkDeck?: ZKDeck;
   private elGamalPublicKey?: ElGamalPublicKey;
   private elGamalSecretKey?: bigint;
+  private mySeatIndex?: string;
 
   private creatingZKDeck: Promise<void>;
 
@@ -138,10 +139,28 @@ export class PollingGame extends EventEmitter {
 
   private isAlreadyCheckedIn(state: WholeGameState): boolean {
     //TODO:
+    for (const player of Object.values(state.seats)) {
+      if (player.id === this.playerId) return true;
+    }
     return false;
   }
 
-  private receivedGameState = (gameState: WholeGameState) => {};
+  private receivedGameState = (newState: WholeGameState) => {
+    // TODO: player events?!!
+    if (newState.gameStatus === GameStatus.AwaitingStart) {
+      return;
+    } else if(newState.gameStatus === GameStatus.Shuffle && newState.)
+  };
+
+  private setMySeatIndex() {
+    if (!this.gameState) throw new Error("No game state");
+    for (const [seat, player] of Object.entries(this.gameState.seats)) {
+      if (player.id === this.playerId) {
+        this.mySeatIndex = seat;
+        return;
+      }
+    }
+  }
 
   public async checkIn(buyIn?: number) {
     await this.creatingZKDeck;
@@ -158,6 +177,7 @@ export class PollingGame extends EventEmitter {
 
     this.onChainDataSource.pollGameState(this.receivedGameState);
     this.gameState = await this.onChainDataSource.getGameState();
+    this.setMySeatIndex();
     // TODO: return game state to ui
     this.receivedGameState(this.gameState);
   }
