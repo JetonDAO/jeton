@@ -20,6 +20,10 @@ export default function GameJoinModal() {
     fetchTables();
   }, []);
 
+  if (!pathname.includes("join")) {
+    return null;
+  }
+
   // Modal choose violence and did not close on navigating
   if (!pathname.includes("join")) {
     return null;
@@ -31,7 +35,7 @@ export default function GameJoinModal() {
       {gameTables.length > 0 ? (
         <ul className="text-white border flex flex-col p-2 bg-[#b87d5b]">
           {gameTables.map((table) => (
-            <li key={table.id} className="mb-4">
+            <li key={table.id} className="mb-4 relative">
               <div>Table ID: {table.id}</div>
               <div>Small Blind: {table.smallBlind}</div>
               <div>Number of Raises: {table.numberOfRaises}</div>
@@ -42,7 +46,10 @@ export default function GameJoinModal() {
                 Buy-In: {table.minBuyIn} - {table.maxBuyIn}
               </div>
               <div>Chip Unit: {table.chipUnit}</div>
-              <Link className="bg-blue-500 px-2 py-1 self-end" href={`/games/${table.id}`}>
+              <Link
+                className="nes-btn is-primary px-2 py-1 text-xs absolute bottom-1 right-1"
+                href={`/games/${table.id}`}
+              >
                 join
               </Link>
             </li>

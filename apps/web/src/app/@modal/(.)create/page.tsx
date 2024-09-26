@@ -122,12 +122,12 @@ function LabelInput({
   required = true,
 }: LabelInputProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-[#eec2af]" htmlFor={name}>
+    <div className="nes-field">
+      <label className="text-[#eec2af] name_field" htmlFor={name}>
         {label}:
       </label>
       <input
-        className="bg-[#b87d5b] text-white border-2 border-[#3a3526] p-2"
+        className="bg-[#b87d5b] nes-input text-white p-2 accent-amber-500"
         type={type}
         value={value}
         name={name}

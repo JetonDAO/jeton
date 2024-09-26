@@ -1,12 +1,34 @@
+"use client";
+
+import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function LandingPage() {
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  // Trigger animation on initial load
+  useEffect(() => {
+    setShouldAnimate(true);
+  }, []);
+
   return (
-    <div
-      className={`relative bg-[url("/images/pixel-wooden-pattern.png")] bg-repeat bg-center bg-[length:200px_200px] overflow-hidden sm:h-[100dvh] w-[100dvw] z-50 flex items-center justify-center flex-col min-h-screen`}
+    <motion.div
+      className="relative overflow-hidden sm:h-[100dvh] bg-black/60 w-[100dvw] z-50 flex items-center justify-center flex-col min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={shouldAnimate ? { opacity: 1 } : {}}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <header className="w-full bg-black/20">
-        <nav className="flex justify-between items-center p-5  text-white">
+      <motion.header
+        className="w-full"
+        initial={{ y: -50, opacity: 0 }}
+        animate={shouldAnimate ? { y: 0, opacity: 1 } : {}}
+        exit={{ y: -50, opacity: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <nav className="flex justify-between items-center p-5 text-white">
           <Image
             width={80}
             height={80}
@@ -14,51 +36,77 @@ export default function LandingPage() {
             src="/images/logo.png"
             alt="Logo"
           />
-          <ul className="flex space-x-8">
+          <ul className="flex space-x-10">
             <li>
-              <a href="#about" className="hover:text-gray-400">
+              <a href="#about" className="hover:text-gray-400 text-xs">
                 Docs
               </a>
             </li>
             <li>
-              <a href="#features" className="hover:text-gray-400">
+              <a href="#features" className="hover:text-gray-400 text-xs">
                 User Manual
-              </a>
-            </li>
-            <li>
-              <a href="#contact" className="hover:text-gray-400">
-                Contact
               </a>
             </li>
           </ul>
         </nav>
-      </header>
+      </motion.header>
 
-      <main className="flex-grow justify-center text-center w-full  text-white items-center flex flex-col ">
-        <h1 className="text-5xl font-bold mb-6 leading-relaxed">
+      <main className="flex-grow justify-center mb-10 px-5 text-center w-full text-white items-center flex flex-col">
+        <motion.h1
+          className="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:leading-relaxed"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+        >
           Jeton
           <br />
           Decentralized Poker Game
-        </h1>
-        <p className="text-xl mb-10 leading-9 max-w-5xl text-balance">
-          Experience the thrill of a decentralized poker game, where fairness is guaranteed. Cards
-          are shuffled securely by players, ensuring transparency and security in every hand.
-        </p>
-        <a href="/games" className="nes-btn is-primary text-white py-3 px-8 rounded-lg text-xl">
-          Play Now
-        </a>
+        </motion.h1>
+
+        <motion.p
+          className="text-base sm:text-xl mb-10 sm:leading-9 max-w-5xl text-balance"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
+          Experience the thrill of a decentralized poker game, where fairness is guaranteed.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <Link
+            prefetch
+            href="/games"
+            className="nes-btn is-warning text-white py-3 px-8 rounded-lg text-base sm:text-xl"
+          >
+            Play Now
+          </Link>
+        </motion.div>
       </main>
 
-      <footer className="p-5 text-white w-full bg-black/30 py-8">
-        <div className="flex flex-wrap justify-between mx-auto text-center items-center">
-          <div className="mb-4">
+      {/* Footer section */}
+      <motion.footer
+        className="p-5 text-white w-full"
+        initial={{ y: 50, opacity: 0 }}
+        animate={shouldAnimate ? { y: 0, opacity: 1 } : {}}
+        exit={{ y: 50, opacity: 0 }}
+        transition={{ duration: 0.8, delay: 1 }}
+      >
+        <div className="flex flex-col justify-between mx-auto text-center items-end">
+          <div className="flex w-full items-center justify-center">
             <a
               href="https://x.com/JetonDAO"
               className="mx-2 hover:text-gray-400 text-white"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="nes-icon twitter is-large" />
+              <i className="nes-icon twitter is-medium hover:scale-[4] duration-300" />
             </a>
 
             <a
@@ -67,7 +115,7 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="nes-icon youtube is-large" />
+              <i className="nes-icon youtube is-medium hover:scale-[4] duration-300" />
             </a>
 
             <a
@@ -76,16 +124,20 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <i className="nes-icon github is-large" />
+              <i className="nes-icon github is-medium hover:scale-[4] duration-300" />
             </a>
           </div>
-          <section className="flex items-start">
-            <div className="nes-balloon from-right">
-              <p className="text-black">© 2024 Jeton. All rights reserved.</p>
-            </div>
-          </section>
+          <motion.div
+            className="nes-balloon from-right origin-bottom-right mt-5 lg:absolute right-0 bottom-2"
+            initial={{ opacity: 0 }}
+            animate={shouldAnimate ? { opacity: 1 } : {}}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
+          >
+            <p className="text-black text-xs">© 2024 Jeton. All rights reserved.</p>
+          </motion.div>
         </div>
-      </footer>
-    </div>
+      </motion.footer>
+    </motion.div>
   );
 }
