@@ -1,7 +1,4 @@
-import {
-  decryptCardShareZkeyURL,
-  shuffleEncryptDeckZkeyURL,
-} from "./constants.js";
+import { decryptCardShareZkeyURL, shuffleEncryptDeckZkeyURL } from "./constants.js";
 
 async function getUrlBytes(url: string): Promise<Uint8Array> {
   const response = await fetch(url);
@@ -40,6 +37,4 @@ async function getUrlBytes(url: string): Promise<Uint8Array> {
 }
 
 export const decryptCardShareZkey = await getUrlBytes(decryptCardShareZkeyURL);
-export const shuffleEncryptDeckZkey = await getUrlBytes(
-  shuffleEncryptDeckZkeyURL,
-);
+export const shuffleEncryptDeckZkey = await getUrlBytes(shuffleEncryptDeckZkeyURL);

@@ -79,10 +79,7 @@ describe("jubjub", () => {
     const q = jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator);
 
     const left = jubjub.mulScalarPoint(a, jubjub.addPoints(p, q));
-    const right = jubjub.addPoints(
-      jubjub.mulScalarPoint(a, p),
-      jubjub.mulScalarPoint(a, q),
-    );
+    const right = jubjub.addPoints(jubjub.mulScalarPoint(a, p), jubjub.mulScalarPoint(a, q));
     expect(jubjub.inCurve(left)).to.be.true;
     expect(jubjub.inCurve(right)).to.be.true;
     expect(jubjub.eqPoints(left, right)).to.be.true;
@@ -94,10 +91,7 @@ describe("jubjub", () => {
     const p = jubjub.mulScalarPoint(jubjub.sampleScalar(), jubjub.generator);
 
     const left = jubjub.mulScalarPoint((a + b) % jubjub.order, p);
-    const right = jubjub.addPoints(
-      jubjub.mulScalarPoint(a, p),
-      jubjub.mulScalarPoint(b, p),
-    );
+    const right = jubjub.addPoints(jubjub.mulScalarPoint(a, p), jubjub.mulScalarPoint(b, p));
     expect(jubjub.inCurve(left)).to.be.true;
     expect(jubjub.inCurve(right)).to.be.true;
     expect(jubjub.eqPoints(left, right)).to.be.true;

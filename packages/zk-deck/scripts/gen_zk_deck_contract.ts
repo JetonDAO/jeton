@@ -23,9 +23,7 @@ function serializeG1(zkDeck: ZKDeck, values: string[]): string {
 }
 
 function serializeG2(zkDeck: ZKDeck, values: string[][]): string {
-  const point = zkDeck.bls12381.G2.fromObject(
-    values.map((ss) => ss.map((s) => BigInt(s))),
-  );
+  const point = zkDeck.bls12381.G2.fromObject(values.map((ss) => ss.map((s) => BigInt(s))));
   return hexify(zkDeck.bls12381.G2.toUncompressed(point));
 }
 
@@ -43,22 +41,15 @@ function serializeVerificationKey(zkDeck: ZKDeck, key: VerificationKey) {
 }
 
 async function generateTestDeckData(zkDeck: ZKDeck, numPlayers: number) {
-  const secretKeys = new Array(numPlayers)
-    .fill(undefined)
-    .map(() => zkDeck.sampleSecretKey());
-  const publicKeys = secretKeys.map((secretKey) =>
-    zkDeck.generatePublicKey(secretKey),
-  );
+  const secretKeys = new Array(numPlayers).fill(undefined).map(() => zkDeck.sampleSecretKey());
+  const publicKeys = secretKeys.map((secretKey) => zkDeck.generatePublicKey(secretKey));
   const aggregatedPublicKey = zkDeck.generateAggregatedPublicKey(publicKeys);
 
   const encryptedDecks: Uint8Array[] = [];
   const encryptProofs: Uint8Array[] = [];
   let deck = zkDeck.initialEncryptedDeck;
   for (let i = 0; i < numPlayers; i++) {
-    const { proof, outputDeck } = await zkDeck.proveShuffleEncryptDeck(
-      aggregatedPublicKey,
-      deck,
-    );
+    const { proof, outputDeck } = await zkDeck.proveShuffleEncryptDeck(aggregatedPublicKey, deck);
     encryptedDecks.push(outputDeck);
     encryptProofs.push(proof);
     deck = outputDeck;
@@ -68,11 +59,7 @@ async function generateTestDeckData(zkDeck: ZKDeck, numPlayers: number) {
     Array.from(new Array(52).keys()).map((cardIndex) =>
       Promise.all(
         Array.from(new Array(numPlayers).keys()).map((playerIndex) =>
-          zkDeck.proveDecryptCardShare(
-            secretKeys[playerIndex],
-            cardIndex,
-            deck,
-          ),
+          zkDeck.proveDecryptCardShare(secretKeys[playerIndex], cardIndex, deck),
         ),
       ),
     ),
@@ -97,9 +84,7 @@ async function generateTestDeckData(zkDeck: ZKDeck, numPlayers: number) {
     aggregatedPublicKey: hexify(aggregatedPublicKey),
     encryptedDecks: encryptedDecks.map((ed) => hexify(ed)),
     encryptProofs: encryptProofs.map((ep) => hexify(ep)),
-    decryptCardShares: decryptCardShares.map((dcss) =>
-      dcss.map((dcs) => hexify(dcs)),
-    ),
+    decryptCardShares: decryptCardShares.map((dcss) => dcss.map((dcs) => hexify(dcs))),
     decryptProofs: decryptProofs.map((dps) => dps.map((dp) => hexify(dp))),
     outputDeck,
   };
@@ -113,14 +98,8 @@ async function main() {
     "./dist/zkeys/decrypt_card_share.zkey",
   );
   const data = {
-    shuffleEncryptDeck: serializeVerificationKey(
-      zkDeck,
-      shuffleEncryptDeckVerificationKey,
-    ),
-    decryptCardShare: serializeVerificationKey(
-      zkDeck,
-      decryptCardShareVerificationKey,
-    ),
+    shuffleEncryptDeck: serializeVerificationKey(zkDeck, shuffleEncryptDeckVerificationKey),
+    decryptCardShare: serializeVerificationKey(zkDeck, decryptCardShareVerificationKey),
     test: await generateTestDeckData(zkDeck, 2),
   };
 

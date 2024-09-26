@@ -10,22 +10,13 @@ export class JubJub {
   readonly zero: Point;
   constructor(readonly field: Fr) {
     this.edwardsA =
-      field.e(
-        52435875175126190479447740508185965837690552500527637822603658699938581184512n,
-      );
+      field.e(52435875175126190479447740508185965837690552500527637822603658699938581184512n);
     this.edwardsD =
-      field.e(
-        19257038036680949359750312669786877991949435402254120286184196891950884077233n,
-      );
-    this.order =
-      6554484396890773809930967563523245729705921265872317281365359162392183254199n;
+      field.e(19257038036680949359750312669786877991949435402254120286184196891950884077233n);
+    this.order = 6554484396890773809930967563523245729705921265872317281365359162392183254199n;
     this.generator = [
-      field.e(
-        8076246640662884909881801758704306714034609987455869804520522091855516602923n,
-      ),
-      field.e(
-        13262374693698910701929044844600465831413122818447359594527400194675274060458n,
-      ),
+      field.e(8076246640662884909881801758704306714034609987455869804520522091855516602923n),
+      field.e(13262374693698910701929044844600465831413122818447359594527400194675274060458n),
     ];
     this.zero = [field.e(0), field.e(1)];
   }
@@ -96,18 +87,12 @@ export class JubJub {
     const f = this.field;
     const beta = f.mul(a[0], b[1]);
     const gamma = f.mul(a[1], b[0]);
-    const delta = f.mul(
-      f.sub(a[1], f.mul(this.edwardsA, a[0])),
-      f.add(b[0], b[1]),
-    );
+    const delta = f.mul(f.sub(a[1], f.mul(this.edwardsA, a[0])), f.add(b[0], b[1]));
     const tau = f.mul(beta, gamma);
     const dtau = f.mul(this.edwardsD, tau);
 
     const x = f.div(f.add(beta, gamma), f.add(f.one, dtau));
-    const y = f.div(
-      f.add(delta, f.sub(f.mul(this.edwardsA, beta), gamma)),
-      f.sub(f.one, dtau),
-    );
+    const y = f.div(f.add(delta, f.sub(f.mul(this.edwardsA, beta), gamma)), f.sub(f.one, dtau));
     return [x, y];
   }
 
