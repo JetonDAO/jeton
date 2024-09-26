@@ -8,8 +8,8 @@ import { createPermutationMatrix, samplePermutationVector } from "./permutation.
 import { proveShuffleEncryptDeck, verifyShuffleEncryptDeck } from "./shuffle_encrypt_deck.js";
 
 export {
-  decryptCardShareZkeyURL,
-  shuffleEncryptDeckZkeyURL,
+  decryptCardShareZkey,
+  shuffleEncryptDeckZkey,
   numCards,
 } from "./constants.js";
 export type SecretKey = bigint;

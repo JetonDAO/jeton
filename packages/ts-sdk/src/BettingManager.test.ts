@@ -12,10 +12,15 @@ import {
 describe("tests different betting functionalities of betting manager", () => {
   test("one round of pre-flop betting", () => {
     const players: Player[] = [
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.sittingOut },
-      { id: "3", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "4", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      {
+        id: "2",
+        balance: 10,
+        elGamalPublicKey: new Uint8Array(64),
+        status: PlayerStatus.sittingOut,
+      },
+      { id: "3", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "4", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const tableInfo: TableInfo = {
       id: "tbc01",
@@ -58,11 +63,11 @@ describe("tests different betting functionalities of betting manager", () => {
   });
   test("betting round finishes on dealer in flop", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.folded },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "3", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.allIn },
-      { id: "4", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.folded },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "3", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.allIn },
+      { id: "4", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const tableInfo: TableInfo = {
       id: "tbc01",
@@ -90,11 +95,11 @@ describe("tests different betting functionalities of betting manager", () => {
 
   test("full round with raise and fold", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "3", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "4", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "3", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "4", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const tableInfo: TableInfo = {
       id: "tbc01",
@@ -139,11 +144,11 @@ describe("tests different betting functionalities of betting manager", () => {
 
   test("betting round with multiple side pots", () => {
     const players: Player[] = [
-      { id: "0", balance: 5, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active }, //1,4
-      { id: "1", balance: 8, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active }, //1,4,1
-      { id: "2", balance: 1, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active }, //1,0,
-      { id: "3", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active }, //1,4,1
-      { id: "4", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active }, //1,0,0
+      { id: "0", balance: 5, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active }, //1,4
+      { id: "1", balance: 8, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active }, //1,4,1
+      { id: "2", balance: 1, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active }, //1,0,
+      { id: "3", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active }, //1,4,1
+      { id: "4", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active }, //1,0,0
     ];
     const tableInfo: TableInfo = {
       id: "tbc01",
@@ -176,8 +181,8 @@ describe("tests different betting functionalities of betting manager", () => {
   });
   test("only two players", () => {
     const players: Player[] = [
-      { id: "0", balance: 50, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 50, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 50, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 50, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
 
     const tableInfo: TableInfo = {
@@ -230,9 +235,9 @@ describe("testing different scenarios of self bet placing", () => {
   };
   test("simply placing a bet early", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -252,9 +257,9 @@ describe("testing different scenarios of self bet placing", () => {
 
   test("placing a bet right on time", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -272,9 +277,9 @@ describe("testing different scenarios of self bet placing", () => {
 
   test("placing a bet on time but without value", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -292,9 +297,9 @@ describe("testing different scenarios of self bet placing", () => {
 
   test("raising without balance", () => {
     const players: Player[] = [
-      { id: "0", balance: 1, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 1, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -315,9 +320,9 @@ describe("testing different scenarios of self bet placing", () => {
 
   test("raising with balance", () => {
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -350,9 +355,9 @@ describe("receiving different illegal bets", () => {
       chipUnit: ChipUnits.apt,
     };
     const players: Player[] = [
-      { id: "0", balance: 1, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.folded },
-      { id: "2", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 1, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.folded },
+      { id: "2", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
@@ -390,9 +395,9 @@ describe("receiving different illegal bets", () => {
       chipUnit: ChipUnits.apt,
     };
     const players: Player[] = [
-      { id: "0", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "1", balance: 10, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
-      { id: "2", balance: 1, elGamalPublicKey: ["a", "a"], status: PlayerStatus.active },
+      { id: "0", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "1", balance: 10, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
+      { id: "2", balance: 1, elGamalPublicKey: new Uint8Array(64), status: PlayerStatus.active },
     ];
     const bettingManager = new BettingManager(
       players,
