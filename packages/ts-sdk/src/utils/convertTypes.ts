@@ -23,6 +23,17 @@ export function getGameStatus(round: BettingRounds) {
       return GameStatus.BetRiver;
   }
 }
+
+export function getGameStatusForPublicCard(round: PublicCardRounds) {
+  switch (round) {
+    case PublicCardRounds.FLOP:
+      return GameStatus.DrawFlop;
+    case PublicCardRounds.TURN:
+      return GameStatus.DrawTurn;
+    case PublicCardRounds.RIVER:
+      return GameStatus.DrawRiver;
+  }
+}
 export function getNextPublicCardRound(round: BettingRounds) {
   switch (round) {
     case BettingRounds.PRE_FLOP:

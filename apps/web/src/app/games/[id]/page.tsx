@@ -25,7 +25,7 @@ import { CARDS_MAP } from "../../../lib/constants/cards";
 import Card from "./components/Card";
 import ShufflingCards from "./components/ShufflingCards";
 import { useSubscribeToGameEvent } from "./components/useSubscribeToGameEvent";
-import { initGame, setTableId } from "./state/actions/gameActions";
+import { initGame, placeBet, setTableId } from "./state/actions/gameActions";
 import {
   selectAvailableActions$,
   selectAwaitingBetFrom$,
@@ -273,7 +273,7 @@ export function PlayerActions() {
           className={`bg-[#b87d5b] py-4 text-lg text-white hover:brightness-90 ${
             isActionQueued && queuedAction === action ? "bg-opacity-50 cursor-not-allowed" : ""
           }`}
-          onClick={() => handlePlayerAction(action)}
+          onClick={() => placeBet(action)}
           disabled={isActionQueued}
         >
           {isActionQueued && queuedAction === action ? `${action} (Queued)` : action}

@@ -20,6 +20,7 @@ import {
   playerShufflingHandler,
   privateCardsDecryptionHandler,
   receivedPrivateCardHandler,
+  receivedPublicCardsHandler,
 } from "./gameEventHandlers";
 
 import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
@@ -73,6 +74,7 @@ function setGameEventListeners() {
   game.addListener?.(GameEventTypes.AWAITING_BET, awaitingPlayerBetHandler);
   game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
   game.addListener?.(GameEventTypes.PLAYER_PLACED_BET, playerPlacedBetHandler);
+  game.addListener?.(GameEventTypes.RECEIVED_PUBLIC_CARDS, receivedPublicCardsHandler);
 }
 
 export const setTableId = (id: string) => {

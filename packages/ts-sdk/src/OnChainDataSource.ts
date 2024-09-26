@@ -174,7 +174,7 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     proofs: CardShareAndProof[],
     round: PublicCardRounds,
   ) {
-    this.pieSocketTransport.publish(OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED, {
+    this.pieSocketTransport.publish(OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED, {
       sender: id,
       proofs,
       round,

@@ -7,9 +7,9 @@ import {
 } from "./contracts/contractInteractions";
 const tables: TableInfo[] = [
   {
-    id: "tbc01",
+    id: "tbc11",
     smallBlind: 1,
-    numberOfRaises: 1,
+    numberOfRaises: 2,
     minPlayers: 2,
     maxPlayers: 8,
     minBuyIn: 400,

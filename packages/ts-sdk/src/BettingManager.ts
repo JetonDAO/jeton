@@ -322,4 +322,8 @@ export class BettingManager {
     }
     return actions;
   }
+
+  public get placedAction() {
+    return this.selfBettingState.preemptivelyPlacedBet;
+  }
 }
