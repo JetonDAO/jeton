@@ -3,10 +3,10 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["circom:build", "typescript:build", "move:build"]
+      "dependsOn": ["circom:build", "typescript:build"]
     },
     "test": {
-      "dependsOn": ["mocha:test", "move:test"]
+      "dependsOn": ["mocha:test"]
     },
     "check": {
       "dependsOn": ["circom:check"]

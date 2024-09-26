@@ -52,12 +52,12 @@
     "mocha:test": "mocha src/**/*.test.ts"
   },
   "devDependencies": {
+    "@aptos-labs/aptos-cli": "^0.2.0",
     "@jeton/typescript-config": "^0.0.0",
     "@types/chai": "^4.3.18",
     "@types/chai-as-promised": "^8.0.0",
     "@types/mocha": "^10.0.7",
     "@types/snarkjs": "^0.7.8",
-    "aptos": "^1.21.0",
     "chai": "^5.1.1",
     "chai-as-promised": "^8.0.0",
     "circomlib": "^2.0.5",

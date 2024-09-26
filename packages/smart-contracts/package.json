@@ -4,10 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "aptos move compile --move-2 --named-addresses zk_deck=0x420,jeton=0x420",
-    "test": "aptos move test --move-2 --named-addresses zk_deck=0x420,jeton=0x420"
+    "move:build": "aptos move compile --move-2 --named-addresses zk_deck=0x420,jeton=0x420",
+    "move:test": "aptos move test --move-2 --named-addresses zk_deck=0x420,jeton=0x420"
   },
   "devDependencies": {
-    "aptos": "^1.21.0"
+    "@aptos-labs/aptos-cli": "^0.2.0"
+  },
+  "dependencies": {
+    "@jeton/zk-deck": "^0.0.0"
   }
 }
