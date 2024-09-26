@@ -47,6 +47,7 @@ export const initGame = async (
   });
   state$.game.set(game);
   setGameEventListeners();
+  // TODO: should we get 'entryGameState' from user?
   const entryGameState = await game.checkIn(1000);
   state$.gameState.players.set(entryGameState.players.map((p) => p));
   state$.gameState.status.set(entryGameState.status);
