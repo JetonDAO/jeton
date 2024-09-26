@@ -17,7 +17,6 @@ const INITIAL_FORM_VALUES: FormValues = {
   maxPlayers: 10,
   minBuyIn: 100,
   maxBuyIn: 1000,
-  waitingBlocks: 0,
   chipUnit: ChipUnits.apt,
 };
 
@@ -59,7 +58,6 @@ export default function GameCreateModal() {
         formValues.maxPlayers,
         formValues.minBuyIn,
         formValues.maxBuyIn,
-        formValues.waitingBlocks,
         formValues.chipUnit,
         account?.address,
         signAndSubmitTransaction,
