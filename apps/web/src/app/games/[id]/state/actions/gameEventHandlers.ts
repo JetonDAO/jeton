@@ -49,6 +49,7 @@ export function awaitingPlayerBetHandler({
     state$.gameState.betState.set({ round: bettingRound, availableActions });
   }
   state$.gameState.betState.awaitingBetFrom.set(bettingPlayer);
+  state$.gameState.betState.availableActions.set(availableActions);
 }
 
 export function playerPlacedBetHandler({
@@ -72,4 +73,5 @@ export function playerPlacedBetHandler({
   state$.gameState.betState.lastBet.amount.set(
     potAfterBet.reduce((sum, a) => sum + a, 0) - potBeforeBet.reduce((sum, a) => sum + a, 0),
   );
+  state$.gameState.betState.availableActions.set(availableActions);
 }

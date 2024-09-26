@@ -35,7 +35,7 @@ export default function GameJoinModal() {
       {gameTables.length > 0 ? (
         <ul className="text-white border flex flex-col p-2 bg-[#b87d5b]">
           {gameTables.map((table) => (
-            <li key={table.id} className="mb-4 relative">
+            <li key={table.id} className="mb-4 relative flex flex-col">
               <div>Table ID: {table.id}</div>
               <div>Small Blind: {table.smallBlind}</div>
               <div>Number of Raises: {table.numberOfRaises}</div>
@@ -47,7 +47,7 @@ export default function GameJoinModal() {
               </div>
               <div>Chip Unit: {table.chipUnit}</div>
               <Link
-                className="nes-btn is-primary px-2 py-1 text-xs absolute bottom-1 right-1"
+                className="nes-btn is-primary p-1 text-xs self-center"
                 href={`/games/${table.id}`}
               >
                 join
