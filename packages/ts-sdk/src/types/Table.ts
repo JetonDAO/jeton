@@ -12,6 +12,5 @@ export interface TableInfo {
   maxPlayers: number;
   minBuyIn: number;
   maxBuyIn: number;
-  waitingBlocks: number;
   chipUnit: ChipUnits;
 }
