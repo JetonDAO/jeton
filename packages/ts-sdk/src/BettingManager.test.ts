@@ -25,7 +25,6 @@ describe("tests different betting functionalities of betting manager", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
 
@@ -73,7 +72,6 @@ describe("tests different betting functionalities of betting manager", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
 
@@ -106,7 +104,6 @@ describe("tests different betting functionalities of betting manager", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
 
@@ -156,7 +153,6 @@ describe("tests different betting functionalities of betting manager", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
 
@@ -192,7 +188,6 @@ describe("tests different betting functionalities of betting manager", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
     const bettingManager = new BettingManager(
@@ -231,7 +226,6 @@ describe("testing different scenarios of self bet placing", () => {
     maxPlayers: 8,
     minBuyIn: 400,
     maxBuyIn: 2000,
-    waitingBlocks: 2,
     chipUnit: ChipUnits.apt,
   };
   test("simply placing a bet early", () => {
@@ -353,7 +347,6 @@ describe("receiving different illegal bets", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
     const players: Player[] = [
@@ -394,7 +387,6 @@ describe("receiving different illegal bets", () => {
       maxPlayers: 8,
       minBuyIn: 400,
       maxBuyIn: 2000,
-      waitingBlocks: 2,
       chipUnit: ChipUnits.apt,
     };
     const players: Player[] = [
