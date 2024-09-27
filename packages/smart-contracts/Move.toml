@@ -5,6 +5,7 @@ version = "0.0.0"
 [addresses]
 std = "0x1"
 aptos_framework = "0x1"
+zk_deck = "0x05a973c774644f1d27beab9308fc05d4a35d49e5108411fff5dad3105190178f"
 jeton = "_"
 
 [dev-addresses]
