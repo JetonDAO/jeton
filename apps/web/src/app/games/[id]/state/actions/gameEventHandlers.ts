@@ -17,6 +17,7 @@ export function newPlayerCheckedInHandler(player: Player) {
   const gameState$ = state$.gameState;
   if (!gameState$.get()) throw new Error("game must exist in state");
   gameState$.players.push(player);
+  console.log("players: ", gameState$.players.peek(), "new player: ", player);
 }
 
 export function handStartedHandler({ dealer }: HandStartedEvent) {

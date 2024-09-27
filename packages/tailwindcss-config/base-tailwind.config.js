@@ -57,6 +57,14 @@ const config = {
             opacity: "1",
           },
         },
+        flip: {
+          "0%": {
+            transform: "rotateY(90deg)",
+          },
+          "100%": {
+            transform: "rotateY(0deg)",
+          },
+        },
       },
       animation: {
         fadeIn: "fadeIn .5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards",
@@ -67,6 +75,7 @@ const config = {
         blinky2: "blinky2 3s 14s linear infinite",
         "slide-in": "slideIn 1s ease-out",
         "grow-in": "growIn 0.5s ease-out",
+        "flip-y": "flip 1s",
       },
     },
   },

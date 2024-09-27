@@ -3,7 +3,7 @@
 export const runtime = "edge";
 
 import { type TableInfo, getTablesInfo } from "@jeton/ts-sdk";
-import Modal from "@jeton/ui/Modal";
+import Modal from "@src/components/Modal";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";

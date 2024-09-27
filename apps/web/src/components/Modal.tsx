@@ -1,7 +1,9 @@
 "use client";
+
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { type MouseEventHandler, useCallback, useEffect, useRef } from "react";
-import { cn } from "../libs/utils";
+import { cn } from "../../../../packages/ui/libs/utils";
 
 export default function Modal({
   children,
@@ -40,10 +42,13 @@ export default function Modal({
   }, [onKeyDown]);
 
   return (
-    <div
+    <motion.div
       ref={overlay}
       className="fixed z-50 inset-0 flex justify-center items-center animate-fadeIn"
       onClick={onClick}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
     >
       <div
         ref={wrapper}
@@ -54,6 +59,6 @@ export default function Modal({
       >
         {children}
       </div>
-    </div>
+    </motion.div>
   );
 }

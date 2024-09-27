@@ -17,7 +17,6 @@
     transform: translateX(-50%);
   }
 
-  .seat-1 .cards,
   .seat-1 .chips {
     top: -50%;
     left: 50%;
@@ -26,40 +25,40 @@
 
   .seat-2 {
     top: 90% !important;
-    left: 18%;
+    left: 20% !important;
     transform: translateY(-50%);
   }
 
   .seat-2 .cards,
   .seat-2 .chips {
     top: -35%;
-    left: 0%;
+    left: 50%;
     transform: translate(50%);
   }
 
   .seat-3 {
     top: 55%;
-    left: 18%;
+    left: 4% !important;
     transform: translateY(-50%);
   }
 
   .seat-3 .cards,
   .seat-3 .chips {
-    bottom: 50%;
-    right: -40%;
+    top: 0%;
+    left: 80%;
     transform: translate(50%);
   }
 
   .seat-4 {
     top: 25%;
-    left: 18%;
+    left: 4% !important;
     transform: translateY(-50%);
   }
 
   .seat-4 .cards,
   .seat-4 .chips {
-    bottom: -20%;
-    right: -60%;
+    top: 70%;
+    left: 150%;
     transform: translate(-50%);
   }
 
@@ -71,8 +70,8 @@
 
   .seat-5 .cards,
   .seat-5 .chips {
-    bottom: -45%;
-    right: 10%;
+    top: 100%;
+    left: 140%;
     transform: translate(-50%);
   }
 
@@ -84,8 +83,8 @@
 
   .seat-6 .cards,
   .seat-6 .chips {
-    bottom: -45%;
-    right: 20%;
+    top: 100%;
+    left: -30%;
     transform: translate(-50%);
   }
 
@@ -123,8 +122,8 @@
 
   .seat-9 .cards,
   .seat-9 .chips {
-    top: -50%;
-    left: 20%;
+    top: -40% !important;
+    left: -40% !important;
     transform: translate(-50%);
   }
 
@@ -219,9 +218,7 @@
   transform: translateY(-50%);
 }
 
-.seat-7 .cards,
-.seat-7 .chips {
-  bottom: -10%;
+.seat-7 .cards {
   left: -40%;
   transform: translate(-50%);
 }
@@ -256,4 +253,12 @@
   top: -5% !important;
   left: 45% !important;
   transform: translate(0);
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
 }
