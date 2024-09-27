@@ -285,7 +285,7 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   );
 }
 
-export function PlayerActions() {
+function PlayerActions() {
   const availableActions = useSelector(selectAvailableActions$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const players = useSelector(selectGamePlayers$());
