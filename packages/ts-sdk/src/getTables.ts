@@ -55,6 +55,7 @@ export const createTable = async (
   chipUnit: ChipUnits,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   accountAddress: any,
+  publicKey: string,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   signAndSubmitTransaction: any,
 ): Promise<TableInfo> => {
@@ -65,8 +66,10 @@ export const createTable = async (
     minBuyIn,
     maxBuyIn,
     accountAddress,
+    publicKey,
     signAndSubmitTransaction,
   );
+
   const tableInfo = createTableInfo(tableAddress, tablerResourceObject);
   tables.push(tableInfo);
 

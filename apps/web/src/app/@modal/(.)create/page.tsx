@@ -60,6 +60,7 @@ export default function GameCreateModal() {
         formValues.maxBuyIn,
         formValues.chipUnit,
         account?.address,
+        "19a6c9988eb82a9ed72d2ebe9ec2cd99fd45f6a0b5ebf1ef0e1a00c4262b813fe9de436d2014c1458e3d724b5a6b20940c31676e14497bcf25fd32a564cd053183aa7ad57c3d86cc106da0ba7f161bc90511f7204f441d7a1e0f7a5d203463bb",
         signAndSubmitTransaction,
       );
 
