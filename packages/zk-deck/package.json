@@ -45,10 +45,15 @@
     "snarkjs:build:verificationkey:mkdir": "mkdir -p verification_keys",
     "snarkjs:build:verificationkey:shuffle-encrypt-deck": "snarkjs zkey export verificationkey dist/zkeys/shuffle_encrypt_deck.zkey verification_keys/shuffle_encrypt_deck.json",
     "snarkjs:build:verificationkey:decrypt-card-share": "snarkjs zkey export verificationkey dist/zkeys/decrypt_card_share.zkey verification_keys/decrypt_card_share.json",
+    "snarkjs:build:contract": "tsx scripts/gen_zk_deck_contract.ts",
+    "move:build": "aptos move compile --move-2 --package-dir contracts --named-addresses zk_deck=default",
+    "move:test": "aptos move test --move-2 --package-dir contracts --named-addresses zk_deck=default",
+    "move:publish": "aptos move deploy-object --address-name zk_deck --chunked-publish --package-dir contracts --move-2 --assume-yes",
     "typescript:build": "tsc",
     "mocha:test": "mocha src/**/*.test.ts"
   },
   "devDependencies": {
+    "@aptos-labs/aptos-cli": "^0.2.0",
     "@jeton/typescript-config": "^0.0.0",
     "@types/chai": "^4.3.18",
     "@types/chai-as-promised": "^8.0.0",
@@ -57,6 +62,7 @@
     "chai": "^5.1.1",
     "chai-as-promised": "^8.0.0",
     "circomlib": "^2.0.5",
+    "handlebars": "^4.7.8",
     "mocha": "^10.7.3",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"

@@ -8,7 +8,7 @@ import type {
 import {
   type DecryptionCardShare,
   type PublicKey as ElGamalPublicKey,
-  type Groth16Proof,
+  type Proof,
   type ZKDeck,
   createZKDeck,
 } from "@jeton/zk-deck";
@@ -363,7 +363,7 @@ export class Game extends EventEmitter<GameEventMap> {
       );
     }
     const proofPromises: Promise<{
-      proof: Groth16Proof;
+      proof: Proof;
       decryptionCardShare: DecryptionCardShare;
     }>[] = [];
     for (const index of indexes) {

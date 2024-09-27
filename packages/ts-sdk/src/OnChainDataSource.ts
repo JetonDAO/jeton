@@ -9,7 +9,7 @@ import {
   PlayerStatus,
 } from "./types";
 
-import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Groth16Proof } from "@jeton/zk-deck";
+import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Proof } from "@jeton/zk-deck";
 
 export enum OnChainEventTypes {
   PLAYER_CHECKED_IN = "player-checked-in",
@@ -146,7 +146,7 @@ export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
     });
   }
 
-  async shuffledDeck(address: string, proof: Groth16Proof, outDeck: EncryptedDeck) {
+  async shuffledDeck(address: string, proof: Proof, outDeck: EncryptedDeck) {
     this.pieSocketTransport.publish(OnChainEventTypes.SHUFFLED_DECK, {
       player: address,
       proof,

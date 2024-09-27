@@ -1,0 +1,13 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "move:build": {
+      "inputs": ["sources/**", "contracts/Move.toml"],
+      "outputs": ["build/**"]
+    },
+    "move:test": {
+      "inputs": ["sources/**", "contracts/Move.toml"]
+    }
+  }
+}
