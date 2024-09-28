@@ -128,6 +128,10 @@ export class Game extends EventEmitter<GameEventMap> {
     this.elGamalPublicKey = zkDeck.generatePublicKey(this.elGamalSecretKey);
   }
 
+  public getRaiseAmount() {
+    return this.handState.bettingManager?.raiseAmount;
+  }
+
   private addOnChainListeners() {
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_CHECKED_IN, this.newPlayerCheckedIn);
     this.onChainDataSource.on(OnChainEventTypes.GAME_STARTED, this.gameStarted);

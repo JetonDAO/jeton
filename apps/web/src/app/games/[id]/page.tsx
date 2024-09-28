@@ -11,8 +11,6 @@ import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
 import Avatar3 from "@src/assets/images/avatars/avatar-3.png";
 import Avatar4 from "@src/assets/images/avatars/avatar-4.png";
-import chips from "@src/assets/images/chips/chips-3-stacks.png";
-import TableBackground from "@src/assets/images/table.png";
 import Modal from "@src/components/Modal";
 import { useAudio } from "@src/hooks/useAudio";
 import { orderPlayersSeats } from "@src/utils/seat";
@@ -23,7 +21,12 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CARDS_MAP } from "../../../lib/constants/cards";
 import Card from "./components/Card";
+import Pot from "./components/Pot";
+import PrivateCards from "./components/PrivateCards";
+import PublicCards from "./components/PublicCards";
 import ShufflingCards from "./components/ShufflingCards";
+import { Table } from "./components/Table";
+import WaitingIndicator from "./components/WaitingIndicator";
 import { useSubscribeToGameEvent } from "./components/useSubscribeToGameEvent";
 import { initGame, placeBet, setTableId } from "./state/actions/gameActions";
 import {
@@ -43,6 +46,9 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const players = useSelector(selectGamePlayers$());
   const [toffState, setToffState] = useState(false);
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
+  const cards = useSelector(selectPublicCards$);
+  const gameStatus = useSelector(selectGameStatus$());
+  const [gameStarted, setGameStarted] = useState(true);
   const router = useRouter();
   const {
     connected,
@@ -51,12 +57,20 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     signAndSubmitTransaction,
     account,
   } = useWallet();
+
   const mainPlayer = useMemo(
     () => players?.find((player) => player.id === account?.address),
     [players, account],
   );
 
   const reorderedPlayers = !players || !mainPlayer ? [] : orderPlayersSeats(players, mainPlayer.id);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (gameStatus === GameStatus.Shuffle && !gameStarted) {
+      setGameStarted(true);
+    }
+  }, [gameStatus]);
 
   useEffect(() => {
     if (!isWalletLoading && account) {
@@ -84,73 +98,31 @@ export default function PlayPage({ params }: { params: { id: string } }) {
             (player, i) => player && <PlayerSeat key={player.id} player={player} seat={i + 1} />,
           )}
         {shufflingPlayer?.id && <ShufflingCards />}
+        <div className="absolute flex flex-col justify-center items-center">
+          {/* <PublicCards cards={[11, 22, 33, 44, 51]} />
+          {gameStatus === GameStatus.AwaitingStart && <WaitingIndicator />} */}
+        </div>
+        <PrivateCards
+          playersPrivateCards={{
+            2: [1, 2],
+            3: [11, 22],
+            4: [14, 24],
+            5: [16, 21],
+            6: [31, 21],
+            7: [21, 24],
+            8: [41, 25],
+            9: [31, 42],
+          }}
+        />
+        {gameStarted && <Pot />}
       </Table>
       <PlayerActions />
-      <DownloadModal />
+      {/* <DownloadModal /> */}
       <GameStatusBox />
     </div>
   );
 }
 
-function Table({ children }: { children: ReactNode }) {
-  const cards = useSelector(selectPublicCards$);
-  const gameStatus = useSelector(selectGameStatus$());
-  const pot = useSelector(selectPot$());
-  const [gameStarted, setGameStarted] = useState(true);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (gameStatus === GameStatus.Shuffle && !gameStarted) {
-      setGameStarted(true);
-    }
-  }, [gameStatus]);
-
-  return (
-    <div className="flex justify-center items-center w-full h-full animate-grow-in">
-      <div className="h-full-z-40 md:scale-x-100 max-w-[70dvh] md:scale-y-100 md:scale-100 w-full md:max-w-[90dvw] xl:max-w-[90dvw] md:max-h-[80dvh] duration-500 scale-x-150 scale-y-150 sm:scale-y-125 relative md:right-0 flex items-center justify-center">
-        <Image
-          draggable={false}
-          priority
-          className="object-fill w-full h-full rotate-90 md:rotate-0 md:max-h-[80dvh]"
-          src={TableBackground}
-          alt="table"
-          style={{ imageRendering: "pixelated" }}
-        />
-
-        {children}
-      </div>
-
-      <div className="absolute flex flex-col justify-center items-center">
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((cardIndex) => {
-            const cardName = CARDS_MAP[cardIndex];
-            return (
-              cardName && (
-                <Card
-                  className="xl:w-24 2xl:w-28 animate-deal w-12 sm:w-16"
-                  key={cardName}
-                  cardName={cardName}
-                />
-              )
-            );
-          })}
-        </div>
-        {gameStatus === GameStatus.AwaitingStart && (
-          <div className="text-white flex text-xl animate-fadeIn px-2 py-1">
-            Waiting for players <div className="animate-bounce">.</div>
-            <div className="animate-bounce delay-300">.</div>
-            <div className="animate-bounce delay-700">.</div>
-          </div>
-        )}
-        {gameStarted && (
-          <div className="text-white flex items-center gap-3 bg-black/20 px-4 py-1 mt-2">
-            ${pot}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   const avatars = [Avatar1, Avatar2, Avatar3, Avatar4];
   const mounted = useRef(false);
@@ -161,8 +133,7 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
   const isPlayerTurn = awaitingBetFrom?.id === player.id;
   const myCards = useSelector(selectMyCards$());
   const dealer = useSelector(selectDealer$());
-  const [startRevealing, setStartRevealing] = useState(false);
-  const [revealedCards, setRevealedCards] = useState(false);
+
   const gameStatus = useSelector(selectGameStatus$());
   const [lastAction, setLastAction] = useState("");
 
@@ -170,14 +141,6 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
     if (mounted.current) return;
 
     mounted.current = true;
-
-    setTimeout(() => {
-      setStartRevealing(true);
-
-      setTimeout(() => {
-        setRevealedCards(true);
-      }, 1000);
-    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -198,7 +161,7 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
 
   return (
     <div
-      className={`seat-position items-center flex shrink-0 md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
+      className={`seat-position items-center flex z-30 shrink-0 md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
         shufflingPlayer?.id === player.id ? "seat-dealer scale-110" : `seat-${seat}`
       }`}
       style={{ animationDelay: `${seat * 100 + 100}ms` }}
@@ -221,45 +184,6 @@ function PlayerSeat({ player, seat }: { player: Player; seat: number }) {
         <span className="bg-white z-30 border rounded-full flex items-center justify-center shadow animate-grow-in absolute top-0 left-0 w-7 h-7">
           D
         </span>
-      )}
-      {seat !== 1 && (
-        <div className="flex chips grow-0 shrink-0 w-max">
-          {revealedCards ? (
-            <>
-              {[1, 5]?.map(
-                (cardName, i) =>
-                  CARDS_MAP[cardName] && (
-                    <Card
-                      className={`w-16 h-24 animate-flip-y grow-0 shrink-0 ${
-                        revealedCards ? "" : ""
-                      }`}
-                      key={cardName}
-                      cardName={CARDS_MAP[cardName]}
-                    />
-                  ),
-              )}
-            </>
-          ) : (
-            <>
-              <div
-                className={`w-14 h-20 rounded-lg animate-deal bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all ${
-                  revealedCards ? "" : ""
-                }`}
-                style={{
-                  transform: startRevealing ? "rotateY(90deg)" : "",
-                  transformStyle: "preserve-3d",
-                }}
-              />
-              <div
-                className={`w-14 h-20 rounded-lg animate-deal bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all`}
-                style={{
-                  transform: startRevealing ? "rotateY(90deg)" : "",
-                  transformStyle: "preserve-3d",
-                }}
-              />
-            </>
-          )}
-        </div>
       )}
 
       {seat === 1 && myCards && myCards.length > 0 && (
@@ -402,6 +326,62 @@ function GameStatusBox() {
     >
       <p>{statusMessage}</p>
     </motion.div>
+  );
+}
+
+function UnrevealedCards({ startRevealing }: { startRevealing: boolean }) {
+  const [startAnimating, setStartAnimating] = useState(false);
+
+  // Start animation after a short delay
+  useEffect(() => {
+    setTimeout(() => setStartAnimating(true), 200); // Delay to start animation
+  }, []);
+
+  return (
+    <>
+      {/* First card */}
+      <motion.div
+        className={`w-14 h-20 rounded-lg bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all`}
+        style={{
+          position: "absolute",
+          top: "50%", // Start at center of the screen
+          left: "50%", // Start at center of the screen
+          transform: "translate(-50%, -50%)", // Center the card exactly
+          transformStyle: "preserve-3d",
+        }}
+        animate={{
+          top: startAnimating ? "80%" : "50%", // Move to default seat position
+          left: startAnimating ? "50%" : "50%", // Move to default seat position
+          rotateY: startRevealing ? 180 : 0, // Flipping card on Y axis
+        }}
+        transition={{
+          duration: 1,
+          ease: "easeInOut",
+        }}
+      />
+
+      {/* Second card */}
+      <motion.div
+        className={`w-14 h-20 rounded-lg bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all`}
+        style={{
+          position: "absolute",
+          top: "50%", // Start at center of the screen
+          left: "50%", // Start at center of the screen
+          transform: "translate(-50%, -50%)", // Center the card exactly
+          transformStyle: "preserve-3d",
+        }}
+        animate={{
+          top: startAnimating ? "80%" : "50%", // Move to default seat position
+          left: startAnimating ? "50%" : "50%", // Move to default seat position
+          rotateY: startRevealing ? 180 : 0, // Flipping card on Y axis
+        }}
+        transition={{
+          duration: 1,
+          delay: 0.2, // Add delay to stagger the two cards
+          ease: "easeInOut",
+        }}
+      />
+    </>
   );
 }
 
