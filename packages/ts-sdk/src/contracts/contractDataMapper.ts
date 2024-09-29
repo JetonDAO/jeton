@@ -10,12 +10,12 @@ export const createTableInfo = (
   //TODO check maxPlayers and minPlayers value
   const tableInfo: TableInfo = {
     id: tableObjectAddress,
-    smallBlind: tableObjectResource.small_blind,
-    numberOfRaises: tableObjectResource.num_raises,
-    minPlayers: tableObjectResource.start_at_player,
-    maxPlayers: tableObjectResource.start_at_player,
-    minBuyIn: tableObjectResource.min_buy_in_amount,
-    maxBuyIn: tableObjectResource.max_buy_in_amount,
+    smallBlind: tableObjectResource.info.small_blind,
+    numberOfRaises: tableObjectResource.info.num_raises,
+    minPlayers: tableObjectResource.info.start_at_player,
+    maxPlayers: tableObjectResource.start_at_player + 4,
+    minBuyIn: tableObjectResource.info.min_buy_in_amount,
+    maxBuyIn: tableObjectResource.info.max_buy_in_amount,
     chipUnit: ChipUnits.apt,
   };
   return tableInfo;

@@ -15,7 +15,7 @@ import {
   createZKDeck,
 } from "@jeton/zk-deck";
 
-import { getUrlBytes, readData } from "./getURLBytes";
+import { getUrlBytes, readData } from "./utils/getURLBytes";
 
 import {
   BettingRounds,

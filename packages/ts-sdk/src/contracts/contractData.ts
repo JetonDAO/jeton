@@ -12,3 +12,5 @@ export const contractTableType = `${contractAddress}::${appName}::${tableType}` 
 const createTable = "create_table";
 export const contractCreateTableFunctionName =
   `${contractAddress}::${appName}::${createTable}` as MoveStructId;
+export const contractCheckInFunctionName =
+  `${contractAddress}::${appName}::check_in` as MoveStructId;

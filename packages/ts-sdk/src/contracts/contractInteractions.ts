@@ -1,8 +1,10 @@
 import type { GetEventsResponse } from "@aptos-labs/ts-sdk";
 import type { WriteSetChange, WriteSetChangeWriteResource } from "@aptos-labs/ts-sdk";
+import type { OnChainTableObject } from "@src/OnChainDataSource";
 import { ChipUnits, TableInfo } from "@src/types";
 import { aptos } from "@src/utils/aptos";
 import {
+  contractCheckInFunctionName,
   contractCreateTableFunctionName,
   contractTableCreatedEventType,
   contractTableType,
@@ -15,11 +17,34 @@ export const getTableObjectAddresses = async (): Promise<GetEventsResponse> => {
   });
 };
 
-export const getTableObject = async (tableObjectAddress: string): Promise<GetEventsResponse> => {
-  return aptos.getAccountResource({
-    accountAddress: tableObjectAddress,
-    resourceType: contractTableType,
+export const getTableObject = async (tableObjectAddress: string) => {
+  return aptos
+    .getAccountResource<OnChainTableObject>({
+      accountAddress: tableObjectAddress,
+      resourceType: contractTableType,
+    })
+    .then((r) => r);
+};
+
+export const callCheckInContract = async (
+  address: string,
+  buyInAmount: number,
+  publicKey: Uint8Array,
+  tableObjetAddress: string,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
+) => {
+  const submitCheckInTransactionHash = await signAndSubmitTransaction({
+    sender: address,
+    data: {
+      function: contractCheckInFunctionName,
+      functionArguments: [tableObjetAddress, publicKey, buyInAmount],
+    },
   });
+  const transactionData = await aptos.waitForTransaction({
+    transactionHash: submitCheckInTransactionHash.hash,
+  });
+  console.log("after tx hash", transactionData);
 };
 
 export const createTableObject = async (
@@ -28,24 +53,29 @@ export const createTableObject = async (
   minPlayers: number,
   minBuyIn: number,
   maxBuyIn: number,
+  buyInAmount: number,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   accountAddress: any,
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  publicKey: any,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   signAndSubmitTransaction: any,
-): Promise<[string, GetEventsResponse]> => {
+) => {
+  //TODO format public key before passing
   const submitCreateTableTransactionHash = await signAndSubmitTransaction({
     sender: accountAddress,
     data: {
       function: contractCreateTableFunctionName,
       functionArguments: [
-        1000,
+        2 * 60,
         minBuyIn,
         maxBuyIn,
-        2 * 60,
         smallBlind,
         numberOfRaises,
-        8,
         minPlayers,
+        9,
+        publicKey,
+        buyInAmount,
       ],
     },
   });
@@ -53,14 +83,18 @@ export const createTableObject = async (
   const transactionData = await aptos.waitForTransaction({
     transactionHash: submitCreateTableTransactionHash.hash,
   });
+  console.log("after tx hash", transactionData);
 
-  const tableObjectAddress = transactionData.changes.find((change) =>
-    isWriteSetChangeWriteResource(change),
-  )!.address;
+  const tableObjectAddress = (
+    transactionData.changes.find((change) =>
+      isWriteSetChangeWriteResource(change),
+    )! as WriteSetChangeWriteResource
+  ).address;
 
   const tableObjectResource = await getTableObject(tableObjectAddress);
 
-  return [tableObjectAddress, tableObjectResource];
+  console.log("transaction resource", tableObjectResource, tableObjectAddress);
+  return [tableObjectAddress, tableObjectResource] as const;
 };
 
 function isWriteSetChangeWriteResource(

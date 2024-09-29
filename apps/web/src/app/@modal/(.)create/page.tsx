@@ -10,6 +10,12 @@ export const runtime = "edge";
 
 type FormValues = Omit<TableInfo, "id">;
 
+import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
+//@ts-ignore
+import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
+//@ts-ignore
+import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+
 const INITIAL_FORM_VALUES: FormValues = {
   smallBlind: 0,
   numberOfRaises: 0,
@@ -51,7 +57,7 @@ export default function GameCreateModal() {
     setLoading(true);
 
     try {
-      const tableInfo = await createTable(
+      const jeton = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,
         formValues.minPlayers,
@@ -59,21 +65,27 @@ export default function GameCreateModal() {
         formValues.minBuyIn,
         formValues.maxBuyIn,
         formValues.chipUnit,
-        account?.address,
+        1000,
+        account!.address,
         signAndSubmitTransaction,
+        {
+          decryptCardShareWasm,
+          shuffleEncryptDeckWasm,
+          decryptCardShareZkey,
+          shuffleEncryptDeckZkey,
+        },
       );
 
-      router.push(`/games/${tableInfo.id}`);
+      router.push(`/games/${jeton.tableInfo.id}`);
     } finally {
       setLoading(false);
     }
+
+    // Modal choose violence and did not close on navigating
+    if (!pathname.includes("create")) {
+      return null;
+    }
   };
-
-  // Modal choose violence and did not close on navigating
-  if (!pathname.includes("create")) {
-    return null;
-  }
-
   return (
     <Modal className="animate-scaleUp">
       <form onSubmit={handleSubmit}>

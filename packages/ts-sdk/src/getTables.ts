@@ -1,10 +1,8 @@
 import { ChipUnits, type TableInfo } from "@src/types/Table";
+import { Jeton } from "./Jeton/Jeton";
+import { AptosOnChainDataSource } from "./OnChainDataSource/AptosOnChainDataSource";
 import { createTableInfo } from "./contracts/contractDataMapper";
-import {
-  createTableObject,
-  getTableObject,
-  getTableObjectAddresses,
-} from "./contracts/contractInteractions";
+import { getTableObject, getTableObjectAddresses } from "./contracts/contractInteractions";
 const tables: TableInfo[] = [
   {
     id: "tbc11",
@@ -38,37 +36,6 @@ export const getTablesInfo = async (): Promise<TableInfo[]> => {
   return tables;
 };
 
-export const getTableInfo = async (id: string): Promise<TableInfo> => {
-  const tableObjectResource = await getTableObject(id);
-  const tableInfo = createTableInfo(id, tableObjectResource);
+export const getTableInfo = AptosOnChainDataSource.getTableInfo;
 
-  return tableInfo;
-};
-
-export const createTable = async (
-  smallBlind: number,
-  numberOfRaises: number,
-  minPlayers: number,
-  minBuyIn: number,
-  maxBuyIn: number,
-  waitingBlocks: number,
-  chipUnit: ChipUnits,
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  accountAddress: any,
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  signAndSubmitTransaction: any,
-): Promise<TableInfo> => {
-  const [tableAddress, tablerResourceObject] = await createTableObject(
-    smallBlind,
-    numberOfRaises,
-    minPlayers,
-    minBuyIn,
-    maxBuyIn,
-    accountAddress,
-    signAndSubmitTransaction,
-  );
-  const tableInfo = createTableInfo(tableAddress, tablerResourceObject);
-  tables.push(tableInfo);
-
-  return tableInfo;
-};
+export const createTable = Jeton.createTableAndJoin;

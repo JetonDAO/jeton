@@ -11,5 +11,5 @@ export interface Player {
   balance: number;
   elGamalPublicKey: ElGamalPublicKey;
   status: PlayerStatus;
-  bet: number;
+  bet?: number;
 }

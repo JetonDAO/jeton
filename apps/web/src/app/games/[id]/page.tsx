@@ -57,7 +57,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   } = useWallet();
 
   const reorderedPlayers = useMemo(() => {
-    const mainPlayer = players?.find((player) => player.id === account?.address);
+    const mainPlayer = players?.find((player) => player?.id === account?.address);
     return players && mainPlayer ? orderPlayersSeats(players, mainPlayer.id) : [];
   }, [players, players?.length, account]);
 

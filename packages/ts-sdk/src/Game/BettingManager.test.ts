@@ -1,4 +1,3 @@
-import { BettingManager } from "./BettingManager";
 import {
   BettingActions,
   BettingRounds,
@@ -7,7 +6,8 @@ import {
   type Player,
   PlayerStatus,
   type TableInfo,
-} from "./types";
+} from "../types";
+import { BettingManager } from "./BettingManager";
 
 describe("tests different betting functionalities of betting manager", () => {
   test("one round of pre-flop betting", () => {

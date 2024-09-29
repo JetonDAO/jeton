@@ -1,13 +1,13 @@
 import { EventEmitter } from "events";
-import type { GameState, PublicCardRounds } from ".";
-import { PieSocketTransport } from "./transport";
+import type { GameState, PublicCardRounds } from "..";
+import { PieSocketTransport } from "../transport";
 import {
   type BettingActions,
   type BettingRounds,
   type CardShareAndProof,
   GameStatus,
   PlayerStatus,
-} from "./types";
+} from "../types";
 
 import type { PublicKey as ElGamalPublicKey, EncryptedDeck, Proof } from "@jeton/zk-deck";
 
@@ -61,7 +61,7 @@ type OnChainEventMap = {
   [OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED]: [OnChainPublicCardsSharesData];
 };
 
-export class OnChainDataSource extends EventEmitter<OnChainEventMap> {
+export class MockOnChainDataSource extends EventEmitter<OnChainEventMap> {
   pieSocketTransport: PieSocketTransport;
   gameState: GameState = { players: [], dealer: 0, status: GameStatus.AwaitingStart };
   playerId = "";

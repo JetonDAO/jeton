@@ -1,4 +1,4 @@
-import type { CardShareAndProof, Player } from "./types";
+import type { CardShareAndProof, Player } from "@src/types";
 
 export class CardShareProofSource {
   playerToProofMap: Record<string, Record<number, CardShareAndProof>>;

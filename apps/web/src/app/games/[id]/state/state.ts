@@ -2,15 +2,17 @@ import {
   type BettingActions,
   type BettingRounds,
   type GameState as EntryGameState,
-  type Game,
   GameStatus,
+  type Jeton,
   type PlacingBettingActions,
   type Player,
 } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
-type GameState = Omit<EntryGameState, "dealer"> & {
+type GameState = {
   dealer?: Player;
+  players: (Player | null)[];
+  status?: GameStatus;
   shufflingPlayer?: Player;
   myCards?: [number, number];
   flopCards?: [number, number, number];
@@ -34,7 +36,7 @@ export interface State {
   tableId?: string;
   loading: boolean;
   initializing: boolean;
-  game?: Game;
+  game?: Jeton;
   gameState?: GameState;
 }
 

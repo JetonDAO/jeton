@@ -13,6 +13,7 @@ import {
   createZKDeck,
 } from "@jeton/zk-deck";
 
+import type { OffChainEvents, offChainTransport } from "@src/offChain";
 import {
   BettingActions,
   BettingRounds,
@@ -24,13 +25,11 @@ import {
   PlayerStatus,
   PublicCardRounds,
   type TableInfo,
-  type offChainTransport,
 } from "@src/types";
-import type { OffChainEvents } from "@src/types/OffChainEvents";
-import { BettingManager } from "./BettingManager";
-import { CardShareProofSource } from "./CardShareProofSource";
+import { calculatePercentage } from "@src/utils/calculatePercentage";
+import { getUrlBytes, readData } from "@src/utils/getURLBytes";
 import {
-  type OnChainDataSource,
+  type MockOnChainDataSource,
   OnChainEventTypes,
   type OnChainGameStartedData,
   type OnChainPlayerCheckedInData,
@@ -38,20 +37,20 @@ import {
   type OnChainPrivateCardsSharesData,
   type OnChainPublicCardsSharesData,
   type OnChainShuffledDeckData,
-} from "./OnChainDataSource";
-import { getUrlBytes, readData } from "./getURLBytes";
+} from "../OnChainDataSource/MockOnChainDataSource";
 import {
   type GameEventMap,
   GameEventTypes,
   type ReceivedPublicCardsEvent,
-} from "./types/GameEvents";
-import { calculatePercentage } from "./utils/calculatePercentage";
+} from "@src/types/GameEvents";
 import {
   getGameStatus,
   getGameStatusForPublicCard,
   getNextBettingRound,
   getNextPublicCardRound,
-} from "./utils/convertTypes";
+} from "@src/utils/convertTypes";
+import { BettingManager } from "./BettingManager";
+import { CardShareProofSource } from "./CardShareProofSource";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -66,13 +65,13 @@ export type GameConfigs = {
   address: string;
   signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>;
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>;
-  onChainDataSource: OnChainDataSource;
+  onChainDataSource: MockOnChainDataSource;
   zkDeckFilesOrUrls: ZkDeckUrls;
 };
 
 export class Game extends EventEmitter<GameEventMap> {
   private offChainTransport: offChainTransport;
-  private onChainDataSource: OnChainDataSource;
+  private onChainDataSource: MockOnChainDataSource;
 
   private tableInfo: TableInfo;
   private playerId: string;
@@ -272,7 +271,7 @@ export class Game extends EventEmitter<GameEventMap> {
     const newPlayer = {
       id: data.address,
       balance: data.buyIn,
-      elGamalPublicKey: data.elGamalPublicKey,
+      elGamalPublicKey: new Uint8Array(data.elGamalPublicKey),
       status: PlayerStatus.sittingOut,
     };
     this.gameState?.players.push(newPlayer);
@@ -285,6 +284,7 @@ export class Game extends EventEmitter<GameEventMap> {
       });
 
       // call game start if there are enough people in the room people
+      console.log("sadjf;laksdjf", this.tableInfo.minPlayers, this.gameState.players.length);
       if (this.gameState.players.length === this.tableInfo.minPlayers) {
         setTimeout(() => {
           this.onChainDataSource.pieSocketTransport.publish(OnChainEventTypes.GAME_STARTED, {
