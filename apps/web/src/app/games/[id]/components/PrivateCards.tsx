@@ -78,7 +78,6 @@ export default function PrivateCards({
                   }}
                 />
               </div>
-              // <UnrevealedCards startRevealing={startRevealing} />
             )}
           </div>
         );
