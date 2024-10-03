@@ -11,11 +11,16 @@ import { useEffect, useState } from "react";
 export default function GameJoinModal() {
   const [gameTables, setGameTables] = useState<TableInfo[]>([]);
   const pathname = usePathname();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTables = async () => {
-      const data = await getTablesInfo();
-      setGameTables(data);
+      try {
+        const data = await getTablesInfo();
+        setGameTables(data);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchTables();
   }, []);
@@ -30,12 +35,16 @@ export default function GameJoinModal() {
   }
 
   return (
-    <Modal className="animate-scaleUp">
+    <Modal
+      className={`animate-scaleUp transition-all duration-1000 ${
+        loading ? "max-h-80" : "max-h-full"
+      }`}
+    >
       <div className="text-white text-2xl pb-10">Join a game</div>
       {gameTables.length > 0 ? (
-        <ul className="text-white border flex flex-col p-2 bg-[#b87d5b]">
+        <ul className="text-white flex animate-grow-in flex-col p-2 bg-[#b87d5b]">
           {gameTables.map((table) => (
-            <li key={table.id} className="mb-4 relative flex flex-col">
+            <li key={table.id} className="relative flex flex-col">
               <div>Table ID: {table.id}</div>
               <div>Small Blind: {table.smallBlind}</div>
               <div>Number of Raises: {table.numberOfRaises}</div>
@@ -47,7 +56,7 @@ export default function GameJoinModal() {
               </div>
               <div>Chip Unit: {table.chipUnit}</div>
               <Link
-                className="nes-btn is-primary p-1 text-xs self-center"
+                className="nes-btn is-primary mt-3 p-1 text-xs self-center"
                 href={`/games/${table.id}`}
               >
                 join
@@ -56,7 +65,7 @@ export default function GameJoinModal() {
           ))}
         </ul>
       ) : (
-        <div className="text-white">No tables available</div>
+        <div className="text-white">{loading ? "Loading tables..." : "No tables available"}</div>
       )}
     </Modal>
   );

@@ -56,16 +56,12 @@ export default function Seat({
     }
   }, [gameStatus]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLastAction("Raise $420");
-    }, 1500);
-  }, []);
-
   return (
     <div
-      className={`seat-position items-center flex z-30 shrink-0 md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
-        shufflingPlayer?.id === player.id ? "seat-dealer scale-110" : `seat-${seatNumber}`
+      className={`seat-position items-center flex z-30 shrink-0  md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
+        shufflingPlayer?.id === player.id
+          ? "seat-dealer scale-110"
+          : `seat-${seatNumber} ${2 > Math.random() ? "z-[501]" : ""}`
       }`}
       style={{ animationDelay: `${seatNumber * 100 + 100}ms` }}
     >

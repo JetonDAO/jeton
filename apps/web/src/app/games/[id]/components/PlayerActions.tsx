@@ -13,7 +13,7 @@ export default function PlayerActions() {
   const availableActions = useSelector(selectAvailableActions$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const players = useSelector(selectGamePlayers$());
-  const [queuedAction, setQueuedAction] = useState<string | null>(null);
+  const [queuedAction, setQueuedAction] = useState<PlacingBettingActions | null>(null);
   const [isActionQueued, setIsActionQueued] = useState(false);
   const { account } = useWallet();
   const mainPlayer = useMemo(
@@ -29,40 +29,43 @@ export default function PlayerActions() {
 
   useEffect(() => {
     if (isPlayerTurn && queuedAction) {
+      console.log(`Player turn, executing queued action: ${queuedAction}`);
       handlePlayerAction(queuedAction);
       setQueuedAction(null);
       setIsActionQueued(false);
     }
   }, [isPlayerTurn, queuedAction]);
 
-  const handlePlayerAction = (action: string) => {
+  const handlePlayerAction = (action: PlacingBettingActions) => {
+    console.log(isPlayerTurn, awaitingBetFrom, mainPlayer);
+
     if (isPlayerTurn) {
-      console.log(`Executing action: ${action}`);
+      console.log(`Executing action immediately: ${action}`);
       takePlayerAction(action);
     } else {
-      console.log(`Queued action: ${action}`);
+      console.log(`Queueing action: ${action}`);
       setQueuedAction(action);
       setIsActionQueued(true);
     }
   };
 
-  const takePlayerAction = (action: string) => {
+  const takePlayerAction = (action: PlacingBettingActions) => {
     console.log(`Action taken: ${action}`);
+    placeBet(action);
   };
 
   return (
     <div className="fixed bottom-5 gap-5 flex justify-center w-full px-10">
       {availableActions &&
-        availableActions?.length > 0 &&
-        actions?.map((action) => (
+        availableActions.length > 0 &&
+        actions.map((action) => (
           <button
             key={action}
-            onClickCapture={() => {}}
-            className={`bg-[#b87d5b] focus:outline-[#b87d5b] disabled:opacity-30 w-full py-4 text-lg text-white hover:brightness-90 ${
-              isActionQueued && queuedAction === action ? "bg-opacity-50 cursor-not-allowed" : ""
+            className={`bg-[#b87d5b] focus:outline-[#b87d5b] disabled:opacity-70 w-full py-4 text-lg text-white hover:brightness-90 ${
+              isActionQueued && queuedAction === action ? "cursor-pointer" : ""
             }`}
-            onClick={() => placeBet(action)}
-            disabled={isActionQueued || !availableActions?.includes(action)}
+            onClick={() => handlePlayerAction(action)}
+            disabled={!availableActions.includes(action) || queuedAction === action}
           >
             {isActionQueued && queuedAction === action ? `${action} (Queued)` : action}
           </button>

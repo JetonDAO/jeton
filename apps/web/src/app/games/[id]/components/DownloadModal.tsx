@@ -2,6 +2,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GameEventTypes } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import Modal from "@src/components/Modal";
+import React from "react";
 import { selectIsGameLoading$ } from "../state/selectors/gameSelectors";
 import { useSubscribeToGameEvent } from "./useSubscribeToGameEvent";
 

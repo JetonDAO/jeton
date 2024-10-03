@@ -9,6 +9,9 @@ import { useSelector } from "@legendapp/state/react";
 import { orderPlayersSeats } from "@src/utils/seat";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import React from "react";
+import DownloadModal from "./components/DownloadModal";
+import GameContainer from "./components/GameContainer";
 import GameStatusBox from "./components/GameStatusBox";
 import PlayerActions from "./components/PlayerActions";
 import Pot from "./components/Pot";
@@ -22,9 +25,18 @@ import { initGame, setTableId } from "./state/actions/gameActions";
 import {
   selectGamePlayers$,
   selectGameStatus$,
+  selectMyCards$,
   selectPublicCards$,
   selectShufflingPlayer$,
 } from "./state/selectors/gameSelectors";
+
+function getRandomCards() {
+  const cards = new Set<number>();
+  while (cards.size < 2) {
+    cards.add(Math.floor(Math.random() * 52));
+  }
+  return Array.from(cards);
+}
 
 export default function PlayPage({ params }: { params: { id: string } }) {
   const players = useSelector(selectGamePlayers$());
@@ -32,8 +44,10 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const cards = useSelector(selectPublicCards$);
   const gameStatus = useSelector(selectGameStatus$());
-  const [gameStarted, setGameStarted] = useState(true);
+  const [drawPrivateCards, setDrawPrivateCards] = useState(false);
+  const myCards = useSelector(selectMyCards$());
   const router = useRouter();
+  const [privateCard, setPrivateCards] = useState<Record<number, number[]> | null>(null);
   const {
     connected,
     isLoading: isWalletLoading,
@@ -44,16 +58,13 @@ export default function PlayPage({ params }: { params: { id: string } }) {
 
   const reorderedPlayers = useMemo(() => {
     const mainPlayer = players?.find((player) => player.id === account?.address);
-    const reorderedPlayers =
-      !players || !mainPlayer ? [] : orderPlayersSeats(players, mainPlayer.id);
-
-    return reorderedPlayers;
-  }, [players, account]);
+    return players && mainPlayer ? orderPlayersSeats(players, mainPlayer.id) : [];
+  }, [players, players?.length, account]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    if (gameStatus === GameStatus.Shuffle && !gameStarted) {
-      setGameStarted(true);
+    if (gameStatus === GameStatus.DrawPrivateCards && !drawPrivateCards) {
+      setDrawPrivateCards(true);
     }
   }, [gameStatus]);
 
@@ -72,39 +83,45 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     }
   }, [isWalletLoading, connected, router, toffState]);
 
+  useEffect(() => {
+    if (myCards && myCards.length > 0) {
+      const privateCards = reorderedPlayers.reduce(
+        (acc, player, seat) => {
+          if (player) {
+            acc[seat + 1] = getRandomCards();
+          }
+          return acc;
+        },
+        {} as Record<number, number[]>,
+      );
+
+      setPrivateCards(privateCards);
+    }
+  }, [reorderedPlayers, myCards]);
+
   return (
-    <div
-      className={`flex flex-col relative items-center justify-center py-2 bg-[url("/images/pixel-wooden-pattern.png")] bg-repeat bg-center bg-[length:120px_120px] overflow-hidden h-[100dvh] w-[100dvw] z-50 min-h-screen`}
-    >
+    <GameContainer>
       <Table>
-        {new Array(9)
-          .fill(reorderedPlayers[0])
-          ?.map(
-            (player, i) => player && <Seat key={player.id} player={player} seatNumber={i + 1} />,
-          )}
+        {reorderedPlayers.map(
+          (player, i) => player && <Seat key={player.id} player={player} seatNumber={i + 1} />,
+        )}
         {shufflingPlayer?.id && <ShufflingCards />}
         <div className="absolute flex flex-col justify-center items-center">
-          {/* <PublicCards cards={[11, 22, 33, 44, 51]} />
-          {gameStatus === GameStatus.AwaitingStart && <WaitingIndicator />} */}
+          {cards.length > 0 && <PublicCards cards={cards} />}
+          {gameStatus === GameStatus.AwaitingStart && <WaitingIndicator />}
         </div>
-        <PrivateCards
-          playersPrivateCards={{
-            2: [1, 2],
-            3: [11, 22],
-            4: [14, 24],
-            5: [16, 21],
-            6: [31, 21],
-            7: [21, 24],
-            8: [41, 25],
-            9: [31, 42],
-          }}
-        />
-        {gameStarted && <Pot />}
+
+        {drawPrivateCards && (
+          <>
+            <PrivateCards playersPrivateCards={privateCard} />
+            <Pot />
+          </>
+        )}
       </Table>
       <PlayerActions />
-      {/* <DownloadModal /> */}
+      <DownloadModal />
       <GameStatusBox />
-    </div>
+    </GameContainer>
   );
 }
 

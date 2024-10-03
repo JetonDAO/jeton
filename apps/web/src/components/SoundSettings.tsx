@@ -1,6 +1,9 @@
 import jazzLoungeSoundtrack from "@src/assets/audio/soundtracks/jazz-lounge.mp3";
+import MusicIcon from "@src/assets/icons/music-note.svg";
+import SoundIcon from "@src/assets/icons/sound.svg";
 import { useAudio } from "@src/hooks/useAudio";
 import { useButtonClickSound } from "@src/hooks/useButtonClickSound";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAudioGroupAllowed, setAudioGroupState } from "../utils/audio";
@@ -40,26 +43,37 @@ const AudioSettings = () => {
   if (pathname === "/") {
     return null;
   }
-
   return (
-    <div className="absolute top-5 right-5 text-white flex gap-5">
-      <label className="flex items-center gap-1">
-        Effect Sound
-        <input
-          type="checkbox"
-          checked={effectEnabled}
-          onChange={(e) => handleToggle("effect", e.target.checked)}
+    <div className="absolute top-5 right-5 text-white flex gap-5 animate-grow-in delay-1000">
+      <div
+        className={`cursor-pointer transition-transform duration-300 ${
+          effectEnabled ? "opacity-100 scale-100" : "opacity-50 scale-75"
+        }`}
+        onClick={() => handleToggle("effect", !effectEnabled)}
+      >
+        <Image
+          src={SoundIcon}
+          alt="Effect Sound Toggle"
+          width={60}
+          height={60}
+          className={`transition-all duration-300 ${effectEnabled ? "" : "grayscale"}`}
         />
-      </label>
+      </div>
 
-      <label className="flex items-center gap-1">
-        Soundtrack
-        <input
-          type="checkbox"
-          checked={soundtrackEnabled}
-          onChange={(e) => handleToggle("soundtrack", e.target.checked)}
+      <div
+        className={`cursor-pointer transition-transform duration-300 ${
+          soundtrackEnabled ? "opacity-100 scale-100" : "opacity-50 scale-75"
+        }`}
+        onClick={() => handleToggle("soundtrack", !soundtrackEnabled)}
+      >
+        <Image
+          src={MusicIcon}
+          alt="Soundtrack Toggle"
+          width={60}
+          height={60}
+          className={`transition-all duration-300 ${soundtrackEnabled ? "" : "grayscale"}`}
         />
-      </label>
+      </div>
     </div>
   );
 };

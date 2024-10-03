@@ -67,9 +67,9 @@
 
   /* Dealer */
   .seat-dealer {
-    top: -5%;
-    left: 45%;
-    transform: translate(0);
+    top: -5% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
   }
 
   .cards-center {
@@ -185,6 +185,7 @@
   .pot {
     top: 65%;
     left: 50%;
+    transform: translateX(-50%);
   }
 }
 

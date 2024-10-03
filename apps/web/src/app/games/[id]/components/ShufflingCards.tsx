@@ -1,5 +1,3 @@
-import CardBackground from "@src/assets/images/cards/card-back.png";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -32,16 +30,12 @@ const ShufflingCards = () => {
   }, []);
 
   const flowerAnimation = async () => {
-    await openAllCards();
+    setOpen(true);
     await delay(1000);
+    setOpened(true);
     await closeAllCards();
     await delay(1000);
     resetCards();
-  };
-
-  const openAllCards = async () => {
-    setOpen(true);
-    await delay(1000);
   };
 
   const closeAllCards = async () => {

@@ -10,6 +10,12 @@ interface UseAudioReturn {
 
 type AudioGroup = "effect" | "soundtrack";
 
+// Define constant volume levels for each audio group
+const AUDIO_GROUP_VOLUMES: Record<AudioGroup, number> = {
+  effect: 0.2, // Volume level for effects (range 0.0 to 1.0)
+  soundtrack: 0.2, // Volume level for soundtracks (range 0.0 to 1.0)
+};
+
 export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -17,7 +23,11 @@ export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
   useEffect(() => {
     audioRef.current = new Audio(soundFile);
 
-    // Event listeners to update isPlaying state
+    // Set the volume based on the audio group
+    if (audioRef.current) {
+      audioRef.current.volume = AUDIO_GROUP_VOLUMES[group];
+    }
+
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     const onEnded = () => setIsPlaying(false);
@@ -38,26 +48,22 @@ export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
         audioRef.current = null;
       }
     };
-  }, [soundFile]);
+  }, [soundFile, group]);
 
   const play = async () => {
-    // Check if the group is allowed to play audio
     if (!isAudioGroupAllowed(group)) {
       console.log(`Audio group "${group}" is disabled, skipping play.`);
-      return; // Do not play if the group is disabled
+      return;
     }
 
     if (audioRef.current) {
-      // Ensure no pause happens while play is being requested
       try {
         if (audioRef.current.paused) {
           reset();
           await audioRef.current.play();
         }
       } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Error during play()", err);
-        }
+        console.error("Error during play()", err);
       }
     }
   };
@@ -80,6 +86,6 @@ export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
     play,
     pause,
     reset,
-    isPlaying, // Return isPlaying state
+    isPlaying,
   };
 }
