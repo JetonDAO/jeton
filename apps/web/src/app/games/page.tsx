@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <div className="relative overflow-hidden items-center flex min-h-screen">
       <Image
-        quality={10}
+        quality={50}
         width={80}
         height={80}
         className="w-24 aspect-square absolute bottom-5 right-5 duration-500 animate-grow-in"
@@ -52,6 +52,7 @@ export default function Home() {
             <>
               {options.map((btn) => (
                 <Link
+                  prefetch
                   href={btn.url}
                   key={btn.url}
                   className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 nes-btn is-warning !bg-amber-500 animate-grow-in"

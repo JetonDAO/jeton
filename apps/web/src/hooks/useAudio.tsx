@@ -10,10 +10,9 @@ interface UseAudioReturn {
 
 type AudioGroup = "effect" | "soundtrack";
 
-// Define constant volume levels for each audio group
 const AUDIO_GROUP_VOLUMES: Record<AudioGroup, number> = {
-  effect: 0.2, // Volume level for effects (range 0.0 to 1.0)
-  soundtrack: 0.2, // Volume level for soundtracks (range 0.0 to 1.0)
+  effect: 0.2,
+  soundtrack: 0.2,
 };
 
 export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
@@ -23,7 +22,6 @@ export function useAudio(soundFile: string, group: AudioGroup): UseAudioReturn {
   useEffect(() => {
     audioRef.current = new Audio(soundFile);
 
-    // Set the volume based on the audio group
     if (audioRef.current) {
       audioRef.current.volume = AUDIO_GROUP_VOLUMES[group];
     }

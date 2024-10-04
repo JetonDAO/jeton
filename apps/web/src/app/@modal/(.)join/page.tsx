@@ -56,6 +56,7 @@ export default function GameJoinModal() {
               </div>
               <div>Chip Unit: {table.chipUnit}</div>
               <Link
+                prefetch
                 className="nes-btn is-primary mt-3 p-1 text-xs self-center"
                 href={`/games/${table.id}`}
               >
