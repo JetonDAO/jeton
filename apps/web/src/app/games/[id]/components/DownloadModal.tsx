@@ -19,7 +19,11 @@ export default function DownloadModal() {
         <div className="flex flex-col items-center gap-1 text-white text-center">
           {percentage ? (
             <>
-              <progress className="nes-progress is-success" value={percentage} max={100} />
+              <progress
+                className="nes-progress is-success duration-300 transition-all"
+                value={percentage}
+                max={100}
+              />
               {`%${percentage}`}
             </>
           ) : (

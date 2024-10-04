@@ -4,6 +4,7 @@ export const runtime = "edge";
 
 import { type TableInfo, getTablesInfo } from "@jeton/ts-sdk";
 import Modal from "@src/components/Modal";
+import Spinner from "@src/components/Spinner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,25 +37,34 @@ export default function GameJoinModal() {
 
   return (
     <Modal
-      className={`animate-scaleUp transition-all duration-1000 ${
-        loading ? "max-h-80" : "max-h-full"
+      className={`animate-scaleUp transition-all flex flex-col items-center overflow-y-scroll duration-1000 ${
+        loading ? "max-h-80" : "max-h-[90dvh]"
       }`}
     >
       <div className="text-white text-2xl pb-10">Join a game</div>
       {gameTables.length > 0 ? (
-        <ul className="text-white flex animate-grow-in flex-col p-2 bg-[#b87d5b]">
+        <ul className="text-white flex animate-grow-in flex-col gap-5 ">
           {gameTables.map((table) => (
-            <li key={table.id} className="relative flex flex-col">
-              <div>Table ID: {table.id}</div>
-              <div>Small Blind: {table.smallBlind}</div>
-              <div>Number of Raises: {table.numberOfRaises}</div>
+            <li key={table.id} className="relative flex flex-col p-5 bg-[#b87d5b]">
               <div>
-                Players: {table.minPlayers} - {table.maxPlayers}
+                <span className="text-[#e0e0e0]">Table ID:</span> {table.id.slice(0, 8)}
               </div>
               <div>
-                Buy-In: {table.minBuyIn} - {table.maxBuyIn}
+                <span className="text-[#e0e0e0]">Small Blind:</span> {table.smallBlind}
               </div>
-              <div>Chip Unit: {table.chipUnit}</div>
+              <div>
+                <span className="text-[#e0e0e0]">Number of Raises:</span> {table.numberOfRaises}
+              </div>
+              <div>
+                <span className="text-[#e0e0e0]">Players:</span> {table.minPlayers} -{" "}
+                {table.maxPlayers}
+              </div>
+              <div>
+                <span className="text-[#e0e0e0]">Buy-In:</span> {table.minBuyIn} - {table.maxBuyIn}
+              </div>
+              <div>
+                <span className="text-[#e0e0e0]">Chip Unit:</span> {table.chipUnit}
+              </div>
               <Link
                 prefetch
                 className="nes-btn is-primary mt-3 p-1 text-xs self-center"
@@ -65,8 +75,13 @@ export default function GameJoinModal() {
             </li>
           ))}
         </ul>
+      ) : loading ? (
+        <div className="text-white flex-col flex gap-3 items-center animate-grow-in">
+          <Spinner />
+          Loading tables
+        </div>
       ) : (
-        <div className="text-white">{loading ? "Loading tables..." : "No tables available"}</div>
+        <div className="text-white ">No tables available</div>
       )}
     </Modal>
   );

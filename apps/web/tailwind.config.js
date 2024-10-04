@@ -45,11 +45,20 @@ module.exports = {
             transform: "translateY(0) rotate(6deg)", // Adjust rotation angle for the second card
           },
         },
+        spinner: {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
+          },
+        },
       },
       animation: {
         deal: "deal 0.5s ease-out forwards",
         dealAndRotate1: "dealAndRotate1 1s ease-out forwards",
         dealAndRotate2: "dealAndRotate2 1s ease-out forwards",
+        spinner: "spinner 2s infinite",
       },
     },
   },
