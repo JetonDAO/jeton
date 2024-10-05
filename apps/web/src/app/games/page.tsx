@@ -5,6 +5,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import buttonBackground from "@src/assets/images/button.png";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 import { useState } from "react";
 
 export const runtime = "edge";
@@ -31,7 +32,7 @@ export default function Home() {
   return (
     <div className="relative overflow-hidden items-center flex min-h-screen">
       <Image
-        quality={10}
+        quality={50}
         width={80}
         height={80}
         className="w-24 aspect-square absolute bottom-5 right-5 duration-500 animate-grow-in"
@@ -42,29 +43,35 @@ export default function Home() {
         priority
       />
       <div
-        className={`text-center flex animate-slide-in flex-col items-center rounded-r-3xl px-8 py-8 bg-opacity-90 duration-500 relative overflow-hidden z-50 justify-center max-w-md bg-[url("/images/wood-pattern-light.png")] bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b]`}
+        className={`text-center flex animate-slide-in flex-col items-center rounded-r-3xl px-8 py-8 bg-opacity-90 duration-1000 relative overflow-hidden z-50 justify-center max-w-md bg-[url("/images/wood-pattern-light.png")] bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b] transition-all ${
+          connected ? "max-h-full" : "max-h-96"
+        }`}
       >
-        <div className="flex flex-col gap-5 relative z-20 duration-500">
+        <div className="flex flex-col gap-5 relative z-20 duration-500 w-full">
           {connected ? (
-            options.map((btn) => (
-              <Link
-                href={btn.url}
-                key={btn.url}
-                style={{ backgroundImage: buttonBackground.src }}
-                className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 nes-btn is-warning !bg-amber-500"
-              >
-                {btn.label}
-              </Link>
-            ))
-          ) : (
-            <p className="text-white text-xl">
-              Please connect your wallet to create or join a game.
-            </p>
-          )}
-
-          {/* Custom Connect Wallet Button */}
-          {!connected && (
             <>
+              {options.map((btn) => (
+                <Link
+                  prefetch
+                  href={btn.url}
+                  key={btn.url}
+                  className="relative w-72 h-14 p-4 flex justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 nes-btn is-warning !bg-amber-500 animate-grow-in"
+                >
+                  {btn.label}
+                </Link>
+              ))}
+              <button
+                className="relative w-72 h-14 p-4 mt-20 flex  whitespace-nowrap text-sm justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 nes-btn is-error animate-grow-in"
+                onClick={disconnect}
+              >
+                Disconnect Wallet
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-white text-xl">
+                Please connect your wallet to create or join a game.
+              </p>
               <div className="invisible absolute">
                 <WalletSelector setModalOpen={setOpenModal} isModalOpen={openModal} />
               </div>
@@ -80,16 +87,6 @@ export default function Home() {
                 {isLoading ? "Connecting..." : "Connect Wallet"}
               </button>
             </>
-          )}
-
-          {connected && (
-            <button
-              className="relative w-72 h-14 p-4 mt-20 flex  whitespace-nowrap text-sm justify-center items-center z-10 hover:brightness-110 shadow-2xl active:scale-95 rounded-lg duration-150 nes-btn is-error"
-              onClick={disconnect}
-              style={{ backgroundImage: buttonBackground.src }}
-            >
-              Disconnect Wallet
-            </button>
           )}
         </div>
       </div>

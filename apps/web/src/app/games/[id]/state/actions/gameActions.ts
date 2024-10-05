@@ -4,16 +4,23 @@ import type {
   SignMessagePayload,
   SignMessageResponse,
 } from "@aptos-labs/wallet-adapter-react";
-import { GameEventTypes, createGame, getTableInfo } from "@jeton/ts-sdk";
+import {
+  GameEventTypes,
+  type PlacingBettingActions,
+  createGame,
+  getTableInfo,
+} from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
 import {
   awaitingPlayerBetHandler,
   handStartedHandler,
   newPlayerCheckedInHandler,
+  playerPlacedBetHandler,
   playerShufflingHandler,
   privateCardsDecryptionHandler,
   receivedPrivateCardHandler,
+  receivedPublicCardsHandler,
 } from "./gameEventHandlers";
 
 import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
@@ -66,8 +73,14 @@ function setGameEventListeners() {
   game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
   game.addListener?.(GameEventTypes.AWAITING_BET, awaitingPlayerBetHandler);
   game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
+  game.addListener?.(GameEventTypes.PLAYER_PLACED_BET, playerPlacedBetHandler);
+  game.addListener?.(GameEventTypes.RECEIVED_PUBLIC_CARDS, receivedPublicCardsHandler);
 }
 
 export const setTableId = (id: string) => {
   state$.tableId.set(id);
 };
+
+export function placeBet(action: PlacingBettingActions) {
+  state$.game.placeBet(action);
+}

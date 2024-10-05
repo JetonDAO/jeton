@@ -30,11 +30,13 @@ export default function LandingPage() {
       >
         <nav className="flex justify-between items-center p-5 text-white">
           <Image
+            quality={50}
             width={80}
             height={80}
             className="w-14 aspect-square"
             src="/images/logo.png"
             alt="Logo"
+            priority
           />
           <ul className="flex space-x-10">
             <li>

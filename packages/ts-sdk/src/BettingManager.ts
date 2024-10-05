@@ -245,7 +245,7 @@ export class BettingManager {
     return newPot;
   }
 
-  private get raiseAmount() {
+  public get raiseAmount() {
     if (!this.active || !this.activeRound) throw new Error("betting round is not defined");
     return [BettingRounds.PRE_FLOP, BettingRounds.FLOP].includes(this.activeRound)
       ? this.tableInfo.smallBlind * 2
@@ -321,5 +321,9 @@ export class BettingManager {
       actions.push(PlacingBettingActions.RAISE);
     }
     return actions;
+  }
+
+  public get placedAction() {
+    return this.selfBettingState.preemptivelyPlacedBet;
   }
 }

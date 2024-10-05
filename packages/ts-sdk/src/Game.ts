@@ -46,7 +46,12 @@ import {
   type ReceivedPublicCardsEvent,
 } from "./types/GameEvents";
 import { calculatePercentage } from "./utils/calculatePercentage";
-import { getGameStatus, getNextBettingRound, getNextPublicCardRound } from "./utils/convertTypes";
+import {
+  getGameStatus,
+  getGameStatusForPublicCard,
+  getNextBettingRound,
+  getNextPublicCardRound,
+} from "./utils/convertTypes";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -121,6 +126,10 @@ export class Game extends EventEmitter<GameEventMap> {
     this.zkDeck = zkDeck;
     this.elGamalSecretKey = zkDeck.sampleSecretKey();
     this.elGamalPublicKey = zkDeck.generatePublicKey(this.elGamalSecretKey);
+  }
+
+  public getRaiseAmount() {
+    return this.handState.bettingManager?.raiseAmount;
   }
 
   private addOnChainListeners() {
@@ -304,13 +313,15 @@ export class Game extends EventEmitter<GameEventMap> {
       potBeforeBet,
       potAfterBet: Array.from(this.handState.pot),
       availableActions: this.handState.bettingManager.selfLegalActions,
+      placedAction: this.handState.bettingManager.placedAction || null,
     });
     const nextPlayer = this.handState.bettingManager.nextBettingPlayer;
     const nextPublicCardRound = getNextPublicCardRound(data.bettingRound);
     if (nextPlayer === null && nextPublicCardRound !== null) {
       // TODO: betting round finished
+      this.gameState.status === getGameStatusForPublicCard(nextPublicCardRound);
       this.createAndSharePublicKeyShares(nextPublicCardRound);
-      console.log("betting round finished");
+      this.handState.bettingManager.active = false;
       return;
     }
     if (nextPlayer === null) {
@@ -325,6 +336,7 @@ export class Game extends EventEmitter<GameEventMap> {
         bettingPlayer: nextPlayer,
         pot: this.handState.pot,
         availableActions: this.handState.bettingManager.selfLegalActions,
+        placedAction: this.handState.bettingManager.placedAction || null,
       });
     }
     // i am big blind no need to get the bet from ui I just send it
@@ -424,6 +436,7 @@ export class Game extends EventEmitter<GameEventMap> {
   }
 
   private initBettingRound(round: BettingRounds) {
+    console.log("init betting round", round);
     this.gameState.status = getGameStatus(round);
     if (round === BettingRounds.PRE_FLOP) {
       this.handState.bettingManager = new BettingManager(
@@ -454,6 +467,7 @@ export class Game extends EventEmitter<GameEventMap> {
         bettingPlayer: nextBettingPlayer,
         pot: this.handState.pot,
         availableActions: this.handState.bettingManager.selfLegalActions,
+        placedAction: this.handState.bettingManager.placedAction || null,
       });
     }
     if (!isItMyTurn) return;

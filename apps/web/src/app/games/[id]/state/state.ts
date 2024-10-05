@@ -13,6 +13,9 @@ type GameState = Omit<EntryGameState, "dealer"> & {
   dealer?: Player;
   shufflingPlayer?: Player;
   myCards?: [number, number];
+  flopCards?: [number, number, number];
+  turnCard?: [number];
+  riverCard?: [number];
   pot: number[];
   betState?: {
     round: BettingRounds;
@@ -23,6 +26,7 @@ type GameState = Omit<EntryGameState, "dealer"> & {
       action: BettingActions;
       amount: number;
     };
+    placedBet?: PlacingBettingActions | null;
   };
 };
 // TODO: should I save game here?

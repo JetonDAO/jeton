@@ -11,7 +11,9 @@ import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 
 import "@jeton/ui/styles.css";
 import { LayoutTransition } from "@src/components/LayoutTransition";
+import SoundSettings from "@src/components/SoundSettings";
 import { WalletProvider } from "@src/components/WalletProvider";
+import { useButtonClickSound } from "@src/hooks/useButtonClickSound";
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -33,6 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
+  useButtonClickSound();
+
   return (
     <html lang="en">
       <body className={pressStart2P.className}>
@@ -40,7 +44,6 @@ export default function RootLayout({
           <LayoutTransition initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {children}
           </LayoutTransition>
-
           <Image
             quality={20}
             className="w-full h-full object-cover absolute top-0 left-0 -z-40"
@@ -51,7 +54,9 @@ export default function RootLayout({
               imageRendering: "pixelated",
             }}
           />
-          <div>{modal}</div>
+          <SoundSettings />
+
+          {modal}
         </WalletProvider>
         <Script src="/register-service-worker.js" />
       </body>

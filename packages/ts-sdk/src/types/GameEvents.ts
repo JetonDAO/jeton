@@ -52,6 +52,7 @@ export type AwaitingBetEvent = {
   pot: number[];
   bettingPlayer: Player;
   availableActions: PlacingBettingActions[];
+  placedAction: PlacingBettingActions | null;
 };
 
 export type PlayerPlacedBetEvent = {
@@ -61,6 +62,7 @@ export type PlayerPlacedBetEvent = {
   potAfterBet: number[];
   betAction: BettingActions;
   availableActions: PlacingBettingActions[];
+  placedAction: PlacingBettingActions | null;
 };
 
 export type GameEvents =

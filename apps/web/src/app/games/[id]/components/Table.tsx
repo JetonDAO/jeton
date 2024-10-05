@@ -1,76 +1,22 @@
-"use client";
+import TableBackground from "@src/assets/images/table.png";
+import Image from "next/image";
+import type { ReactNode } from "react";
 
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { GameEventTypes } from "@jeton/ts-sdk";
-import FullPageLoading from "@jeton/ui/FullPageLoading";
-import { useSelector } from "@legendapp/state/react";
-import { useRouter } from "next/navigation";
-import { type FC, useEffect, useState } from "react";
-import { initGame, setTableId } from "../state/actions/gameActions";
-import {
-  selectGamePlayers$,
-  selectGameStatus$,
-  selectIsGameLoading$,
-  selectShufflingPlayer$,
-} from "../state/selectors/gameSelectors";
-import { useSubscribeToGameEvent } from "./useSubscribeToGameEvent";
-
-type TableComponentProps = {
-  id: string;
-};
-
-export const TableComponent: FC<TableComponentProps> = ({ id }) => {
-  const [toffState, setToffState] = useState(false);
-  const players = useSelector(selectGamePlayers$());
-  const gameStatus = useSelector(selectGameStatus$());
-  const shufflingPlayer = useSelector(selectShufflingPlayer$());
-  const [{ percentage }] = useSubscribeToGameEvent(GameEventTypes.DOWNLOAD_PROGRESS) || [
-    { percentage: undefined },
-  ];
-  const router = useRouter();
-  const {
-    connected,
-    isLoading: isWalletLoading,
-    signMessage,
-    signAndSubmitTransaction,
-    account,
-  } = useWallet();
-
-  useEffect(() => {
-    if (!isWalletLoading && !connected && toffState) {
-      router.push("/");
-    } else if (!isWalletLoading && !connected) {
-      setTimeout(() => setToffState(true), 100);
-    }
-  }, [isWalletLoading, connected, router, toffState]);
-
-  useEffect(() => {
-    if (!isWalletLoading && account) {
-      initGame(account.address, signMessage, signAndSubmitTransaction);
-    }
-    setTableId(id);
-  }, [id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
-
-  const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
-  if (isLoading)
-    return (
-      <div>
-        {percentage && <p>downloading... {percentage}%</p>}
-        <FullPageLoading />
-      </div>
-    );
-
+export function Table({ children }: { children: ReactNode }) {
   return (
-    <div>
-      <p>game state is ${gameStatus}</p>
-      <p>this is the actual game page</p>
-      <p>players are: </p>
-      {players?.map((p) => (
-        <div key={p.id}>
-          <p> player id: {p.id}</p>
-          {p === shufflingPlayer && <span style={{ color: "red" }}>shuffling</span>}
-        </div>
-      ))}
+    <div className="flex justify-center items-center w-full h-full animate-grow-in">
+      <div className="h-full-z-40 md:scale-x-100 max-w-[70dvh] md:scale-y-100 md:scale-100 w-full md:max-w-[90dvw] xl:max-w-[90dvw] md:max-h-[75dvh] duration-500 scale-x-150 scale-y-150 sm:scale-y-125 relative md:right-0 flex items-center justify-center">
+        <Image
+          draggable={false}
+          priority
+          className="object-fill w-full h-full rotate-90 md:rotate-0 md:max-h-[75dvh]"
+          src={TableBackground}
+          alt="table"
+          style={{ imageRendering: "pixelated" }}
+        />
+
+        {children}
+      </div>
     </div>
   );
-};
+}

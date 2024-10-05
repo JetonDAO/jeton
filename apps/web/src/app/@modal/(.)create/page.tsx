@@ -2,7 +2,7 @@
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { ChipUnits, type TableInfo, createTable } from "@jeton/ts-sdk";
-import Modal from "@jeton/ui/Modal";
+import Modal from "@src/components/Modal";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 

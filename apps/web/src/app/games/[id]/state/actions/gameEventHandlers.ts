@@ -1,3 +1,4 @@
+import { stat } from "fs";
 import {
   type AwaitingBetEvent,
   GameStatus,
@@ -8,12 +9,15 @@ import {
   getGameStatus,
   type playerShufflingEvent,
 } from "@jeton/ts-sdk";
+import type { ReceivedPublicCardsEvent } from "@jeton/ts-sdk";
+import { PublicCardRounds } from "@jeton/ts-sdk";
 import { state$ } from "../state";
 
 export function newPlayerCheckedInHandler(player: Player) {
   const gameState$ = state$.gameState;
   if (!gameState$.get()) throw new Error("game must exist in state");
   gameState$.players.push(player);
+  console.log("players: ", gameState$.players.peek(), "new player: ", player);
 }
 
 export function handStartedHandler({ dealer }: HandStartedEvent) {
@@ -42,13 +46,17 @@ export function awaitingPlayerBetHandler({
   pot,
   bettingPlayer,
   availableActions,
+  placedAction,
 }: AwaitingBetEvent) {
+  console.log("awaiting bet", bettingRound, pot, bettingPlayer, availableActions);
   state$.gameState.status.set(getGameStatus(bettingRound));
   state$.gameState.pot.set(pot);
   if (!state$.gameState.betState.peek()) {
     state$.gameState.betState.set({ round: bettingRound, availableActions });
   }
   state$.gameState.betState.awaitingBetFrom.set(bettingPlayer);
+  state$.gameState.betState.availableActions.set(availableActions);
+  state$.gameState.betState.placedBet.set(placedAction);
 }
 
 export function playerPlacedBetHandler({
@@ -58,7 +66,9 @@ export function playerPlacedBetHandler({
   potAfterBet,
   betAction,
   availableActions,
+  placedAction,
 }: PlayerPlacedBetEvent) {
+  console.log("placed bet", bettingRound, potAfterBet, betAction, availableActions);
   state$.gameState.status.set(getGameStatus(bettingRound));
   state$.gameState.pot.set(potAfterBet);
   if (!state$.gameState.betState.peek()) {
@@ -72,4 +82,17 @@ export function playerPlacedBetHandler({
   state$.gameState.betState.lastBet.amount.set(
     potAfterBet.reduce((sum, a) => sum + a, 0) - potBeforeBet.reduce((sum, a) => sum + a, 0),
   );
+  state$.gameState.betState.availableActions.set(availableActions);
+  state$.gameState.betState.placedBet.set(placedAction);
+}
+
+export function receivedPublicCardsHandler({ cards, round }: ReceivedPublicCardsEvent) {
+  console.log("received public cards", round, cards);
+  if (round === PublicCardRounds.FLOP) {
+    state$.gameState.flopCards.set(cards);
+  } else if (round === PublicCardRounds.RIVER) {
+    state$.gameState.riverCard.set(cards);
+  } else if (round === PublicCardRounds.TURN) {
+    state$.gameState.turnCard.set(cards);
+  }
 }

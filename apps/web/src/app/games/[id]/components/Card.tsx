@@ -30,5 +30,12 @@ export default function Card({
 
   if (!cardSrc) return null;
 
-  return <Image src={cardSrc} alt={cardName} className={cn("shrink-0", className)} />;
+  return (
+    <Image
+      src={cardSrc}
+      alt={cardName}
+      className={cn("shrink-0 grow-0", className)}
+      style={{ imageRendering: "pixelated" }}
+    />
+  );
 }

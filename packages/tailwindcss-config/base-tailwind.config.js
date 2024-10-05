@@ -57,6 +57,36 @@ const config = {
             opacity: "1",
           },
         },
+        flip: {
+          "0%": {
+            transform: "rotateY(90deg)",
+          },
+          "100%": {
+            transform: "rotateY(0deg)",
+          },
+        },
+        fading: {
+          "0%": {
+            opacity: "0",
+          },
+          "10%": {
+            opacity: "1",
+          },
+          "80%": {
+            opacity: "1",
+          },
+          "100%": {
+            opacity: "0",
+          },
+        },
+        headShake: {
+          "0%": { transform: "translateX(0)" },
+          "6.5%": { transform: "translateX(-6px) rotateY(-9deg) scale(1.3)" },
+          "18.5%": { transform: "translateX(5px) rotateY(7deg) scale(1.3)" },
+          "31.5%": { transform: "translateX(-3px) rotateY(-5deg) scale(1.3)" },
+          "43.5%": { transform: "translateX(2px) rotateY(3deg) scale(1.3)" },
+          "50%": { transform: "translateX(0) scale(1)" },
+        },
       },
       animation: {
         fadeIn: "fadeIn .5s cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards",
@@ -67,6 +97,9 @@ const config = {
         blinky2: "blinky2 3s 14s linear infinite",
         "slide-in": "slideIn 1s ease-out",
         "grow-in": "growIn 0.5s ease-out",
+        "flip-y": "flip 1s",
+        fading: "fading .7s",
+        headShake: "headShake 1s ease-in-out .5s",
       },
     },
   },

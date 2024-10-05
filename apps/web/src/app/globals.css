@@ -13,80 +13,38 @@
 @media (min-width: 768px) {
   .seat-1 {
     top: 80% !important;
-    left: 50% !important;
-    transform: translateX(-50%);
-  }
-
-  .seat-1 .cards,
-  .seat-1 .chips {
-    top: -50%;
     left: 50%;
     transform: translateX(-50%);
   }
 
   .seat-2 {
     top: 90% !important;
-    left: 18%;
+    left: 22% !important;
     transform: translateY(-50%);
-  }
-
-  .seat-2 .cards,
-  .seat-2 .chips {
-    top: -35%;
-    left: 0%;
-    transform: translate(50%);
   }
 
   .seat-3 {
     top: 55%;
-    left: 18%;
+    left: 4% !important;
     transform: translateY(-50%);
-  }
-
-  .seat-3 .cards,
-  .seat-3 .chips {
-    bottom: 50%;
-    right: -40%;
-    transform: translate(50%);
   }
 
   .seat-4 {
     top: 25%;
-    left: 18%;
+    left: 4% !important;
     transform: translateY(-50%);
-  }
-
-  .seat-4 .cards,
-  .seat-4 .chips {
-    bottom: -20%;
-    right: -60%;
-    transform: translate(-50%);
   }
 
   .seat-5 {
-    top: -20%;
-    left: 18%;
+    top: -22%;
+    left: 22% !important;
     transform: translateY(-50%);
-  }
-
-  .seat-5 .cards,
-  .seat-5 .chips {
-    bottom: -45%;
-    right: 10%;
-    transform: translate(-50%);
   }
 
   .seat-6 {
-    top: -20%;
+    top: -22%;
     left: 70%;
     transform: translateY(-50%);
-  }
-
-  .seat-6 .cards,
-  .seat-6 .chips {
-    bottom: -45%;
-    right: 20%;
-    transform: translate(-50%);
   }
 
   .seat-7 {
@@ -95,24 +53,10 @@
     transform: translateY(-50%);
   }
 
-  .seat-7 .cards,
-  .seat-7 .chips {
-    bottom: -10%;
-    left: -40%;
-    transform: translate(-50%);
-  }
-
   .seat-8 {
     top: 55%;
     left: 87%;
     transform: translateY(-50%);
-  }
-
-  .seat-8 .cards,
-  .seat-8 .chips {
-    bottom: 60%;
-    left: -50%;
-    transform: translate(-50%);
   }
 
   .seat-9 {
@@ -121,17 +65,127 @@
     transform: translateY(-50%);
   }
 
-  .seat-9 .cards,
-  .seat-9 .chips {
-    top: -50%;
-    left: 20%;
-    transform: translate(-50%);
+  /* Dealer */
+  .seat-dealer {
+    top: -5% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
   }
 
-  .seat-dealer {
-    top: -5%;
-    left: 45%;
-    transform: translate(0);
+  .cards-center {
+    top: 50% !important;
+    left: 50% !important;
+  }
+
+  /* Cards near the center of the table */
+
+  .cards-2 {
+    top: 68%;
+    left: 30%;
+    transform: translateX(-50%);
+  }
+
+  .cards-3 {
+    top: 55%;
+    left: 15%;
+    transform: translateX(-50%);
+  }
+
+  .cards-4 {
+    top: 35%;
+    left: 15%;
+    transform: translateX(-50%);
+  }
+
+  .cards-5 {
+    top: 20%;
+    left: 30%;
+    transform: translateX(-50%);
+  }
+
+  .cards-6 {
+    top: 20%;
+    left: 65%;
+    transform: translateX(-50%);
+  }
+
+  .cards-7 {
+    top: 35%;
+    left: 82%;
+    transform: translateX(-50%);
+  }
+
+  .cards-8 {
+    top: 60%;
+    left: 82%;
+    transform: translateX(-50%);
+  }
+
+  .cards-9 {
+    top: 70%;
+    left: 70%;
+    transform: translateX(-50%);
+  }
+
+  /* Chips near the center of the table */
+  .chips-1 {
+    top: 60%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .chips-2 {
+    top: 75%;
+    left: 25%;
+    transform: translateX(-50%);
+  }
+
+  .chips-3 {
+    top: 55%;
+    left: 10%;
+    transform: translateX(-50%);
+  }
+
+  .chips-4 {
+    top: 35%;
+    left: 10%;
+    transform: translateX(-50%);
+  }
+
+  .chips-5 {
+    top: 5%;
+    left: 20%;
+    transform: translateX(-50%);
+  }
+
+  .chips-6 {
+    top: 5%;
+    left: 65%;
+    transform: translateX(-50%);
+  }
+
+  .chips-7 {
+    top: 35%;
+    left: 85%;
+    transform: translateX(-50%);
+  }
+
+  .chips-8 {
+    top: 55%;
+    left: 85%;
+    transform: translateX(-50%);
+  }
+
+  .chips-9 {
+    top: 75%;
+    left: 65%;
+    transform: translateX(-50%);
+  }
+
+  .pot {
+    top: 65%;
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
@@ -219,9 +273,7 @@
   transform: translateY(-50%);
 }
 
-.seat-7 .cards,
-.seat-7 .chips {
-  bottom: -10%;
+.seat-7 .cards {
   left: -40%;
   transform: translate(-50%);
 }
@@ -256,4 +308,12 @@
   top: -5% !important;
   left: 45% !important;
   transform: translate(0);
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
 }

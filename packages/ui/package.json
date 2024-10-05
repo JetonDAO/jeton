@@ -4,7 +4,6 @@
   "private": true,
   "exports": {
     "./styles.css": "./dist/index.css",
-    "./Modal": "./src/Modal.tsx",
     "./GoogleLogo": "./src/GoogleLogo.tsx",
     "./FullPageLoading": "./src/FullPageLoading.tsx",
     "./ProgressBar": "./src/ProgressBar.tsx"
