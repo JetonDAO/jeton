@@ -3,7 +3,17 @@ import type { ChipUnits, TableInfo } from "../types/Table";
 import type { OnChainEventMap } from "./onChainEvents.types";
 import type { OnChainTableObject } from "./onChainObjects.types";
 
-export interface OnChainDataSource extends EventEmitter<OnChainEventMap> {
+export interface OnChainDataSource {
+  new (
+    address: string,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    singAndSubmitTransaction: (...args: any) => Promise<{ hash: string }>,
+  ): OnChainDataSourceInstance;
+
+  getTableInfo(id: string): Promise<TableInfo>;
+  getTablesInfo(id: string): Promise<TableInfo>;
+}
+export interface OnChainDataSourceInstance extends EventEmitter<OnChainEventMap> {
   createTable(
     smallBlind: number,
     // number of raises allowed in one round of betting
@@ -20,7 +30,6 @@ export interface OnChainDataSource extends EventEmitter<OnChainEventMap> {
     chipUnit: ChipUnits,
     publicKey: Uint8Array,
   ): Promise<TableInfo>;
-  getTableInfo(id: string): Promise<TableInfo>;
 
   queryGameState<T extends keyof OnChainTableObject>(
     id: string,

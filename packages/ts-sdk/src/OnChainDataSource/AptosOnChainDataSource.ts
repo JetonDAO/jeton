@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import type {
   OnChainDataSource,
+  OnChainDataSourceInstance,
   OnChainEventMap,
   OnChainTableObject,
 } from "@src/OnChainDataSource";
@@ -9,6 +10,7 @@ import {
   callCheckInContract,
   createTableObject,
   getTableObject,
+  getTableObjectAddresses,
 } from "@src/contracts/contractInteractions";
 import type { ChipUnits, TableInfo } from "@src/types";
 // @ts-ignore
@@ -16,7 +18,7 @@ import { gql, request } from "graffle";
 
 export class AptosOnChainDataSource
   extends EventEmitter<OnChainEventMap>
-  implements OnChainDataSource
+  implements OnChainDataSourceInstance
 {
   constructor(
     public address: string,
@@ -25,9 +27,6 @@ export class AptosOnChainDataSource
   ) {
     super();
     this.address = address;
-  }
-  getTableInfo(id: string): Promise<TableInfo> {
-    throw new Error("Method not implemented.");
   }
 
   public async createTable(
@@ -105,5 +104,24 @@ export class AptosOnChainDataSource
     const tableObjectResource = await getTableObject(id);
     const tableInfo = createTableInfo(id, tableObjectResource);
     return tableInfo;
+  }
+
+  static async getTablesInfo() {
+    //TODO paginate
+    const result = await getTableObjectAddresses();
+    console.log("get tables objectsAddresses", result);
+    const tablePromises: Promise<TableInfo>[] = [];
+
+    for (const event of result) {
+      const tableObjectAddress = event.data.table_object.inner;
+      tablePromises.push(
+        getTableObject(tableObjectAddress).then((tableObjectResource) => {
+          console.log(tableObjectResource);
+          return createTableInfo(tableObjectAddress, tableObjectResource);
+        }),
+      );
+    }
+
+    return await Promise.all(tablePromises);
   }
 }

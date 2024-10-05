@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import { type TableInfo, getTablesInfo } from "@jeton/ts-sdk";
+import { AptosOnChainDataSource, type TableInfo } from "@jeton/ts-sdk";
 import Modal from "@src/components/Modal";
 import Spinner from "@src/components/Spinner";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default function GameJoinModal() {
   useEffect(() => {
     const fetchTables = async () => {
       try {
-        const data = await getTablesInfo();
+        const data = await AptosOnChainDataSource.getTablesInfo();
         setGameTables(data);
       } finally {
         setLoading(false);

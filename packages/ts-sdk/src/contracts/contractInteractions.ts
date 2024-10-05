@@ -14,6 +14,7 @@ import {
 export const getTableObjectAddresses = async (): Promise<GetEventsResponse> => {
   return aptos.getModuleEventsByEventType({
     eventType: contractTableCreatedEventType,
+    options: { orderBy: [{ transaction_block_height: "desc" }] },
   });
 };
 
@@ -34,6 +35,7 @@ export const callCheckInContract = async (
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   signAndSubmitTransaction: any,
 ) => {
+  console.log("call check-in contract", address, buyInAmount, publicKey, signAndSubmitTransaction);
   const submitCheckInTransactionHash = await signAndSubmitTransaction({
     sender: address,
     data: {

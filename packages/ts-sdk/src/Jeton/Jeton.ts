@@ -2,11 +2,12 @@ import { EventEmitter } from "events";
 import type { ZKDeck } from "@jeton/zk-deck";
 import {
   type OnChainDataSource,
+  type OnChainDataSourceInstance,
   OnChainEventTypes,
   type OnChainPlayerCheckedInData,
 } from "@src/OnChainDataSource";
-import { AptosOnChainDataSource } from "../OnChainDataSource/AptosOnChainDataSource";
-import onChainDataMapper from "../OnChainDataSource/onChainDataMapper";
+import { AptosOnChainDataSource } from "@src/OnChainDataSource/AptosOnChainDataSource";
+import onChainDataMapper from "@src/OnChainDataSource/onChainDataMapper";
 import type {
   ChipUnits,
   GameEventMap,
@@ -14,8 +15,8 @@ import type {
   PlacingBettingActions,
   Player,
   TableInfo,
-} from "../types";
-import { createLocalZKDeck } from "../utils/createZKDeck";
+} from "@src/types";
+import { createLocalZKDeck } from "@src/utils/createZKDeck";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -27,7 +28,7 @@ export type ZkDeckUrls = {
 export type JetonConfigs = {
   tableInfo: TableInfo;
   address: string;
-  onChainDataSource: OnChainDataSource;
+  onChainDataSource: OnChainDataSourceInstance;
   zkDeck: ZKDeck;
   secretKey?: bigint;
 };
@@ -43,7 +44,7 @@ export interface JGameState {
 export class Jeton extends EventEmitter<GameEventMap> {
   private playerId: string;
   public tableInfo: TableInfo;
-  private onChainDataSource: OnChainDataSource;
+  private onChainDataSource: OnChainDataSourceInstance;
   private zkDeck: ZKDeck;
   private secretKey: bigint;
   private publicKey: Uint8Array;
@@ -152,7 +153,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
     const publicKey = zkDeck.generatePublicKey(secretKey);
 
     console.log("secret key", secretKey);
-    const onChainDataSource: OnChainDataSource = new AptosOnChainDataSource(
+    const onChainDataSource: OnChainDataSourceInstance = new AptosOnChainDataSource(
       accountAddress,
       signAndSubmitTransaction,
     );
@@ -192,7 +193,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
       console.log("downloading", percentage);
     });
 
-    const onChainDataSource: OnChainDataSource = new AptosOnChainDataSource(
+    const onChainDataSource: OnChainDataSourceInstance = new AptosOnChainDataSource(
       accountAddress,
       signAndSubmitTransaction,
     );
