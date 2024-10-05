@@ -1,7 +1,6 @@
 import {
   type BettingActions,
   type BettingRounds,
-  type GameState as EntryGameState,
   GameStatus,
   type Jeton,
   type PlacingBettingActions,
@@ -31,12 +30,10 @@ type GameState = {
     placedBet?: PlacingBettingActions | null;
   };
 };
-// TODO: should I save game here?
 export interface State {
   tableId?: string;
   loading: boolean;
   initializing: boolean;
-  game?: Jeton;
   gameState?: GameState;
 }
 

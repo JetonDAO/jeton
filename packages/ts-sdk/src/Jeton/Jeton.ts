@@ -7,7 +7,14 @@ import {
 } from "@src/OnChainDataSource";
 import { AptosOnChainDataSource } from "../OnChainDataSource/AptosOnChainDataSource";
 import onChainDataMapper from "../OnChainDataSource/onChainDataMapper";
-import type { ChipUnits, GameEventMap, GameStatus, Player, TableInfo } from "../types";
+import type {
+  ChipUnits,
+  GameEventMap,
+  GameStatus,
+  PlacingBettingActions,
+  Player,
+  TableInfo,
+} from "../types";
 import { createLocalZKDeck } from "../utils/createZKDeck";
 
 export type ZkDeckUrls = {
@@ -58,9 +65,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   async checkIn(buyInAmount: number) {
     console.log("check in, tableInfo", this.tableInfo);
     const rawState = await this.onChainDataSource.queryGameState(this.tableInfo.id, ["seets"]);
-    console.log("rawState", rawState);
     const seats = onChainDataMapper.convertSeats(rawState.seets);
-    console.log("converted seats", rawState);
     const alreadyCheckedIn = this.isAlreadyCheckedIn(seats);
 
     if (!alreadyCheckedIn) {
@@ -114,6 +119,10 @@ export class Jeton extends EventEmitter<GameEventMap> {
       if (player && player.id === this.playerId) return true;
     }
     return false;
+  }
+
+  public placeBet(action: PlacingBettingActions) {
+    console.log("placeBet Called", action);
   }
 
   static async createTableAndJoin(
@@ -178,6 +187,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
     signAndSubmitTransaction: any,
     zkFiles: ZkDeckUrls,
   ) {
+    console.log("join table called");
     const zkDeck = await createLocalZKDeck(zkFiles, ({ percentage }) => {
       console.log("downloading", percentage);
     });

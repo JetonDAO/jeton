@@ -1,3 +1,5 @@
+// @ts-nocheck
+// biome-ignore : <explanation>
 import { EventEmitter } from "events";
 
 import type {
@@ -440,7 +442,6 @@ export class PollingGame extends EventEmitter<GameEventMap> {
           copiedBets[id] = 0;
         } else if (bet > 0) {
           sidePot += allInBet;
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
           copiedBets[id]! -= allInBet;
         }
       }

@@ -26,7 +26,7 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsc --noEmit && tsup",
     "dev": "tsup --watch",
     "test": "jest"
   },

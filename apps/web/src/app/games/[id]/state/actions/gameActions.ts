@@ -1,11 +1,6 @@
 "use client";
-import type {
-  InputTransactionData,
-  SignMessagePayload,
-  SignMessageResponse,
-} from "@aptos-labs/wallet-adapter-react";
-import {} from "@jeton/ts-sdk";
-import { GameEventTypes, type PlacingBettingActions, type Jeton } from "@jeton/ts-sdk";
+import type { InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+import { GameEventTypes, type Jeton } from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
 import {
@@ -27,32 +22,36 @@ import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.was
 
 export const initGame = async (
   address: string,
-  signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>,
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>,
   joinTable: (typeof Jeton)["joinTable"],
+  game?: Jeton,
 ) => {
   await when(
     () => state$.tableId.get() !== undefined && state$.loading.get() && !state$.initializing.get(),
   );
+  if (state$.initializing.get()) {
+    return;
+  }
+  console.log("init game", game);
   state$.initializing.set(true);
   const tableId = state$.tableId.peek() as string;
   // TODO: should we get 'entryGameState' from user?
-  const game = await joinTable(tableId, 1000, address, signAndSubmitTransaction, {
-    decryptCardShareWasm,
-    shuffleEncryptDeckWasm,
-    decryptCardShareZkey,
-    shuffleEncryptDeckZkey,
-  });
-  setGameEventListeners(game);
-  console.log("reading gamestate", game);
-  const entryGameState = game.gameState;
-  console.log("inside app");
+  const finalGame =
+    game ||
+    (await joinTable(tableId, 1000, address, signAndSubmitTransaction, {
+      decryptCardShareWasm,
+      shuffleEncryptDeckWasm,
+      decryptCardShareZkey,
+      shuffleEncryptDeckZkey,
+    }));
+  setGameEventListeners(finalGame);
+  const entryGameState = finalGame.gameState;
   if (!entryGameState) throw Error("should have existed");
   state$.gameState.players.set(entryGameState.seats.map((p) => p));
   state$.gameState.status.set(entryGameState.status);
   state$.gameState.dealer.set(entryGameState.seats[entryGameState.dealerIndex]!);
   state$.loading.set(false);
-  state$.initializing.set(false);
+  //state$.initializing.set(false);
 };
 
 function setGameEventListeners(game: Jeton) {
@@ -70,7 +69,3 @@ function setGameEventListeners(game: Jeton) {
 export const setTableId = (id: string) => {
   state$.tableId.set(id);
 };
-
-export function placeBet(action: PlacingBettingActions) {
-  state$.game.placeBet(action);
-}

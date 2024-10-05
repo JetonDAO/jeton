@@ -85,20 +85,16 @@ export const createTableObject = async (
   });
   console.log("after tx hash", transactionData);
 
-  const tableObjectAddress = (
-    transactionData.changes.find((change) =>
-      isWriteSetChangeWriteResource(change),
-    )! as WriteSetChangeWriteResource
-  ).address;
+  const tableWriteChange = transactionData.changes.find(
+    (change) => isWriteSetChangeWriteResource(change) && change.data.type === contractTableType,
+  )! as WriteSetChangeWriteResource;
 
-  const tableObjectResource = await getTableObject(tableObjectAddress);
-
-  console.log("transaction resource", tableObjectResource, tableObjectAddress);
-  return [tableObjectAddress, tableObjectResource] as const;
+  console.log("transaction resource", tableWriteChange);
+  return [tableWriteChange.address, tableWriteChange.data.data] as const;
 };
 
 function isWriteSetChangeWriteResource(
   write: WriteSetChange,
 ): write is WriteSetChangeWriteResource {
-  return (write as WriteSetChangeWriteResource) !== undefined;
+  return (write as WriteSetChangeWriteResource).data !== undefined;
 }

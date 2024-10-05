@@ -1,7 +1,6 @@
 "use client";
 
 import background from "@src/assets/images/main-menu-background.png";
-import type { Metadata } from "next";
 import { Press_Start_2P } from "next/font/google";
 import Image from "next/image";
 import Script from "next/script";

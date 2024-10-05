@@ -1,10 +1,10 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { ChipUnits, type TableInfo, createTable } from "@jeton/ts-sdk";
+import { ChipUnits, type TableInfo } from "@jeton/ts-sdk";
 import Modal from "@src/components/Modal";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useState, type ChangeEvent, type FormEvent, useContext } from "react";
 
 export const runtime = "edge";
 
@@ -15,6 +15,7 @@ import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
 import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
 //@ts-ignore
 import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import { JetonContext } from "@src/components/JetonContextProvider";
 
 const INITIAL_FORM_VALUES: FormValues = {
   smallBlind: 0,
@@ -41,6 +42,7 @@ export default function GameCreateModal() {
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_VALUES);
   const { account, signAndSubmitTransaction } = useWallet();
 
+  const { createTable } = useContext(JetonContext);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -57,6 +59,7 @@ export default function GameCreateModal() {
     setLoading(true);
 
     try {
+      if (!createTable) throw new Error("create Table must exist");
       const jeton = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,

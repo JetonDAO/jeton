@@ -26,7 +26,18 @@ import {
   PublicCardRounds,
   type TableInfo,
 } from "@src/types";
+import {
+  type GameEventMap,
+  GameEventTypes,
+  type ReceivedPublicCardsEvent,
+} from "@src/types/GameEvents";
 import { calculatePercentage } from "@src/utils/calculatePercentage";
+import {
+  getGameStatus,
+  getGameStatusForPublicCard,
+  getNextBettingRound,
+  getNextPublicCardRound,
+} from "@src/utils/convertTypes";
 import { getUrlBytes, readData } from "@src/utils/getURLBytes";
 import {
   type MockOnChainDataSource,
@@ -38,17 +49,6 @@ import {
   type OnChainPublicCardsSharesData,
   type OnChainShuffledDeckData,
 } from "../OnChainDataSource/MockOnChainDataSource";
-import {
-  type GameEventMap,
-  GameEventTypes,
-  type ReceivedPublicCardsEvent,
-} from "@src/types/GameEvents";
-import {
-  getGameStatus,
-  getGameStatusForPublicCard,
-  getNextBettingRound,
-  getNextPublicCardRound,
-} from "@src/utils/convertTypes";
 import { BettingManager } from "./BettingManager";
 import { CardShareProofSource } from "./CardShareProofSource";
 

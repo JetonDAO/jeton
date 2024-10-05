@@ -1,6 +1,6 @@
-import type { OnChainPlayer, OnChainTableObject } from "@src/OnChainDataSource";
+import type { OnChainPhase, OnChainPlayer, OnChainTableObject } from "@src/OnChainDataSource";
 import type { JGameState, Seats } from "../Jeton/Jeton";
-import { type Player, PlayerStatus } from "../types";
+import { GameStatus, type Player, PlayerStatus } from "../types";
 
 const convertPlayer = (player: OnChainPlayer): Player => {
   return {
@@ -34,6 +34,11 @@ const convertSeats = (seats: OnChainTableObject["seets"]): Seats => {
   return transformedSeats;
 };
 
+const convertGameStatus = (phase: OnChainPhase) => {
+  // TODO:
+  return GameStatus.AwaitingStart as GameStatus;
+};
+
 const convertJetonState = (
   state: Pick<OnChainTableObject, "seets" | "phase" | "time_out" | "dealer_index">,
 ): JGameState => {
@@ -42,6 +47,7 @@ const convertJetonState = (
   return {
     dealerIndex: state.dealer_index,
     seats: convertSeats(state.seets),
+    status: convertGameStatus(state.phase),
   };
 };
 
