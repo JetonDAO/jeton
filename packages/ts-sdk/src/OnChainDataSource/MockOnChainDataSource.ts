@@ -134,7 +134,7 @@ export class MockOnChainDataSource extends EventEmitter<OnChainEventMap> {
       this.gameState.players.push({
         id: address,
         balance: buyIn,
-        elGamalPublicKey,
+        //elGamalPublicKey,
         status: PlayerStatus.active,
       });
     }

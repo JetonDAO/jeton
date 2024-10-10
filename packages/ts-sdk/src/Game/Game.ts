@@ -497,7 +497,7 @@ export class Game extends EventEmitter<GameEventMap> {
 
   private async shuffle() {
     if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
-    const publicKeys = this.gameState.players.map((p) => p.elGamalPublicKey);
+    const publicKeys = [new Uint8Array()]; //this.gameState.players.map((p) => p.elGamalPublicKey);
     const aggregatedPublicKey = this.zkDeck.generateAggregatedPublicKey(publicKeys);
     this.handState.aggregatedPublicKey = aggregatedPublicKey;
     const inputDeck = this.amIDealer()

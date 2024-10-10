@@ -1,7 +1,7 @@
 import type EventEmitter from "events";
 import type { ChipUnits, TableInfo } from "../types/Table";
 import type { OnChainEventMap } from "./onChainEvents.types";
-import type { OnChainTableObject } from "./onChainObjects.types";
+import type { OnChainTableObject, TableAddress } from "./onChainObjects.types";
 
 export interface OnChainDataSource {
   new (
@@ -29,12 +29,16 @@ export interface OnChainDataSourceInstance extends EventEmitter<OnChainEventMap>
     waitingTimeOut: number,
     chipUnit: ChipUnits,
     publicKey: Uint8Array,
-  ): Promise<TableInfo>;
+  ): Promise<[TableAddress, OnChainTableObject]>;
 
+  listenToTableEvents(tableId: string): void;
+  disregardTableEvents(tableId: string): void;
   queryGameState<T extends keyof OnChainTableObject>(
     id: string,
     fields: T[],
   ): Promise<Pick<OnChainTableObject, T>>;
+  queryGameState(id: string): Promise<OnChainTableObject>;
 
   checkIn(tableId: string, buyInAmount: number, publicKey: Uint8Array): Promise<void>;
+  shuffledDeck(tableId: string, outDeck: Uint8Array, proof: Uint8Array): Promise<void>;
 }

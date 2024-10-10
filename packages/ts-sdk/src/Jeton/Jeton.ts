@@ -1,22 +1,28 @@
 import { EventEmitter } from "events";
 import type { ZKDeck } from "@jeton/zk-deck";
 import {
-  type OnChainDataSource,
   type OnChainDataSourceInstance,
   OnChainEventTypes,
   type OnChainPlayerCheckedInData,
+  type OnChainShuffledDeckData,
+  type OnChainTableObject,
 } from "@src/OnChainDataSource";
 import { AptosOnChainDataSource } from "@src/OnChainDataSource/AptosOnChainDataSource";
-import onChainDataMapper from "@src/OnChainDataSource/onChainDataMapper";
-import type {
-  ChipUnits,
-  GameEventMap,
-  GameStatus,
-  PlacingBettingActions,
-  Player,
-  TableInfo,
+import onChainDataMapper, { covertTableInfo } from "@src/OnChainDataSource/onChainDataMapper";
+import {
+  type ChipUnits,
+  type GameEventMap,
+  GameEventTypes,
+  type GameStatus,
+  type PlacingBettingActions,
+  type Player,
+  PlayerStatus,
+  type TableInfo,
 } from "@src/types";
+import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
 import { createLocalZKDeck } from "@src/utils/createZKDeck";
+import { hexStringToUint8Array } from "@src/utils/unsignedInt";
+import { getShufflingPlayer, isActivePlayer } from "./helpers";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -33,11 +39,10 @@ export type JetonConfigs = {
   secretKey?: bigint;
 };
 
-export type Seats = [Player | null];
-
 export interface JGameState {
-  seats: Seats;
+  players: Player[];
   dealerIndex: number;
+  shufflingPlayer: Player | null;
   status: GameStatus;
 }
 
@@ -49,7 +54,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   private secretKey: bigint;
   private publicKey: Uint8Array;
   public gameState?: JGameState;
-  public mySeatIndex?: number;
+  private pendingMemo: PendingMemo;
 
   constructor(config: JetonConfigs) {
     super();
@@ -61,35 +66,30 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.zkDeck = config.zkDeck;
     this.secretKey = config.secretKey ?? this.zkDeck.sampleSecretKey();
     this.publicKey = this.zkDeck.generatePublicKey(this.secretKey);
+
+    this.pendingMemo = createPendingMemo();
   }
 
   async checkIn(buyInAmount: number) {
     console.log("check in, tableInfo", this.tableInfo);
-    const rawState = await this.onChainDataSource.queryGameState(this.tableInfo.id, ["seets"]);
-    const seats = onChainDataMapper.convertSeats(rawState.seets);
-    const alreadyCheckedIn = this.isAlreadyCheckedIn(seats);
+    const rawState = await this.onChainDataSource.queryGameState(this.tableInfo.id);
+    const gameState = onChainDataMapper.convertJetonState(rawState);
+    const alreadyCheckedIn = this.isAlreadyCheckedIn(gameState.players);
+    console.log("is already checked in?", alreadyCheckedIn, "  game state:", gameState);
 
     if (!alreadyCheckedIn) {
       await this.onChainDataSource.checkIn(this.tableInfo.id, buyInAmount, this.publicKey);
     }
 
-    const rawState2 = await this.onChainDataSource.queryGameState(this.tableInfo.id, [
-      "seets",
-      "dealer_index",
-      "phase",
-      "time_out",
-    ]);
-    this.gameState = onChainDataMapper.convertJetonState(rawState2) as JGameState;
-    console.log("game state", this.gameState);
-    this.setMySeatIndex();
-    console.log("set seat index");
+    const updatedRawState = await this.onChainDataSource.queryGameState(this.tableInfo.id);
+    this.gameState = onChainDataMapper.convertJetonState(updatedRawState);
     this.addOnChainListeners();
+    this.checkForActions(updatedRawState);
   }
 
   private addOnChainListeners() {
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_CHECKED_IN, this.newPlayerCheckedIn);
-    //  this.onChainDataSource.on(OnChainEventTypes.GAME_STARTED, this.gameStarted);
-    //  this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
+    this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
     //  this.onChainDataSource.on(
     //    OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
     //    this.receivedPrivateCardsShares,
@@ -99,28 +99,80 @@ export class Jeton extends EventEmitter<GameEventMap> {
     //    this.receivedPublicCardsShares,
     //  );
     //  this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
+    this.onChainDataSource.listenToTableEvents(this.tableInfo.id);
   }
 
-  private newPlayerCheckedIn = (data: OnChainPlayerCheckedInData) => {
+  private newPlayerCheckedIn = async (data: OnChainPlayerCheckedInData) => {
+    //if (!this.gameState) throw new Error("game state must exist");
     console.log("new player checked in", data);
+    const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
+    const newJState = onChainDataMapper.convertJetonState(onChainTableObject);
+    const newPlayer = newJState.players.find((p) => p.id === data.address);
+    if (!newPlayer) throw new Error("new player must have existed!!");
+    // TODO: are you sure? you want to replace all the players?
+    this.emit(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayer);
+
+    // if the new player is active player then the game has just started
+    if (newPlayer.status !== PlayerStatus.sittingOut) {
+      const dealerIndex = newJState.dealerIndex;
+      this.emit(GameEventTypes.HAND_STARTED, { dealer: newJState.players[dealerIndex]! });
+      const shufflingPlayer = getShufflingPlayer(onChainTableObject);
+      if (shufflingPlayer)
+        this.emit(
+          GameEventTypes.PLAYER_SHUFFLING,
+          onChainDataMapper.convertPlayer(shufflingPlayer),
+        );
+      this.checkForActions(onChainTableObject);
+    }
+
+    this.gameState = newJState;
   };
 
-  private setMySeatIndex() {
-    if (!this.gameState) throw new Error("No game state");
-    for (const [seat, player] of Object.entries(this.gameState.seats)) {
-      if (player && player.id === this.playerId) {
-        this.mySeatIndex = Number(seat);
-        return;
-      }
+  private async playerShuffledDeck(data: OnChainShuffledDeckData) {
+    const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
+    const shufflingPlayer = getShufflingPlayer(onChainTableObject);
+    if (!shufflingPlayer) {
+      console.log("shuffle ended, lets do private card decryption");
+      return;
+    }
+    this.emit(GameEventTypes.PLAYER_SHUFFLING, onChainDataMapper.convertPlayer(shufflingPlayer));
+    this.checkForActions(onChainTableObject);
+    this.gameState = onChainDataMapper.convertJetonState(onChainTableObject);
+  }
+
+  private checkForActions(onChainTableObject: OnChainTableObject) {
+    if (getShufflingPlayer(onChainTableObject)?.addr === this.playerId) {
+      if (onChainTableObject.state.__variant__ !== "Playing")
+        throw new Error("shuffle should only be called during playing");
+      const publicKeys = onChainTableObject.roster.players.map((p) =>
+        hexStringToUint8Array(p.public_key),
+      );
+      this.shuffle(hexStringToUint8Array(onChainTableObject.state.deck), publicKeys);
     }
   }
 
-  private isAlreadyCheckedIn(seats: Seats): boolean {
-    for (const player of seats) {
+  private async shuffle(deck: Uint8Array, publicKeys: Uint8Array[]) {
+    console.log("going to shuffle deck");
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    const aggregatedPublicKey = this.zkDeck.generateAggregatedPublicKey(publicKeys);
+    const { proof, outputDeck } = await this.zkDeck.proveShuffleEncryptDeck(
+      aggregatedPublicKey,
+      deck,
+    );
+    console.log("shuffled deck", outputDeck);
+    this.onChainDataSource.shuffledDeck(this.tableInfo.id, outputDeck, proof);
+  }
+
+  private isAlreadyCheckedIn(players: Player[]): boolean {
+    for (const player of players) {
       if (player && player.id === this.playerId) return true;
     }
     return false;
   }
+
+  private queryGameState = () => {
+    return this.onChainDataSource.queryGameState(this.tableInfo.id);
+  };
 
   public placeBet(action: PlacingBettingActions) {
     console.log("placeBet Called", action);
@@ -157,7 +209,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
       accountAddress,
       signAndSubmitTransaction,
     );
-    const tableInfo = await onChainDataSource.createTable(
+    const [tableAddress, tableObject] = await onChainDataSource.createTable(
       smallBlind,
       numberOfRaises,
       minPlayers,
@@ -168,6 +220,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
       chipUnit,
       publicKey,
     );
+    const tableInfo = covertTableInfo(tableAddress, tableObject);
 
     const jeton = new Jeton({
       tableInfo,

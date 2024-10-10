@@ -1,25 +1,33 @@
 import { EventEmitter } from "events";
-import type {
-  OnChainDataSource,
-  OnChainDataSourceInstance,
-  OnChainEventMap,
-  OnChainTableObject,
+import {
+  type OnChainDataSource,
+  type OnChainDataSourceInstance,
+  type OnChainEventMap,
+  OnChainEventTypes,
+  type OnChainTableObject,
 } from "@src/OnChainDataSource";
+import { contractCheckedInEventType } from "@src/contracts/contractData";
 import { createTableInfo } from "@src/contracts/contractDataMapper";
 import {
   callCheckInContract,
+  callShuffleEncryptDeck,
   createTableObject,
   getTableObject,
   getTableObjectAddresses,
+  queryEvents,
 } from "@src/contracts/contractInteractions";
 import type { ChipUnits, TableInfo } from "@src/types";
-// @ts-ignore
-import { gql, request } from "graffle";
+import { POLLING_INTERVAL } from "./constants";
 
 export class AptosOnChainDataSource
   extends EventEmitter<OnChainEventMap>
   implements OnChainDataSourceInstance
 {
+  pollingTables: Record<
+    string,
+    { timerId: number | NodeJS.Timeout; lastEventBlockHeight?: number }
+  > = {};
+
   constructor(
     public address: string,
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -27,6 +35,48 @@ export class AptosOnChainDataSource
   ) {
     super();
     this.address = address;
+  }
+
+  private publishEvent(event: { data: { sender_addr: string }; indexed_type: string }) {
+    console.log("publish event", event);
+    switch (event.indexed_type) {
+      case contractCheckedInEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_CHECKED_IN);
+        this.emit(OnChainEventTypes.PLAYER_CHECKED_IN, { address: event.data.sender_addr });
+        break;
+    }
+  }
+
+  private pollTableEvents = async (tableId: string) => {
+    const events = await queryEvents(tableId);
+    const lastEventIndex = this.pollingTables[tableId]!.lastEventBlockHeight;
+    if (lastEventIndex) {
+      const newEvents = events
+        .filter((ev) => ev.transaction_block_height > lastEventIndex)
+        .reverse();
+      if (newEvents.length > 0) console.log("new events are", newEvents);
+      for (const event of newEvents) {
+        this.publishEvent(event);
+      }
+    }
+    // TODO: parse events and emit
+    const pollingTable = this.pollingTables[tableId];
+    if (pollingTable) {
+      pollingTable.lastEventBlockHeight = events[0].transaction_block_height;
+      pollingTable.timerId = setTimeout(this.pollTableEvents.bind(this, tableId), POLLING_INTERVAL);
+    }
+  };
+
+  public listenToTableEvents(tableId: string) {
+    console.log("listen to events", tableId);
+    if (this.pollingTables[tableId]) return;
+    const timerId = setTimeout(this.pollTableEvents.bind(this, tableId), POLLING_INTERVAL);
+    this.pollingTables[tableId] = { timerId: timerId };
+  }
+
+  public disregardTableEvents(tableId: string) {
+    if (!this.pollingTables[tableId]) return;
+    clearInterval(this.pollingTables[tableId]?.timerId);
   }
 
   public async createTable(
@@ -45,7 +95,8 @@ export class AptosOnChainDataSource
     chipUnit: ChipUnits,
     publicKey: Uint8Array,
   ) {
-    const [tableAddress, tableResourceObject] = await createTableObject(
+    return await createTableObject(
+      waitingTimeOut,
       smallBlind,
       numberOfRaises,
       minPlayers,
@@ -56,16 +107,18 @@ export class AptosOnChainDataSource
       publicKey,
       this.singAndSubmitTransaction,
     );
-    const tableInfo = createTableInfo(tableAddress, tableResourceObject);
-    return tableInfo;
   }
 
-  async queryGameState<T extends keyof OnChainTableObject>(
+  queryGameState(id: string): Promise<OnChainTableObject>;
+  // TODO: partial query
+  queryGameState<T extends keyof OnChainTableObject>(
     id: string,
     fields: T[],
+  ): Promise<Pick<OnChainTableObject, T>>;
+  async queryGameState<T extends keyof OnChainTableObject>(
+    id: string,
+    fields?: T[],
   ): Promise<Pick<OnChainTableObject, T>> {
-    console.log("query game state");
-    //TODO
     const tableObject = (await getTableObject(id)) as OnChainTableObject;
     console.log("OnChainTableObject", tableObject);
     return tableObject;
@@ -82,22 +135,14 @@ export class AptosOnChainDataSource
     );
   }
 
-  async queryEvents(tableId: string) {
-    const document = gql`
-    query MyQuery {
-  events(
-    where: {indexed_type: {_eq: "${tableId}::texas_holdem::TableCreatedEvent"}, data: {_cast: {String: {_like: "%0x73639065d084db4d47531fcae25da3fd003ae43dec691f53a7ef5dcce072676c%"}}}}
-  ) {
-    data,
-    indexed_type
-  }
-}
-`;
-    const res = await request(
-      "https://aptos-testnet.nodit.io/tUOKeLdo0yUmJsNgwfln97h_03wYs8mP/v1/graphql",
-      document,
+  async shuffledDeck(tableId: string, outDeck: Uint8Array, proof: Uint8Array) {
+    return await callShuffleEncryptDeck(
+      this.address,
+      outDeck,
+      proof,
+      tableId,
+      this.singAndSubmitTransaction,
     );
-    console.log("res is", res);
   }
 
   static async getTableInfo(id: string) {

@@ -1,44 +1,72 @@
-export type OnChainPlayer = {
+export type TableAddress = string;
+
+export type ChipStack = {
+  _0: string;
+};
+
+export type OnChainActivePlayer = {
   addr: string;
-  public_key: Uint8Array;
-  balance: number;
-  bet: number;
+  remaining: ChipStack;
+  bet: ChipStack;
+  stake: ChipStack;
   is_folded: boolean;
-  is_playing: boolean;
   is_last_hand: boolean;
+  public_key: string;
+};
+
+export type OnChainPendingPlayer = {
+  addr: string;
+  balance: ChipStack;
+  stake: ChipStack;
+  public_key: string;
 };
 
 export type DrawPrivateCardsPhase = {
-  type: "DrawPrivateCards";
+  __variant__: "DrawPrivateCards";
   contributors_index: number[];
 };
 
 export type ShufflePhase = {
-  type: "Shuffle";
-  seat_index: number;
+  __variant__: "ShuffleEncrypt";
+  turn_index: number;
 };
 
-export type AwaitingStartPhase = {
-  type: "AwaitingStart";
+export type OnChainPhase = ShufflePhase | DrawPrivateCardsPhase;
+
+export type AwaitingStartState = {
+  __variant__: "AwaitingStart";
 };
 
-export type OnChainPhase = AwaitingStartPhase | ShufflePhase | DrawPrivateCardsPhase;
+export type RemovedState = {
+  __variant__: "Removed";
+};
 
-export type OnChainTableObject = {
-  seets: ({ vec: [OnChainPlayer] } | { vec: [] })[];
-  dealer_index: number;
+export type PlayingState = {
+  __variant__: "Playing";
+  timeout: string;
+  deck: string;
+  // TODO: what does it represent?
+  decryption_card_shares: Uint8Array[];
   phase: OnChainPhase;
-  time_out: number;
-  aggregated_public_key: Uint8Array[];
-  deck: Uint8Array[];
-  private_cards_share: Uint8Array[][];
-  public_cards_share: Uint8Array[][];
-  info: {
+};
+
+export type OnChainGameState = AwaitingStartState | PlayingState | RemovedState;
+export type OnChainTableObject = {
+  state: OnChainGameState;
+  roster: {
+    stake_amount: number;
+    max_players: number;
+    small_index: number;
+    waitings: OnChainPendingPlayer[];
+    players: OnChainActivePlayer[];
+  };
+  config: {
     action_timeout: number;
     max_buy_in_amount: number;
     min_buy_in_amount: number;
     num_raises: number;
-    small_blind: number;
+    small_bet: number;
     start_at_player: number;
+    max_players: number;
   };
 };
