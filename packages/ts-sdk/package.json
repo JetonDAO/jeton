@@ -26,7 +26,7 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsc --noEmit && tsup",
     "dev": "tsup --watch",
     "test": "jest"
   },
@@ -42,6 +42,8 @@
     "@aptos-labs/ts-sdk": "^1.28.0",
     "@jeton/zk-deck": "*",
     "events": "^3.3.0",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0",
     "piesocket-js": "^5.1.0"
   },
   "peerDependencies": {

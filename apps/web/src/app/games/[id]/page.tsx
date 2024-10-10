@@ -6,9 +6,10 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GameStatus } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 
+import { JetonContext } from "@src/components/JetonContextProvider";
 import { orderPlayersSeats } from "@src/utils/seat";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import React from "react";
 import DownloadModal from "./components/DownloadModal";
 import GameContainer from "./components/GameContainer";
@@ -39,6 +40,7 @@ function getRandomCards() {
 }
 
 export default function PlayPage({ params }: { params: { id: string } }) {
+  const { game, joinTable } = useContext(JetonContext);
   const players = useSelector(selectGamePlayers$());
   const [toffState, setToffState] = useState(false);
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
@@ -57,7 +59,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   } = useWallet();
 
   const reorderedPlayers = useMemo(() => {
-    const mainPlayer = players?.find((player) => player.id === account?.address);
+    const mainPlayer = players?.find((player) => player?.id === account?.address);
     return players && mainPlayer ? orderPlayersSeats(players, mainPlayer.id) : [];
   }, [players, players?.length, account]);
 
@@ -69,11 +71,11 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   }, [gameStatus]);
 
   useEffect(() => {
-    if (!isWalletLoading && account) {
-      initGame(account.address, signMessage, signAndSubmitTransaction);
+    if (!isWalletLoading && account && joinTable) {
+      initGame(account.address, signAndSubmitTransaction, joinTable, game);
     }
     setTableId(params.id);
-  }, [params.id, signMessage, signAndSubmitTransaction, isWalletLoading, account]);
+  }, [params.id, signAndSubmitTransaction, isWalletLoading, account, joinTable, game]);
 
   useEffect(() => {
     if (!isWalletLoading && !connected && toffState) {

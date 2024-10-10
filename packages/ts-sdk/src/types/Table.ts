@@ -13,4 +13,5 @@ export interface TableInfo {
   minBuyIn: number;
   maxBuyIn: number;
   chipUnit: ChipUnits;
+  waitingTimeout: number; // seconds
 }

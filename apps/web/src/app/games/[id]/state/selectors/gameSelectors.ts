@@ -18,5 +18,3 @@ export const selectPublicCards$ = () => {
 
   return [flopCards, turnCard, riverCard].flat();
 };
-
-export const selectRaiseAmount = () => state$.game.getRaiseAmount();
