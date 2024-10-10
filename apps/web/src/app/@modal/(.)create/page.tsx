@@ -34,7 +34,7 @@ const INPUT_FIELDS = [
   { label: "Maximum Players", name: "maxPlayers" },
   { label: "Minimum Buy-in", name: "minBuyIn" },
   { label: "Maximum Buy-in", name: "maxBuyIn" },
-  { label: "Waiting Blocks", name: "waitingBlocks" },
+  { label: "Waiting timeOut(seconds)", name: "waitingTimeOut" },
 ];
 
 export default function GameCreateModal() {
@@ -64,9 +64,9 @@ export default function GameCreateModal() {
         formValues.smallBlind,
         formValues.numberOfRaises,
         formValues.minPlayers,
-        formValues.maxPlayers,
         formValues.minBuyIn,
         formValues.maxBuyIn,
+        formValues.waitingTimeOut,
         formValues.chipUnit,
         1000,
         account!.address,

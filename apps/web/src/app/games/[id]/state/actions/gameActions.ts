@@ -47,9 +47,9 @@ export const initGame = async (
   setGameEventListeners(finalGame);
   const entryGameState = finalGame.gameState;
   if (!entryGameState) throw Error("should have existed");
-  state$.gameState.players.set(entryGameState.seats.map((p) => p));
+  state$.gameState.players.set(entryGameState.players.map((p) => p));
   state$.gameState.status.set(entryGameState.status);
-  state$.gameState.dealer.set(entryGameState.seats[entryGameState.dealerIndex]!);
+  state$.gameState.dealer.set(entryGameState.players[entryGameState.dealerIndex]!);
   state$.loading.set(false);
   //state$.initializing.set(false);
 };

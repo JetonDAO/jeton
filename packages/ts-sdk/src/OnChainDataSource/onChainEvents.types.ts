@@ -2,7 +2,6 @@ import type { BettingActions, BettingRounds, PublicCardRounds } from "../types";
 
 export enum OnChainEventTypes {
   PLAYER_CHECKED_IN = "player-checked-in",
-  GAME_STARTED = "game-started",
   SHUFFLED_DECK = "shuffled-deck",
   PRIVATE_CARDS_SHARES_RECEIVED = "private-cards-shares",
   PLAYER_PLACED_BET = "player-placed-bet",
@@ -11,10 +10,6 @@ export enum OnChainEventTypes {
 
 export type OnChainPlayerCheckedInData = {
   address: string;
-};
-
-export type OnChainGameStartedData = {
-  dealerIndex: number;
 };
 
 export type OnChainShuffledDeckData = {
@@ -38,7 +33,6 @@ export type OnChainPublicCardsSharesData = {
 
 export type OnChainEventMap = {
   [OnChainEventTypes.PLAYER_CHECKED_IN]: [OnChainPlayerCheckedInData];
-  [OnChainEventTypes.GAME_STARTED]: [OnChainGameStartedData];
   [OnChainEventTypes.SHUFFLED_DECK]: [OnChainShuffledDeckData];
   [OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED]: [OnChainPrivateCardsSharesData];
   [OnChainEventTypes.PLAYER_PLACED_BET]: [OnChainPlayerPlacedBetData];
