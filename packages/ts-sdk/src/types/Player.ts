@@ -9,6 +9,6 @@ export enum PlayerStatus {
 export interface Player {
   id: string;
   balance: number;
-  elGamalPublicKey: ElGamalPublicKey;
   status: PlayerStatus;
+  bet?: number;
 }

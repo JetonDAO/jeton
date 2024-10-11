@@ -5,7 +5,7 @@ import {
   type Player,
   PlayerStatus,
   type TableInfo,
-} from "./types";
+} from "@src/types";
 
 export class BettingManager {
   active: boolean;
@@ -170,7 +170,6 @@ export class BettingManager {
         const sb = this.tableInfo.smallBlind;
         const amount = sb > sender.balance ? sender.balance : sb;
         if (sb > sender.balance) sender.status = PlayerStatus.allIn;
-        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         this.roundBets[sender.id]! += amount;
         sender.balance -= amount;
         break;
@@ -180,7 +179,6 @@ export class BettingManager {
         const amount = bb > sender.balance ? sender.balance : bb;
         if (bb > sender.balance) sender.status = PlayerStatus.allIn;
         this.numberOfRaisesInRound += 1;
-        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         this.roundBets[sender.id]! += amount;
         sender.balance -= amount;
         break;
@@ -198,7 +196,6 @@ export class BettingManager {
           sender.balance > amountNeededToCall ? amountNeededToCall : sender.balance;
 
         if (sender.balance <= amountNeededToCall) sender.status = PlayerStatus.allIn;
-        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         this.roundBets[sender.id]! += finalAmount;
         sender.balance -= finalAmount;
         break;
@@ -230,7 +227,6 @@ export class BettingManager {
           copiedBets[id] = 0;
         } else if (bet > 0) {
           sidePot += allInBet;
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
           copiedBets[id]! -= allInBet;
         }
       }

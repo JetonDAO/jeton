@@ -1,21 +1,20 @@
 import { ChipUnits, type TableInfo } from "@src/types";
-
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-type Table = any;
+import type { OnChainTableObject } from "../OnChainDataSource";
 
 export const createTableInfo = (
   tableObjectAddress: string,
-  tableObjectResource: Table,
+  tableObjectResource: OnChainTableObject,
 ): TableInfo => {
   //TODO check maxPlayers and minPlayers value
   const tableInfo: TableInfo = {
     id: tableObjectAddress,
-    smallBlind: tableObjectResource.small_blind,
-    numberOfRaises: tableObjectResource.num_raises,
-    minPlayers: tableObjectResource.start_at_player,
-    maxPlayers: tableObjectResource.start_at_player,
-    minBuyIn: tableObjectResource.min_buy_in_amount,
-    maxBuyIn: tableObjectResource.max_buy_in_amount,
+    smallBlind: Number(tableObjectResource.config.small_bet),
+    numberOfRaises: Number(tableObjectResource.config.num_raises),
+    minPlayers: Number(tableObjectResource.config.start_at_player),
+    maxPlayers: Number(tableObjectResource.config.max_players),
+    minBuyIn: Number(tableObjectResource.config.min_buy_in_amount),
+    maxBuyIn: Number(tableObjectResource.config.max_buy_in_amount),
+    waitingTimeout: Number(tableObjectResource.config.action_timeout),
     chipUnit: ChipUnits.apt,
   };
   return tableInfo;

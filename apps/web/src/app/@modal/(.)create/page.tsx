@@ -1,14 +1,21 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { ChipUnits, type TableInfo, createTable } from "@jeton/ts-sdk";
+import { ChipUnits, type TableInfo } from "@jeton/ts-sdk";
 import Modal from "@src/components/Modal";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, type ChangeEvent, type FormEvent } from "react";
+import React, { useState, type ChangeEvent, type FormEvent, useContext } from "react";
 
 export const runtime = "edge";
 
 type FormValues = Omit<TableInfo, "id">;
+
+import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
+//@ts-ignore
+import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
+//@ts-ignore
+import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import { JetonContext } from "@src/components/JetonContextProvider";
 
 const INITIAL_FORM_VALUES: FormValues = {
   smallBlind: 0,
@@ -17,6 +24,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   maxPlayers: 10,
   minBuyIn: 100,
   maxBuyIn: 1000,
+  waitingTimeout: 3600,
   chipUnit: ChipUnits.apt,
 };
 
@@ -27,7 +35,7 @@ const INPUT_FIELDS = [
   { label: "Maximum Players", name: "maxPlayers" },
   { label: "Minimum Buy-in", name: "minBuyIn" },
   { label: "Maximum Buy-in", name: "maxBuyIn" },
-  { label: "Waiting Blocks", name: "waitingBlocks" },
+  { label: "Waiting timeOut(seconds)", name: "waitingTimeOut" },
 ];
 
 export default function GameCreateModal() {
@@ -35,6 +43,7 @@ export default function GameCreateModal() {
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_VALUES);
   const { account, signAndSubmitTransaction } = useWallet();
 
+  const { createTable } = useContext(JetonContext);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -51,29 +60,36 @@ export default function GameCreateModal() {
     setLoading(true);
 
     try {
-      const tableInfo = await createTable(
+      if (!createTable) throw new Error("create Table must exist");
+      const jeton = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,
         formValues.minPlayers,
-        formValues.maxPlayers,
         formValues.minBuyIn,
         formValues.maxBuyIn,
+        formValues.waitingTimeout,
         formValues.chipUnit,
-        account?.address,
+        1000,
+        account!.address,
         signAndSubmitTransaction,
+        {
+          decryptCardShareWasm,
+          shuffleEncryptDeckWasm,
+          decryptCardShareZkey,
+          shuffleEncryptDeckZkey,
+        },
       );
 
-      router.push(`/games/${tableInfo.id}`);
+      router.push(`/games/${jeton.tableInfo.id}`);
     } finally {
       setLoading(false);
     }
+
+    // Modal choose violence and did not close on navigating
+    if (!pathname.includes("create")) {
+      return null;
+    }
   };
-
-  // Modal choose violence and did not close on navigating
-  if (!pathname.includes("create")) {
-    return null;
-  }
-
   return (
     <Modal className="animate-scaleUp">
       <form onSubmit={handleSubmit}>

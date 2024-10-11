@@ -1,10 +1,11 @@
 import type { GameEventMap, GameEventTypes } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
-import { useEffect, useState } from "react";
+import { JetonContext } from "@src/components/JetonContextProvider";
+import { useContext, useEffect, useState } from "react";
 import { state$ } from "../state/state";
 
 export const useSubscribeToGameEvent = <T extends keyof GameEventMap>(event: T) => {
-  const game = useSelector(state$.game);
+  const { game } = useContext(JetonContext);
   const [eventState, setEventState] = useState<GameEventMap[T]>();
 
   useEffect(() => {

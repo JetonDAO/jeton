@@ -1,15 +1,6 @@
 "use client";
-import type {
-  InputTransactionData,
-  SignMessagePayload,
-  SignMessageResponse,
-} from "@aptos-labs/wallet-adapter-react";
-import {
-  GameEventTypes,
-  type PlacingBettingActions,
-  createGame,
-  getTableInfo,
-} from "@jeton/ts-sdk";
+import type { InputTransactionData } from "@aptos-labs/wallet-adapter-react";
+import { GameEventTypes, type Jeton } from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
 import {
@@ -31,56 +22,53 @@ import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.was
 
 export const initGame = async (
   address: string,
-  signMessage: (message: SignMessagePayload) => Promise<SignMessageResponse>,
   signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>,
+  joinTable: (typeof Jeton)["joinTable"],
+  game?: Jeton,
 ) => {
   await when(
     () => state$.tableId.get() !== undefined && state$.loading.get() && !state$.initializing.get(),
   );
+  if (state$.initializing.get()) {
+    return;
+  }
+  console.log("init game", game);
   state$.initializing.set(true);
   const tableId = state$.tableId.peek() as string;
-  const tableInfo = await getTableInfo(tableId);
-  const game = createGame({
-    address,
-    tableInfo,
-    signMessage,
-    signAndSubmitTransaction,
-    zkDeckFilesOrUrls: {
+  // TODO: should we get 'entryGameState' from user?
+  const finalGame =
+    game ||
+    (await joinTable(tableId, 1000, address, signAndSubmitTransaction, {
       decryptCardShareWasm,
       shuffleEncryptDeckWasm,
       decryptCardShareZkey,
       shuffleEncryptDeckZkey,
-    },
-  });
-  state$.game.set(game);
-  setGameEventListeners();
-  // TODO: should we get 'entryGameState' from user?
-  const entryGameState = await game.checkIn(1000);
+    }));
+  setGameEventListeners(finalGame);
+  const entryGameState = finalGame.gameState;
+  if (!entryGameState) throw Error("should have existed");
   state$.gameState.players.set(entryGameState.players.map((p) => p));
   state$.gameState.status.set(entryGameState.status);
-  state$.gameState.dealer.set(entryGameState.players[entryGameState.dealer]);
+  state$.gameState.dealer.set(entryGameState.players[entryGameState.dealerIndex]!);
+  if (entryGameState.shufflingPlayer) {
+    state$.gameState.shufflingPlayer.set(entryGameState.shufflingPlayer);
+  }
   state$.loading.set(false);
-  state$.initializing.set(false);
+  //state$.initializing.set(false);
 };
 
-function setGameEventListeners() {
-  const game = state$.game.peek();
-  if (game === undefined) throw new Error("game must exist");
+function setGameEventListeners(game: Jeton) {
   game.addListener?.(GameEventTypes.NEW_PLAYER_CHECK_IN, newPlayerCheckedInHandler);
   game.addListener?.(GameEventTypes.HAND_STARTED, handStartedHandler);
   game.addListener?.(GameEventTypes.PLAYER_SHUFFLING, playerShufflingHandler);
   game.addListener?.(GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED, privateCardsDecryptionHandler);
   game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
   game.addListener?.(GameEventTypes.AWAITING_BET, awaitingPlayerBetHandler);
-  game.addListener?.(GameEventTypes.RECEIVED_PRIVATE_CARDS, receivedPrivateCardHandler);
   game.addListener?.(GameEventTypes.PLAYER_PLACED_BET, playerPlacedBetHandler);
   game.addListener?.(GameEventTypes.RECEIVED_PUBLIC_CARDS, receivedPublicCardsHandler);
+  console.log("set game event listeners end");
 }
 
 export const setTableId = (id: string) => {
   state$.tableId.set(id);
 };
-
-export function placeBet(action: PlacingBettingActions) {
-  state$.game.placeBet(action);
-}
