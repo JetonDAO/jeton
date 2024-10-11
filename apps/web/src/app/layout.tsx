@@ -3,6 +3,7 @@
 import background from "@src/assets/images/main-menu-background.png";
 import { Press_Start_2P } from "next/font/google";
 import Image from "next/image";
+import { useSelectedLayoutSegments } from "next/navigation";
 import Script from "next/script";
 
 import "./globals.css";
@@ -36,6 +37,7 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   useButtonClickSound();
+  const segments = useSelectedLayoutSegments();
 
   return (
     <html lang="en">
@@ -61,7 +63,7 @@ export default function RootLayout({
             />
             <SoundSettings />
 
-            {modal}
+            {segments.length < 2 && modal}
           </JetonProvider>
         </WalletProvider>
         <Script src="/register-service-worker.js" />
