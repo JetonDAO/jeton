@@ -82,8 +82,26 @@ const convertGameStatus = (state: OnChainGameState) => {
     case "Removed":
       return GameStatus.AwaitingStart;
     case "Playing": {
-      //TODO:
-      return GameStatus.Shuffle;
+      switch (state.phase.__variant__) {
+        case "ShuffleEncrypt":
+          return GameStatus.Shuffle;
+        case "DrawPrivateCards":
+          return GameStatus.DrawPrivateCards;
+        case "BetFlop":
+          return GameStatus.BetFlop;
+        case "BetPreFlop":
+          return GameStatus.BetPreFlop;
+        case "BetTurn":
+          return GameStatus.BetTurn;
+        case "BetRiver":
+          return GameStatus.BetRiver;
+        case "DrawFlopCards":
+          return GameStatus.DrawFlop;
+        case "DrawTurnCard":
+          return GameStatus.DrawTurn;
+        case "DrawRiverCard":
+          return GameStatus.DrawRiver;
+      }
     }
   }
 };
@@ -107,4 +125,4 @@ const convertJetonState = (state: OnChainTableObject): JGameState => {
   };
 };
 
-export default { convertPlayer, convertPlayers, convertJetonState };
+export default { convertPlayer, convertPlayers, convertJetonState, convertGameStatus };

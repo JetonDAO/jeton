@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
-import type { ZKDeck } from "@jeton/zk-deck";
+import type { DecryptionCardShare, Proof, ZKDeck } from "@jeton/zk-deck";
 import {
+  type OnChainCardsSharesData,
   type OnChainDataSourceInstance,
   OnChainEventTypes,
   type OnChainPlayerCheckedInData,
@@ -13,16 +14,26 @@ import {
   type ChipUnits,
   type GameEventMap,
   GameEventTypes,
-  type GameStatus,
+  GameStatus,
   type PlacingBettingActions,
   type Player,
   PlayerStatus,
+  PublicCardRounds,
+  type ReceivedPublicCardsEvent,
   type TableInfo,
 } from "@src/types";
 import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
 import { createLocalZKDeck } from "@src/utils/createZKDeck";
 import { hexStringToUint8Array } from "@src/utils/unsignedInt";
-import { getShufflingPlayer, isActivePlayer } from "./helpers";
+import {
+  getBettingPlayer,
+  getCardIndexes,
+  getCardShares,
+  getDeck,
+  getPrivateCardsIndexes,
+  getShufflingPlayer,
+  isActivePlayer,
+} from "./helpers";
 
 export type ZkDeckUrls = {
   shuffleEncryptDeckWasm: string;
@@ -54,6 +65,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   private secretKey: bigint;
   private publicKey: Uint8Array;
   public gameState?: JGameState;
+  private myPrivateCardsShares?: [DecryptionCardShare, DecryptionCardShare];
   private pendingMemo: PendingMemo;
 
   constructor(config: JetonConfigs) {
@@ -90,10 +102,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   private addOnChainListeners() {
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_CHECKED_IN, this.newPlayerCheckedIn);
     this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
-    //  this.onChainDataSource.on(
-    //    OnChainEventTypes.PRIVATE_CARDS_SHARES_RECEIVED,
-    //    this.receivedPrivateCardsShares,
-    //  );
+    this.onChainDataSource.on(OnChainEventTypes.CARDS_SHARES_RECEIVED, this.receivedCardsShares);
     //  this.onChainDataSource.on(
     //    OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED,
     //    this.receivedPublicCardsShares,
@@ -101,6 +110,21 @@ export class Jeton extends EventEmitter<GameEventMap> {
     //  this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
     this.onChainDataSource.listenToTableEvents(this.tableInfo.id);
   }
+
+  private receivedCardsShares = async (data: OnChainCardsSharesData) => {
+    const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
+    const newState = onChainDataMapper.convertJetonState(onChainTableObject);
+    if (newState.status === GameStatus.BetPreFlop) {
+      this.decryptMyPrivateCards(onChainTableObject);
+    } else if (newState.status === GameStatus.BetFlop) {
+      this.decryptPublicCards(onChainTableObject, PublicCardRounds.FLOP);
+    } else if (newState.status === GameStatus.BetRiver) {
+      this.decryptPublicCards(onChainTableObject, PublicCardRounds.RIVER);
+    } else if (newState.status === GameStatus.BetTurn) {
+      this.decryptPublicCards(onChainTableObject, PublicCardRounds.TURN);
+    }
+    this.gameState = newState;
+  };
 
   private newPlayerCheckedIn = async (data: OnChainPlayerCheckedInData) => {
     //if (!this.gameState) throw new Error("game state must exist");
@@ -128,16 +152,93 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.gameState = newJState;
   };
 
-  private async playerShuffledDeck(data: OnChainShuffledDeckData) {
+  private playerShuffledDeck = async (data: OnChainShuffledDeckData) => {
     const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
     const shufflingPlayer = getShufflingPlayer(onChainTableObject);
     if (!shufflingPlayer) {
       console.log("shuffle ended, lets do private card decryption");
+      this.emit(GameEventTypes.PRIVATE_CARD_DECRYPTION_STARTED, {});
+      this.createAndSharePrivateKeyShares(onChainTableObject);
+      this.gameState = onChainDataMapper.convertJetonState(onChainTableObject);
       return;
     }
     this.emit(GameEventTypes.PLAYER_SHUFFLING, onChainDataMapper.convertPlayer(shufflingPlayer));
     this.checkForActions(onChainTableObject);
     this.gameState = onChainDataMapper.convertJetonState(onChainTableObject);
+  };
+
+  private async createAndSharePrivateKeyShares(state: OnChainTableObject) {
+    if (!this.zkDeck) throw new Error("zkDeck should be present");
+    // TODO: do not call if your player is not active player
+
+    const numberOfPlayers = state.roster.players.length;
+    const cardIndexes = Array.from(new Array(numberOfPlayers * 2).keys());
+
+    const proofsAndShares = await this.createDecryptionShareProofsFor(cardIndexes, state);
+
+    const myPrivateCardsIndexes = getPrivateCardsIndexes(state, this.playerId);
+    const filteredPAS = proofsAndShares.filter(
+      (pas) => !myPrivateCardsIndexes.includes(pas.cardIndex),
+    );
+    const proofsToSend = filteredPAS.map((pas) => pas.proof);
+    const sharesToSend = filteredPAS.map((pas) => pas.decryptionCardShare);
+    this.myPrivateCardsShares = proofsAndShares
+      .filter((pas) => myPrivateCardsIndexes.includes(pas.cardIndex))
+      .map((pas) => pas.decryptionCardShare) as [DecryptionCardShare, DecryptionCardShare];
+    this.onChainDataSource.privateCardsDecryptionShares(
+      this.tableInfo.id,
+      sharesToSend,
+      proofsToSend,
+    );
+  }
+
+  private async createDecryptionShareProofsFor(indexes: number[], state: OnChainTableObject) {
+    const deck = getDeck(state);
+    if (!deck) throw new Error("Deck must exist");
+
+    const proofPromises: Promise<{
+      proof: Proof;
+      decryptionCardShare: DecryptionCardShare;
+    }>[] = [];
+    for (const index of indexes) {
+      proofPromises.push(this.zkDeck.proveDecryptCardShare(this.secretKey, index, deck));
+    }
+    const proofsAndShares = (await Promise.all(proofPromises)).map((s, i) =>
+      Object.assign({ cardIndex: indexes[i] as number }, s),
+    );
+    return proofsAndShares;
+  }
+
+  private async decryptPublicCards(state: OnChainTableObject, round: PublicCardRounds) {
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    if (state.state.__variant__ !== "Playing") throw new Error("Invalid call");
+    const deck = getDeck(state);
+    if (!deck) throw new Error("state is wrong");
+
+    const cardIndexes = getCardIndexes(state, round);
+    const shares = getCardShares(state, cardIndexes);
+    const cards = shares.map((share, index) =>
+      this.zkDeck.decryptCard(cardIndexes[index]!, deck, [share]),
+    );
+    this.emit(GameEventTypes.RECEIVED_PUBLIC_CARDS, { cards, round } as ReceivedPublicCardsEvent);
+  }
+
+  private async decryptMyPrivateCards(state: OnChainTableObject) {
+    if (!this.zkDeck) throw new Error("zkDeck must have been created by now!");
+    if (state.state.__variant__ !== "Playing") throw new Error("Invalid call");
+    const deck = getDeck(state);
+    if (!deck) throw new Error("state is wrong");
+
+    if (!this.myPrivateCardsShares) throw new Error("must be available");
+    const [firstCardIndex, secondCardIndex] = getPrivateCardsIndexes(state, this.playerId);
+    const firstCardShares = [getCardShares(state, firstCardIndex), this.myPrivateCardsShares[0]];
+    const secondCardShares = [getCardShares(state, secondCardIndex), this.myPrivateCardsShares[1]];
+    const firstPrivateCard = this.zkDeck.decryptCard(firstCardIndex, deck, firstCardShares);
+    const secondPrivateCard = this.zkDeck.decryptCard(secondCardIndex, deck, secondCardShares);
+
+    this.emit(GameEventTypes.RECEIVED_PRIVATE_CARDS, {
+      cards: [firstPrivateCard, secondPrivateCard],
+    });
   }
 
   private checkForActions(onChainTableObject: OnChainTableObject) {
@@ -148,6 +249,12 @@ export class Jeton extends EventEmitter<GameEventMap> {
         hexStringToUint8Array(p.public_key),
       );
       this.shuffle(hexStringToUint8Array(onChainTableObject.state.deck), publicKeys);
+    }
+    if (
+      onChainDataMapper.convertGameStatus(onChainTableObject.state) === GameStatus.BetPreFlop &&
+      getBettingPlayer(onChainTableObject)?.addr === this.playerId
+    ) {
+      // TODO: bet
     }
   }
 

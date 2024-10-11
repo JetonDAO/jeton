@@ -5,9 +5,11 @@ import { aptos } from "@src/utils/aptos";
 import { gql, request } from "graphql-request";
 import {
   NODIT_GQL_ADDRESS,
+  contractCardDecryptionShareEventType,
   contractCheckInFunctionName,
   contractCheckedInEventType,
   contractCreateTableFunctionName,
+  contractDecryptShareFunctionName,
   contractShuffleEncryptDeckFunctionName,
   contractTableCreatedEventType,
   contractTableType,
@@ -73,12 +75,28 @@ export const callShuffleEncryptDeck = async (
   });
   console.log("shuffle transaction result", transactionData);
 };
-export const callDecryptCardShares = (
+export const callDecryptCardShares = async (
   address: string,
   cardDecryptionShares: Uint8Array[],
   proofs: Uint8Array[],
   tableObjectAddress: string,
-) => {};
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
+) => {
+  console.log("call card decryption share contract", address, cardDecryptionShares, proofs);
+  const submittedTransaction = await signAndSubmitTransaction({
+    sender: address,
+    data: {
+      function: contractDecryptShareFunctionName,
+      functionArguments: [tableObjectAddress, cardDecryptionShares, proofs],
+    },
+  });
+  const transactionData = await aptos.waitForTransaction({
+    transactionHash: submittedTransaction.hash,
+  });
+  console.log("shuffle transaction result", transactionData);
+};
+
 export const createTableObject = async (
   waitingTimeOut: number,
   smallBlind: number,
@@ -140,7 +158,7 @@ export async function queryEvents(tableId: string) {
   const document = gql`
         query MyQuery {
           events(
-            where: {indexed_type: {_in: ["${contractTableCreatedEventType}", "${contractCheckedInEventType}"]},
+            where: {indexed_type: {_in: ["${contractTableCreatedEventType}", "${contractCheckedInEventType}", "${contractCardDecryptionShareEventType}"]},
             data: {_cast: {String: {_like: "%${tableId}%"}}}},
             order_by: {transaction_block_height: desc}
           ) {

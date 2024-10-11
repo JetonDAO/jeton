@@ -8,6 +8,10 @@ export const contractTableCreatedEventType =
   `${contractAddress}::${appName}::TableCreatedEvent` as MoveStructId;
 export const contractCheckedInEventType =
   `${contractAddress}::${appName}::CheckedInEvent` as MoveStructId;
+export const contractShuffleEventType =
+  `${contractAddress}::${appName}::DeckShuffleEncryptedEvent` as MoveStructId;
+export const contractCardDecryptionShareEventType =
+  `${contractAddress}::${appName}::CardDecryptedShareEvent` as MoveStructId;
 
 export const contractTableType = `${contractAddress}::${appName}::${tableType}` as MoveStructId;
 
@@ -18,6 +22,8 @@ export const contractCheckInFunctionName =
   `${contractAddress}::${appName}::check_in` as MoveStructId;
 export const contractShuffleEncryptDeckFunctionName =
   `${contractAddress}::${appName}::shuffle_encrypt_deck` as MoveStructId;
+export const contractDecryptShareFunctionName =
+  `${contractAddress}::${appName}::decrypt_card_shares` as MoveStructId;
 
 export const NODIT_GQL_ADDRESS =
   "https://aptos-testnet.nodit.io/tUOKeLdo0yUmJsNgwfln97h_03wYs8mP/v1/graphql";
