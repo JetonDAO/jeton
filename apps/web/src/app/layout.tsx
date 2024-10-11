@@ -63,7 +63,7 @@ export default function RootLayout({
             />
             <SoundSettings />
 
-            {segments.length < 2 && modal}
+            {!(segments[0] === "games" && segments[1]?.startsWith("0x")) && modal}
           </JetonProvider>
         </WalletProvider>
         <Script src="/register-service-worker.js" />
