@@ -146,6 +146,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   };
 
   private playerShuffledDeck = async (data: OnChainShuffledDeckData) => {
+    console.log("player shuffled deck");
     const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
     const shufflingPlayer = getShufflingPlayer(onChainTableObject);
     if (!shufflingPlayer) {
@@ -161,6 +162,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   };
 
   private async createAndSharePrivateKeyShares(state: OnChainTableObject) {
+    console.log("create and share private key shares");
     if (!this.zkDeck) throw new Error("zkDeck should be present");
     // TODO: do not call if your player is not active player
 
@@ -177,6 +179,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
     const sharesToSend = filteredPAS.map((pas) => pas.decryptionCardShare);
     this.myPrivateCardsShares = proofsAndShares
       .filter((pas) => myPrivateCardsIndexes.includes(pas.cardIndex))
+      .sort((a, b) => a.cardIndex - b.cardIndex)
       .map((pas) => pas.decryptionCardShare) as [DecryptionCardShare, DecryptionCardShare];
     this.onChainDataSource.privateCardsDecryptionShares(
       this.tableInfo.id,

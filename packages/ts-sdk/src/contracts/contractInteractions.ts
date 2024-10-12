@@ -11,6 +11,7 @@ import {
   contractCreateTableFunctionName,
   contractDecryptShareFunctionName,
   contractShuffleEncryptDeckFunctionName,
+  contractShuffleEventType,
   contractTableCreatedEventType,
   contractTableType,
 } from "./contractData";
@@ -158,7 +159,7 @@ export async function queryEvents(tableId: string) {
   const document = gql`
         query MyQuery {
           events(
-            where: {indexed_type: {_in: ["${contractTableCreatedEventType}", "${contractCheckedInEventType}", "${contractCardDecryptionShareEventType}"]},
+            where: {indexed_type: {_in: ["${contractTableCreatedEventType}", "${contractCheckedInEventType}","${contractShuffleEventType}", "${contractCardDecryptionShareEventType}"]},
             data: {_cast: {String: {_like: "%${tableId}%"}}}},
             order_by: {transaction_block_height: desc}
           ) {

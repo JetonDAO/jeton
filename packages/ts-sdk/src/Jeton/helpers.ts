@@ -36,12 +36,15 @@ export function getCardShares(tableObject: OnChainTableObject, indexes: number):
 export function getCardShares(tableObject: OnChainTableObject, indexes: number[]): Uint8Array[];
 export function getCardShares(tableObject: OnChainTableObject, indexes: number | number[]) {
   if (tableObject.state.__variant__ !== "Playing") throw new Error("must be playing");
+  const arrayedShares = new Array(52);
+  const mapShares = tableObject.state.decryption_card_shares.data;
+  for (const mapShare of mapShares) {
+    arrayedShares[mapShare.key] = mapShare.value;
+  }
 
-  if (!Array.isArray(indexes)) return tableObject.state.decryption_card_shares[indexes];
+  if (!Array.isArray(indexes)) return hexStringToUint8Array(arrayedShares[indexes]!);
 
-  return indexes.map(
-    (cardIndex) => (tableObject.state as PlayingState).decryption_card_shares[cardIndex]!,
-  );
+  return indexes.map((cardIndex) => hexStringToUint8Array(arrayedShares[cardIndex]));
 }
 
 export function getCardIndexes(tableObject: OnChainTableObject, round: PublicCardRounds) {

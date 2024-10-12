@@ -57,8 +57,7 @@ export type PlayingState = {
   __variant__: "Playing";
   timeout: string;
   deck: string;
-  // TODO: what does it represent?
-  decryption_card_shares: Record<number, Uint8Array>;
+  decryption_card_shares: { data: { key: number; value: string }[] };
   phase: OnChainPhase;
 };
 
