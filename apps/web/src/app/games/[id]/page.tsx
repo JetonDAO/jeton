@@ -50,13 +50,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   const myCards = useSelector(selectMyCards$());
   const router = useRouter();
   const [privateCard, setPrivateCards] = useState<Record<number, number[]> | null>(null);
-  const {
-    connected,
-    isLoading: isWalletLoading,
-    signMessage,
-    signAndSubmitTransaction,
-    account,
-  } = useWallet();
+  const { connected, isLoading: isWalletLoading, signAndSubmitTransaction, account } = useWallet();
 
   const reorderedPlayers = useMemo(() => {
     const mainPlayer = players?.find((player) => player?.id === account?.address);

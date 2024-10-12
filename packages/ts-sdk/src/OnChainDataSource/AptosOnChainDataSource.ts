@@ -1,15 +1,19 @@
 import { EventEmitter } from "events";
 import {
-  type OnChainDataSource,
   type OnChainDataSourceInstance,
   type OnChainEventMap,
   OnChainEventTypes,
   type OnChainTableObject,
 } from "@src/OnChainDataSource";
-import { contractCheckedInEventType } from "@src/contracts/contractData";
+import {
+  contractCardDecryptionShareEventType,
+  contractCheckedInEventType,
+  contractShuffleEventType,
+} from "@src/contracts/contractData";
 import { createTableInfo } from "@src/contracts/contractDataMapper";
 import {
   callCheckInContract,
+  callDecryptCardShares,
   callShuffleEncryptDeck,
   createTableObject,
   getTableObject,
@@ -43,6 +47,16 @@ export class AptosOnChainDataSource
       case contractCheckedInEventType:
         console.log("publishing", OnChainEventTypes.PLAYER_CHECKED_IN);
         this.emit(OnChainEventTypes.PLAYER_CHECKED_IN, { address: event.data.sender_addr });
+        break;
+      case contractShuffleEventType:
+        console.log("publishing", OnChainEventTypes.SHUFFLED_DECK);
+        this.emit(OnChainEventTypes.SHUFFLED_DECK, { address: event.data.sender_addr });
+        break;
+      case contractCardDecryptionShareEventType:
+        console.log("publishing", OnChainEventTypes.CARDS_SHARES_RECEIVED);
+        this.emit(OnChainEventTypes.CARDS_SHARES_RECEIVED, {
+          address: event.data.sender_addr,
+        });
         break;
     }
   }
@@ -140,6 +154,20 @@ export class AptosOnChainDataSource
       this.address,
       outDeck,
       proof,
+      tableId,
+      this.singAndSubmitTransaction,
+    );
+  }
+
+  async privateCardsDecryptionShares(
+    tableId: string,
+    cardDecryptionShares: Uint8Array[],
+    proofs: Uint8Array[],
+  ) {
+    return await callDecryptCardShares(
+      this.address,
+      cardDecryptionShares,
+      proofs,
       tableId,
       this.singAndSubmitTransaction,
     );

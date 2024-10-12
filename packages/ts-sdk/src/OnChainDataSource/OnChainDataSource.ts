@@ -41,4 +41,9 @@ export interface OnChainDataSourceInstance extends EventEmitter<OnChainEventMap>
 
   checkIn(tableId: string, buyInAmount: number, publicKey: Uint8Array): Promise<void>;
   shuffledDeck(tableId: string, outDeck: Uint8Array, proof: Uint8Array): Promise<void>;
+  privateCardsDecryptionShares(
+    tableId: string,
+    cardDecryptionShares: Uint8Array[],
+    proofs: Uint8Array[],
+  ): Promise<void>;
 }

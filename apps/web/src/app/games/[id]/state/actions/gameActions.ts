@@ -72,3 +72,7 @@ function setGameEventListeners(game: Jeton) {
 export const setTableId = (id: string) => {
   state$.tableId.set(id);
 };
+
+export const setProgress = (percentage: number) => {
+  state$.downloadingAssets.loadingProgress.set(percentage);
+};

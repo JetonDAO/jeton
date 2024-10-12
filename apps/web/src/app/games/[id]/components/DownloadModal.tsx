@@ -1,16 +1,12 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { GameEventTypes } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import Modal from "@src/components/Modal";
 import React from "react";
-import { selectIsGameLoading$ } from "../state/selectors/gameSelectors";
-import { useSubscribeToGameEvent } from "./useSubscribeToGameEvent";
+import { selectIsGameLoading$, selectProgressPercentage$ } from "../state/selectors/gameSelectors";
 
 export default function DownloadModal() {
   const { isLoading: isWalletLoading } = useWallet();
-  const [{ percentage }] = useSubscribeToGameEvent(GameEventTypes.DOWNLOAD_PROGRESS) || [
-    { percentage: undefined },
-  ];
+  const percentage = useSelector(selectProgressPercentage$());
 
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
   if (isLoading)

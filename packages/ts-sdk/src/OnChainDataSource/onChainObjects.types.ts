@@ -26,12 +26,24 @@ export type DrawPrivateCardsPhase = {
   contributors_index: number[];
 };
 
+export type DrawPublicCardsPhase = {
+  __variant__: "DrawFlopCards" | "DrawTurnCard" | "DrawRiverCard";
+  contributors_index: number[];
+};
+
 export type ShufflePhase = {
   __variant__: "ShuffleEncrypt";
   turn_index: number;
 };
 
-export type OnChainPhase = ShufflePhase | DrawPrivateCardsPhase;
+export type BetPhase = {
+  __variant__: "BetPreFlop" | "BetFlop" | "BetTurn" | "BetRiver";
+  turn_index: number;
+  last_raise_index: number;
+  raises_left: number;
+};
+
+export type OnChainPhase = ShufflePhase | DrawPrivateCardsPhase | BetPhase | DrawPublicCardsPhase;
 
 export type AwaitingStartState = {
   __variant__: "AwaitingStart";
@@ -45,8 +57,7 @@ export type PlayingState = {
   __variant__: "Playing";
   timeout: string;
   deck: string;
-  // TODO: what does it represent?
-  decryption_card_shares: Uint8Array[];
+  decryption_card_shares: { data: { key: number; value: string }[] };
   phase: OnChainPhase;
 };
 

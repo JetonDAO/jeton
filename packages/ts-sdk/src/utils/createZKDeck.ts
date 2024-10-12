@@ -18,7 +18,7 @@ export const createLocalZKDeck = async (
     shuffleEncryptDeckZkeyBytes,
     decryptCardShareWasmBytes,
     shuffleEncryptDeckWasmBytes,
-  ] = await downloadZkeyFiles(filesOrUrls);
+  ] = await downloadZkeyFiles(filesOrUrls, callback);
 
   const zkDeck = await createZKDeck(
     shuffleEncryptDeckWasmBytes,

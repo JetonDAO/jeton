@@ -91,11 +91,6 @@ export default function GameCreateModal() {
     } finally {
       setLoading(false);
     }
-
-    // Modal choose violence and did not close on navigating
-    if (!pathname.includes("create")) {
-      return null;
-    }
   };
 
   return (
