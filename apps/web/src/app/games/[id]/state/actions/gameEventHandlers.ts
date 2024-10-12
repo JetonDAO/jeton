@@ -75,6 +75,9 @@ export function playerPlacedBetHandler({
   }
   const player$ = state$.gameState.players.find((p) => p.id.peek() === player.id)!;
   player$.roundAction.action.set(betAction);
+  player$.balance.set(player.balance);
+  player$.bet.set(player.bet);
+  player$.status.set(player.status);
   //TODO: calc amount
   player$.roundAction.amount.set(10);
   state$.gameState.betState.availableActions.set(availableActions);
