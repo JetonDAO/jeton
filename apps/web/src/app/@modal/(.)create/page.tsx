@@ -4,7 +4,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { ChipUnits, type TableInfo } from "@jeton/ts-sdk";
 import Modal from "@src/components/Modal";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, type ChangeEvent, type FormEvent, useContext } from "react";
+import React, { useState, type ChangeEvent, type FormEvent, useContext, useEffect } from "react";
 
 export const runtime = "edge";
 
@@ -15,7 +15,10 @@ import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
 import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
 //@ts-ignore
 import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import CheckIn from "@src/components/CheckIn";
+import { Input } from "@src/components/Input";
 import { JetonContext } from "@src/components/JetonContextProvider";
+import useCheckIn from "@src/hooks/useCheckIn";
 
 const INITIAL_FORM_VALUES: FormValues = {
   smallBlind: 0,
@@ -42,6 +45,8 @@ export default function GameCreateModal() {
   const [loading, setLoading] = useState(false);
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_FORM_VALUES);
   const { account, signAndSubmitTransaction } = useWallet();
+  const { checkIn, submitCheckIn } = useCheckIn();
+  const [isCreating, setIsCreating] = useState(false);
 
   const { createTable } = useContext(JetonContext);
   const router = useRouter();
@@ -61,6 +66,8 @@ export default function GameCreateModal() {
 
     try {
       if (!createTable) throw new Error("create Table must exist");
+      if (!checkIn) throw new Error("Check in you must do");
+
       const jeton = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,
@@ -69,7 +76,7 @@ export default function GameCreateModal() {
         formValues.maxBuyIn,
         formValues.waitingTimeout,
         formValues.chipUnit,
-        1000,
+        checkIn,
         account!.address,
         signAndSubmitTransaction,
         {
@@ -90,64 +97,41 @@ export default function GameCreateModal() {
       return null;
     }
   };
+
   return (
-    <Modal className="animate-scaleUp">
-      <form onSubmit={handleSubmit}>
-        <div className="text-white text-lg mb-5">Create a New Game</div>
-        <div className="flex flex-col gap-3">
-          {INPUT_FIELDS.map(({ label, name }) => (
-            <LabelInput
-              key={name}
-              label={label}
-              type="number"
-              value={formValues[name as keyof FormValues]}
-              name={name}
-              onChange={handleChange}
-            />
-          ))}
-        </div>
-        <button
-          className="bg-[#b87d5b] border-2 border-[#3a3526] rounded-lg w-full py-2 px-4 text-white mt-3"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create Game"}
-        </button>
-      </form>
+    <Modal className="animate-scaleUp max-w-md">
+      {isCreating ? (
+        <form onSubmit={handleSubmit}>
+          <div className="text-white text-lg mb-5">Create a New Game</div>
+          <div className="flex flex-col gap-3">
+            {INPUT_FIELDS.map(({ label, name }) => (
+              <Input
+                key={name}
+                label={label}
+                type="number"
+                value={formValues[name as keyof FormValues]}
+                name={name}
+                onChange={handleChange}
+              />
+            ))}
+          </div>
+          <button
+            className="nes-btn is-primary rounded-lg w-full py-2 px-4 mt-3"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Game"}
+          </button>
+        </form>
+      ) : (
+        <CheckIn
+          onSubmit={(value) =>
+            submitCheckIn(value, () => {
+              setIsCreating(true);
+            })
+          }
+        />
+      )}
     </Modal>
-  );
-}
-
-interface LabelInputProps {
-  label: string;
-  value: string | number;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  type?: string;
-  name: string;
-  required?: boolean;
-}
-
-function LabelInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-  name,
-  required = true,
-}: LabelInputProps) {
-  return (
-    <div className="nes-field">
-      <label className="text-[#eec2af] name_field" htmlFor={name}>
-        {label}:
-      </label>
-      <input
-        className="bg-[#b87d5b] nes-input text-white p-2 accent-amber-500"
-        type={type}
-        value={value}
-        name={name}
-        onChange={onChange}
-        required={required}
-      />
-    </div>
   );
 }

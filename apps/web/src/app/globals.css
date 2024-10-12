@@ -13,7 +13,7 @@
 @media (min-width: 768px) {
   .seat-1 {
     top: 80% !important;
-    left: 50%;
+    left: 50% !important;
     transform: translateX(-50%);
   }
 
@@ -24,44 +24,44 @@
   }
 
   .seat-3 {
-    top: 55%;
+    top: 70% !important;
     left: 4% !important;
     transform: translateY(-50%);
   }
 
   .seat-4 {
-    top: 25%;
+    top: 25% !important;
     left: 4% !important;
     transform: translateY(-50%);
   }
 
   .seat-5 {
-    top: -22%;
+    top: 10% !important;
     left: 22% !important;
     transform: translateY(-50%);
   }
 
   .seat-6 {
-    top: -22%;
-    left: 70%;
+    top: 10% !important;
+    left: 70% !important;
     transform: translateY(-50%);
   }
 
   .seat-7 {
-    top: 25%;
-    left: 87%;
+    top: 25% !important;
+    left: 87% !important;
     transform: translateY(-50%);
   }
 
   .seat-8 {
-    top: 55%;
-    left: 87%;
+    top: 70% !important;
+    left: 87% !important;
     transform: translateY(-50%);
   }
 
   .seat-9 {
-    top: 90%;
-    left: 75%;
+    top: 90% !important;
+    left: 75% !important;
     transform: translateY(-50%);
   }
 
@@ -203,8 +203,8 @@
 }
 
 .seat-2 {
-  top: -13%;
-  left: 17%;
+  top: 100%;
+  left: 20%;
   transform: translateY(-50%);
 }
 
@@ -217,7 +217,7 @@
 
 .seat-3 {
   top: 70%;
-  left: -5%;
+  left: 20%;
   transform: translateY(-50%);
 }
 
@@ -229,8 +229,8 @@
 }
 
 .seat-4 {
-  top: 30%;
-  left: -5%;
+  top: 40%;
+  left: 20%;
   transform: translateY(-50%);
 }
 
@@ -243,7 +243,7 @@
 
 .seat-5 {
   top: 10%;
-  left: 17%;
+  left: 20%;
   transform: translateY(-50%);
 }
 
@@ -256,7 +256,7 @@
 
 .seat-6 {
   top: 10%;
-  right: 15%;
+  left: 72%;
   transform: translateY(-50%);
 }
 
@@ -268,8 +268,8 @@
 }
 
 .seat-7 {
-  top: 30%;
-  right: -5%;
+  top: 40%;
+  left: 72%;
   transform: translateY(-50%);
 }
 
@@ -280,7 +280,7 @@
 
 .seat-8 {
   top: 70%;
-  right: -5%;
+  left: 72%;
   transform: translateY(-50%);
 }
 
@@ -292,8 +292,8 @@
 }
 
 .seat-9 {
-  bottom: -13%;
-  right: 11%;
+  bottom: 100%;
+  left: 72%;
   transform: translateY(-50%);
 }
 
