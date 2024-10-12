@@ -1,4 +1,5 @@
 import type EventEmitter from "events";
+import type { PlacingBettingActions } from "@src/types";
 import type { ChipUnits, TableInfo } from "../types/Table";
 import type { OnChainEventMap } from "./onChainEvents.types";
 import type { OnChainTableObject, TableAddress } from "./onChainObjects.types";
@@ -41,7 +42,8 @@ export interface OnChainDataSourceInstance extends EventEmitter<OnChainEventMap>
 
   checkIn(tableId: string, buyInAmount: number, publicKey: Uint8Array): Promise<void>;
   shuffledDeck(tableId: string, outDeck: Uint8Array, proof: Uint8Array): Promise<void>;
-  privateCardsDecryptionShares(
+  Bet(tableId: string, action: PlacingBettingActions): Promise<void>;
+  cardsDecryptionShares(
     tableId: string,
     cardDecryptionShares: Uint8Array[],
     proofs: Uint8Array[],

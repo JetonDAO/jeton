@@ -49,20 +49,17 @@ export type ReceivedPublicCardsEvent =
 
 export type AwaitingBetEvent = {
   bettingRound: BettingRounds;
-  pot: number[];
+  pot: number;
   bettingPlayer: Player;
   availableActions: PlacingBettingActions[];
-  placedAction: PlacingBettingActions | null;
 };
 
 export type PlayerPlacedBetEvent = {
   bettingRound: BettingRounds;
   player: Player;
-  potBeforeBet: number[];
-  potAfterBet: number[];
+  potAfterBet: number;
   betAction: BettingActions;
   availableActions: PlacingBettingActions[];
-  placedAction: PlacingBettingActions | null;
 };
 
 export type GameEvents =

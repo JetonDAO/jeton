@@ -24,6 +24,38 @@ export function getGameStatus(round: BettingRounds) {
   }
 }
 
+export function getBettingRound(status: GameStatus) {
+  switch (status) {
+    case GameStatus.BetPreFlop:
+    case GameStatus.DrawFlop:
+      return BettingRounds.PRE_FLOP;
+    case GameStatus.BetFlop:
+    case GameStatus.DrawTurn:
+      return BettingRounds.FLOP;
+    case GameStatus.BetTurn:
+    case GameStatus.DrawRiver:
+      return BettingRounds.TURN;
+    case GameStatus.BetRiver:
+    case GameStatus.ShowDown:
+      return BettingRounds.RIVER;
+    default:
+      throw new Error("not a betting round");
+  }
+}
+
+export function getPublicCardRound(status: GameStatus) {
+  switch (status) {
+    case GameStatus.DrawFlop:
+      return PublicCardRounds.FLOP;
+    case GameStatus.DrawRiver:
+      return PublicCardRounds.RIVER;
+    case GameStatus.DrawTurn:
+      return PublicCardRounds.TURN;
+    default:
+      throw new Error("not in public card round");
+  }
+}
+
 export function getGameStatusForPublicCard(round: PublicCardRounds) {
   switch (round) {
     case PublicCardRounds.FLOP:

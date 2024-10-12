@@ -5,17 +5,20 @@ import {
   type OnChainDataSourceInstance,
   OnChainEventTypes,
   type OnChainPlayerCheckedInData,
+  type OnChainPlayerPlacedBetData,
   type OnChainShuffledDeckData,
   type OnChainTableObject,
 } from "@src/OnChainDataSource";
 import { AptosOnChainDataSource } from "@src/OnChainDataSource/AptosOnChainDataSource";
 import onChainDataMapper, { covertTableInfo } from "@src/OnChainDataSource/onChainDataMapper";
 import {
+  BettingActions,
+  BettingRounds,
   type ChipUnits,
   type GameEventMap,
   GameEventTypes,
   GameStatus,
-  type PlacingBettingActions,
+  PlacingBettingActions,
   type Player,
   PlayerStatus,
   PublicCardRounds,
@@ -25,13 +28,20 @@ import {
 import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
 import { type ZkDeckUrls, createLocalZKDeck } from "@src/utils/createZKDeck";
 import { hexStringToUint8Array } from "@src/utils/unsignedInt";
+import { getBettingRound, getNextBettingRound, getPublicCardRound } from "..";
 import {
   getBettingPlayer,
+  getBigBlindPlayer,
   getCardIndexes,
   getCardShares,
   getDeck,
+  getNumberOfRaisesLeft,
+  getPlayerByAddress,
+  getPlayerByIndex,
+  getPot,
   getPrivateCardsIndexes,
   getShufflingPlayer,
+  getSmallBlindPlayer,
   isActivePlayer,
 } from "./helpers";
 
@@ -96,13 +106,61 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_CHECKED_IN, this.newPlayerCheckedIn);
     this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
     this.onChainDataSource.on(OnChainEventTypes.CARDS_SHARES_RECEIVED, this.receivedCardsShares);
-    //  this.onChainDataSource.on(
-    //    OnChainEventTypes.PUBLIC_CARDS_SHARES_RECEIVED,
-    //    this.receivedPublicCardsShares,
-    //  );
-    //  this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
+    this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
     this.onChainDataSource.listenToTableEvents(this.tableInfo.id);
   }
+
+  private receivedPlayerBet = async (data: OnChainPlayerPlacedBetData) => {
+    console.log("received Player bet", data);
+    const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
+    const newState = onChainDataMapper.convertJetonState(onChainTableObject);
+    const bettingRound = getBettingRound(newState.status);
+    let sender: Player;
+    if (data.action === BettingActions.SMALL_BLIND) {
+      sender = onChainDataMapper.convertPlayer(getSmallBlindPlayer(onChainTableObject));
+    } else if (data.action === BettingActions.BIG_BLIND) {
+      sender = onChainDataMapper.convertPlayer(getBigBlindPlayer(onChainTableObject));
+    } else {
+      sender = onChainDataMapper.convertPlayer(
+        getPlayerByAddress(onChainTableObject, data.address!)!,
+      );
+    }
+
+    const pot = getPot(onChainTableObject);
+    this.emit(GameEventTypes.PLAYER_PLACED_BET, {
+      bettingRound,
+      player: sender,
+      betAction: data.action,
+      potAfterBet: pot,
+      availableActions: this.calculateAvailableActions(onChainTableObject),
+    });
+
+    const nextPlayer = getBettingPlayer(onChainTableObject);
+    console.log("next player is", nextPlayer);
+
+    if (
+      nextPlayer === null &&
+      [GameStatus.DrawFlop, GameStatus.DrawRiver, GameStatus.DrawTurn].includes(newState.status)
+    ) {
+      console.log("betting round finished, sharing keys for:", newState.status);
+      this.createAndSharePublicKeyShares(onChainTableObject, getPublicCardRound(newState.status));
+      return;
+    }
+    if (nextPlayer === null) {
+      //TODO: showdown
+      return;
+    }
+    // don't send awaiting bet to ui for small and big blind
+    if (data.action !== BettingActions.SMALL_BLIND && nextPlayer) {
+      this.emit(GameEventTypes.AWAITING_BET, {
+        bettingRound: bettingRound,
+        bettingPlayer: onChainDataMapper.convertPlayer(nextPlayer),
+        pot,
+        availableActions: this.calculateAvailableActions(onChainTableObject),
+      });
+    }
+    this.gameState = newState;
+  };
 
   private receivedCardsShares = async (data: OnChainCardsSharesData) => {
     const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
@@ -161,6 +219,18 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.gameState = onChainDataMapper.convertJetonState(onChainTableObject);
   };
 
+  private async createAndSharePublicKeyShares(
+    tableObject: OnChainTableObject,
+    round: PublicCardRounds,
+  ) {
+    const cardIndexes = getCardIndexes(tableObject, round);
+    const proofsAndShares = await this.createDecryptionShareProofsFor(cardIndexes, tableObject);
+    proofsAndShares.sort((a, b) => a.cardIndex - b.cardIndex);
+    const proofsToSend = proofsAndShares.map((pas) => pas.proof);
+    const sharesToSend = proofsAndShares.map((pas) => pas.decryptionCardShare);
+    this.onChainDataSource.cardsDecryptionShares(this.tableInfo.id, sharesToSend, proofsToSend);
+  }
+
   private async createAndSharePrivateKeyShares(state: OnChainTableObject) {
     console.log("create and share private key shares");
     if (!this.zkDeck) throw new Error("zkDeck should be present");
@@ -181,11 +251,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
       .filter((pas) => myPrivateCardsIndexes.includes(pas.cardIndex))
       .sort((a, b) => a.cardIndex - b.cardIndex)
       .map((pas) => pas.decryptionCardShare) as [DecryptionCardShare, DecryptionCardShare];
-    this.onChainDataSource.privateCardsDecryptionShares(
-      this.tableInfo.id,
-      sharesToSend,
-      proofsToSend,
-    );
+    this.onChainDataSource.cardsDecryptionShares(this.tableInfo.id, sharesToSend, proofsToSend);
   }
 
   private async createDecryptionShareProofsFor(indexes: number[], state: OnChainTableObject) {
@@ -277,8 +343,37 @@ export class Jeton extends EventEmitter<GameEventMap> {
     return this.onChainDataSource.queryGameState(this.tableInfo.id);
   };
 
+  public raiseAmount(round: BettingRounds) {
+    return [BettingRounds.PRE_FLOP, BettingRounds.FLOP].includes(round)
+      ? this.tableInfo.smallBlind * 2
+      : this.tableInfo.smallBlind * 4;
+  }
+
   public placeBet(action: PlacingBettingActions) {
-    console.log("placeBet Called", action);
+    console.log("placeBet called", action);
+    return this.onChainDataSource.Bet(this.tableInfo.id, action);
+  }
+
+  public calculateAvailableActions(tableObject: OnChainTableObject): PlacingBettingActions[] {
+    try {
+      const self = onChainDataMapper.convertPlayer(getPlayerByAddress(tableObject, this.playerId)!);
+      const round = getBettingRound(onChainDataMapper.convertGameStatus(tableObject.state));
+      if (self.status === PlayerStatus.folded || self.status === PlayerStatus.sittingOut) return [];
+      const actions = [PlacingBettingActions.FOLD, PlacingBettingActions.CHECK_CALL];
+      if (self.status === PlayerStatus.allIn) return actions;
+      const alreadyBettedAmount = self.bet;
+      if (alreadyBettedAmount == null) throw new Error("should not be undefined");
+      const maxBet = onChainDataMapper
+        .convertPlayers(tableObject.roster.players, [])
+        .reduce((maxBet, player) => (maxBet > Number(player.bet) ? maxBet : Number(player.bet)), 0);
+      const expectedAmount = maxBet - self.bet! + this.raiseAmount(round);
+      if (getNumberOfRaisesLeft(tableObject) > 0 && expectedAmount < self.balance) {
+        actions.push(PlacingBettingActions.RAISE);
+      }
+      return actions;
+    } catch (e) {
+      return [];
+    }
   }
 
   static async createTableAndJoin(

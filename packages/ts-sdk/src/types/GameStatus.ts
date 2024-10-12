@@ -10,5 +10,4 @@ export enum GameStatus {
   DrawRiver = "draw-river",
   BetRiver = "bet-river",
   ShowDown = "show-down",
-  PotDistribution = "post-distribution",
 }
