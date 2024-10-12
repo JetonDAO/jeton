@@ -18,3 +18,4 @@ export const selectPublicCards$ = () => {
 
   return [flopCards, turnCard, riverCard].flat();
 };
+export const selectProgressPercentage$ = () => state$.downloadingAssets.loadingProgress;

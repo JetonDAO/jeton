@@ -2,17 +2,47 @@
 
 import { WalletSelector } from "@aptos-labs/wallet-adapter-ant-design";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { createZkDeck } from "@jeton/ts-sdk";
 import buttonBackground from "@src/assets/images/button.png";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
+import DownloadModal from "./[id]/components/DownloadModal";
+
+import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
+//@ts-ignore
+import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
+//@ts-ignore
+import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import { setProgress } from "./[id]/state/actions/gameActions";
 
 export const runtime = "edge";
 
 export default function Home() {
   const { connected, disconnect, isLoading } = useWallet();
   const [openModal, setOpenModal] = useState(false);
+  const [downloadingAssets, setDownloadingAssets] = useState(true);
+  const startedDownloadingRef = useRef(false);
+
+  useEffect(() => {
+    if (!startedDownloadingRef.current) {
+      startedDownloadingRef.current = true;
+      createZkDeck(
+        {
+          decryptCardShareWasm,
+          shuffleEncryptDeckWasm,
+          decryptCardShareZkey,
+          shuffleEncryptDeckZkey,
+        },
+        ({ percentage }) => {
+          setProgress(percentage);
+        },
+      ).then(() => {
+        setDownloadingAssets(false);
+      });
+    }
+  }, []);
 
   const options = [
     {
@@ -28,6 +58,8 @@ export default function Home() {
       url: "/",
     },
   ];
+
+  if (downloadingAssets) return <DownloadModal />;
 
   return (
     <div className="relative overflow-hidden items-center flex min-h-screen">

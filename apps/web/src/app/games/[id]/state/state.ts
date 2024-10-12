@@ -33,6 +33,9 @@ type GameState = {
 export interface State {
   tableId?: string;
   loading: boolean;
+  downloadingAssets?: {
+    loadingProgress: number;
+  };
   initializing: boolean;
   gameState?: GameState;
 }

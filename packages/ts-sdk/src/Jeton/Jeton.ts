@@ -23,7 +23,7 @@ import {
   type TableInfo,
 } from "@src/types";
 import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
-import { createLocalZKDeck } from "@src/utils/createZKDeck";
+import { type ZkDeckUrls, createLocalZKDeck } from "@src/utils/createZKDeck";
 import { hexStringToUint8Array } from "@src/utils/unsignedInt";
 import {
   getBettingPlayer,
@@ -34,13 +34,6 @@ import {
   getShufflingPlayer,
   isActivePlayer,
 } from "./helpers";
-
-export type ZkDeckUrls = {
-  shuffleEncryptDeckWasm: string;
-  decryptCardShareWasm: string;
-  shuffleEncryptDeckZkey: string;
-  decryptCardShareZkey: string;
-};
 
 export type JetonConfigs = {
   tableInfo: TableInfo;
@@ -303,10 +296,11 @@ export class Jeton extends EventEmitter<GameEventMap> {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     signAndSubmitTransaction: any,
     zkFiles: ZkDeckUrls,
+    progressCallback?: (progress: number) => void,
   ) {
     console.log("Create table and join");
     const zkDeck = await createLocalZKDeck(zkFiles, ({ percentage }) => {
-      console.log("downloading", percentage);
+      progressCallback?.(percentage);
     });
     const secretKey = zkDeck.sampleSecretKey();
     const publicKey = zkDeck.generatePublicKey(secretKey);
@@ -347,10 +341,11 @@ export class Jeton extends EventEmitter<GameEventMap> {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     signAndSubmitTransaction: any,
     zkFiles: ZkDeckUrls,
+    progressCallback?: (progress: number) => void,
   ) {
     console.log("join table called");
     const zkDeck = await createLocalZKDeck(zkFiles, ({ percentage }) => {
-      console.log("downloading", percentage);
+      progressCallback?.(percentage);
     });
 
     const onChainDataSource: OnChainDataSourceInstance = new AptosOnChainDataSource(
