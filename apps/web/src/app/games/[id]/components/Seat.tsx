@@ -1,4 +1,4 @@
-import { GameStatus, type Player } from "@jeton/ts-sdk";
+import { GameStatus, type Player, PlayerStatus } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
@@ -61,7 +61,9 @@ export default function Seat({
       className={`seat-position items-center flex z-30 shrink-0  md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
         shufflingPlayer?.id === player.id
           ? "seat-dealer scale-110"
-          : `seat-${seatNumber} ${2 > Math.random() ? "z-[501]" : ""}`
+          : `seat-${seatNumber} ${2 > Math.random() ? "z-[501]" : ""} ${
+              player.status === PlayerStatus.folded ? "opacity-80" : ""
+            } ${player.status === PlayerStatus.sittingOut ? "opacity-70" : ""}`
       }`}
       style={{ animationDelay: `${seatNumber * 100 + 100}ms` }}
     >
@@ -76,9 +78,11 @@ export default function Seat({
           transitionDelay: mounted.current ? "0ms" : `${150 * seatNumber}ms`,
         }}
       />
-      {lastAction && (
-        <div className="nes-balloon from-left z-50 animate-grow-in origin-bottom-left absolute -right-24 h-12 w-32 text-center !p-0">
-          <p className="text-sm">{lastAction}</p>
+      {(lastAction || player.status === PlayerStatus.folded) && (
+        <div className="nes-balloon from-left z-50 animate-grow-in origin-bottom-left absolute top-0 -right-20 text-center p-2 sm:p-2">
+          <p className="text-[8px] sm:text-sm">
+            {player.status === PlayerStatus.folded ? "Folded" : lastAction}
+          </p>
         </div>
       )}
       {dealer?.id === player.id && <DealerBadge />}
