@@ -46,7 +46,6 @@ export function awaitingPlayerBetHandler({
   pot,
   bettingPlayer,
   availableActions,
-  placedAction,
 }: AwaitingBetEvent) {
   console.log("awaiting bet", bettingRound, pot, bettingPlayer, availableActions);
   state$.gameState.status.set(getGameStatus(bettingRound));
@@ -56,17 +55,14 @@ export function awaitingPlayerBetHandler({
   }
   state$.gameState.betState.awaitingBetFrom.set(bettingPlayer);
   state$.gameState.betState.availableActions.set(availableActions);
-  state$.gameState.betState.placedBet.set(placedAction);
 }
 
 export function playerPlacedBetHandler({
   bettingRound,
   player,
-  potBeforeBet,
   potAfterBet,
   betAction,
   availableActions,
-  placedAction,
 }: PlayerPlacedBetEvent) {
   console.log("placed bet", bettingRound, potAfterBet, betAction, availableActions);
   state$.gameState.status.set(getGameStatus(bettingRound));
@@ -77,13 +73,14 @@ export function playerPlacedBetHandler({
   if (state$.gameState.betState.awaitingBetFrom.peek() === player) {
     state$.gameState.betState.awaitingBetFrom.set(undefined);
   }
-  state$.gameState.betState.lastBet.player.set(player);
-  state$.gameState.betState.lastBet.action.set(betAction);
-  state$.gameState.betState.lastBet.amount.set(
-    potAfterBet.reduce((sum, a) => sum + a, 0) - potBeforeBet.reduce((sum, a) => sum + a, 0),
-  );
+  const player$ = state$.gameState.players.find((p) => p.id.peek() === player.id)!;
+  player$.roundAction.action.set(betAction);
+  player$.balance.set(player.balance);
+  player$.bet.set(player.bet);
+  player$.status.set(player.status);
+  //TODO: calc amount
+  player$.roundAction.amount.set(10);
   state$.gameState.betState.availableActions.set(availableActions);
-  state$.gameState.betState.placedBet.set(placedAction);
 }
 
 export function receivedPublicCardsHandler({ cards, round }: ReceivedPublicCardsEvent) {

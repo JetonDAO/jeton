@@ -20,9 +20,8 @@ export type OnChainCardsSharesData = {
 };
 
 export type OnChainPlayerPlacedBetData = {
-  bettingRound: BettingRounds;
   action: BettingActions;
-  address: string;
+  address?: string;
 };
 
 export type OnChainEventMap = {

@@ -8,26 +8,27 @@ import {
 } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
+type UIPlayer = Player & {
+  roundAction?: {
+    action: BettingActions;
+    amount: number;
+  };
+};
+
 type GameState = {
-  dealer?: Player;
-  players: (Player | null)[];
+  dealer?: UIPlayer;
+  players: (UIPlayer | null)[];
   status?: GameStatus;
-  shufflingPlayer?: Player;
+  shufflingPlayer?: UIPlayer;
   myCards?: [number, number];
   flopCards?: [number, number, number];
   turnCard?: [number];
   riverCard?: [number];
-  pot: number[];
+  pot: number;
   betState?: {
     round: BettingRounds;
-    awaitingBetFrom?: Player;
+    awaitingBetFrom?: UIPlayer;
     availableActions: PlacingBettingActions[];
-    lastBet?: {
-      player: Player;
-      action: BettingActions;
-      amount: number;
-    };
-    placedBet?: PlacingBettingActions | null;
   };
 };
 export interface State {
@@ -44,7 +45,7 @@ export const state$: Observable<State> = observable<State>({
   loading: true,
   initializing: false,
   gameState: {
-    pot: [0],
+    pot: 0,
     players: [],
     status: GameStatus.AwaitingStart,
     dealer: {} as Player,
