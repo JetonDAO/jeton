@@ -11,7 +11,7 @@ export default function DownloadModal() {
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
   if (isLoading)
     return (
-      <Modal className="w-96 h-52 animate-grow-in">
+      <Modal closeButton={false} className="w-96 h-52 animate-grow-in">
         <div className="flex flex-col items-center gap-1 text-white text-center">
           {percentage ? (
             <>

@@ -7,6 +7,7 @@ import { GameStatus } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 
 import { JetonContext } from "@src/components/JetonContextProvider";
+import { mockPlayers } from "@src/lib/constants/mocks";
 import { orderPlayersSeats } from "@src/utils/seat";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -115,7 +116,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         )}
       </Table>
       <PlayerActions />
-      {/* <DownloadModal /> */}
+      <DownloadModal />
       <GameStatusBox />
     </GameContainer>
   );
