@@ -30,7 +30,7 @@ export default function GameStatusBox() {
 
   return (
     <motion.div
-      className="absolute top-4 left-4 bg-black bg-opacity-70 text-white p-3 rounded-lg shadow-md"
+      className="absolute top-4 left-4 bg-black bg-opacity-70 text-[10px] max-w-[50vw] sm:text-base text-white p-3 rounded-lg shadow-md"
       key={statusMessage}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}

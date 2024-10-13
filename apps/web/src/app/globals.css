@@ -292,7 +292,7 @@
 }
 
 .seat-9 {
-  bottom: 100%;
+  top: 100%;
   left: 72%;
   transform: translateY(-50%);
 }

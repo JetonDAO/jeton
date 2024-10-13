@@ -7,6 +7,12 @@ module.exports = {
   theme: {
     extend: {
       keyframes: {
+        cardAnimation: {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "30%": { transform: "rotate(360deg)" },
+          "50%": { transform: "rotateY(180deg)" },
+          "70%": { transform: "rotate(360deg)" },
+        },
         deal: {
           "0%": {
             transform: "translateY(20px)",
@@ -59,6 +65,7 @@ module.exports = {
         dealAndRotate1: "dealAndRotate1 1s ease-out forwards",
         dealAndRotate2: "dealAndRotate2 1s ease-out forwards",
         spinner: "spinner 2s infinite",
+        cardLoop: "cardAnimation 6s ease-in-out infinite",
       },
     },
   },

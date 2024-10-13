@@ -73,7 +73,7 @@ export default function Seat({
         alt="avatar"
         className={`w-full aspect-square animate-grow-in grow-0 sm:w-14 rounded-full shrink-0 border-2 md:border-8 ${
           shufflingPlayer?.id === player.id ? "scale-125 animate-bounce delay-1000" : ""
-        } ${isPlayerTurn ? "ring-8 ring-blue-600 duration-500" : ""}`}
+        } ${isPlayerTurn ? "ring-8 animate-bounce ring-blue-600 duration-500" : ""}`}
         style={{
           transitionDelay: mounted.current ? "0ms" : `${150 * seatNumber}ms`,
         }}
