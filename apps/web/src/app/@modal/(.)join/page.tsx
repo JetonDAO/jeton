@@ -48,8 +48,9 @@ export default function GameJoinModal() {
   return (
     <Modal
       className={`animate-scaleUp transition-all flex flex-col items-center overflow-y-scroll max-w-md duration-1000 ${
-        loading ? "max-h-80" : "max-h-[90dvh]"
+        loading ? "max-h-96" : "max-h-[90dvh]"
       }`}
+      closeButton
     >
       {isJoining ? (
         <>

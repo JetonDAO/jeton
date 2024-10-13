@@ -183,14 +183,20 @@
   }
 
   .pot {
-    top: 65%;
-    left: 50%;
+    top: 65% !important;
+    left: 50% !important;
     transform: translateX(-50%);
   }
 }
 
+.pot {
+  top: 80%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .seat-1 {
-  top: 120%;
+  top: 110%;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -229,7 +235,7 @@
 }
 
 .seat-4 {
-  top: 40%;
+  top: 30%;
   left: 20%;
   transform: translateY(-50%);
 }
@@ -242,8 +248,8 @@
 }
 
 .seat-5 {
-  top: 10%;
-  left: 20%;
+  top: -10%;
+  left: 25%;
   transform: translateY(-50%);
 }
 
@@ -255,8 +261,8 @@
 }
 
 .seat-6 {
-  top: 10%;
-  left: 72%;
+  top: -10%;
+  left: 68%;
   transform: translateY(-50%);
 }
 
@@ -268,7 +274,7 @@
 }
 
 .seat-7 {
-  top: 40%;
+  top: 30%;
   left: 72%;
   transform: translateY(-50%);
 }
