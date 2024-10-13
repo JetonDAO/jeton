@@ -21,14 +21,19 @@ export type OnChainPendingPlayer = {
   public_key: string;
 };
 
+export type ShowDownPhase = {
+  __variant__: "ShowDown";
+  has_contributed: number[];
+};
+
 export type DrawPrivateCardsPhase = {
   __variant__: "DrawPrivateCards";
-  contributors_index: number[];
+  has_contributed: number[];
 };
 
 export type DrawPublicCardsPhase = {
   __variant__: "DrawFlopCards" | "DrawTurnCard" | "DrawRiverCard";
-  contributors_index: number[];
+  has_contributed: number[];
 };
 
 export type ShufflePhase = {
@@ -43,7 +48,12 @@ export type BetPhase = {
   raises_left: number;
 };
 
-export type OnChainPhase = ShufflePhase | DrawPrivateCardsPhase | BetPhase | DrawPublicCardsPhase;
+export type OnChainPhase =
+  | ShufflePhase
+  | DrawPrivateCardsPhase
+  | BetPhase
+  | DrawPublicCardsPhase
+  | ShowDownPhase;
 
 export type AwaitingStartState = {
   __variant__: "AwaitingStart";

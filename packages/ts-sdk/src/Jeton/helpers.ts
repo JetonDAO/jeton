@@ -49,7 +49,7 @@ export function getCardShares(tableObject: OnChainTableObject, indexes: number |
 
 export function getCardIndexes(tableObject: OnChainTableObject, round: PublicCardRounds) {
   const numOfPlayer = tableObject.roster.players.length;
-  const beforeFirstIndex = numOfPlayer * 2 + 1;
+  const beforeFirstIndex = numOfPlayer * 2;
   if (round === PublicCardRounds.FLOP)
     return [beforeFirstIndex + 1, beforeFirstIndex + 2, beforeFirstIndex + 3];
   if (round === PublicCardRounds.TURN) return [beforeFirstIndex + 4];
@@ -61,6 +61,12 @@ export function getPlayerByIndex(tableObject: OnChainTableObject, index: number)
   return tableObject.roster.players[index];
 }
 
+export function getPlayerByAddress(tableObject: OnChainTableObject, address: string) {
+  return [...tableObject.roster.players, ...tableObject.roster.waitings].find(
+    (player) => player.addr === address,
+  );
+}
+
 export function getBettingPlayer(tableObject: OnChainTableObject) {
   if (tableObject.state.__variant__ !== "Playing") return null;
   if (
@@ -70,4 +76,28 @@ export function getBettingPlayer(tableObject: OnChainTableObject) {
   }
 
   return null;
+}
+
+export function getSmallBlindPlayer(tableObject: OnChainTableObject) {
+  if (tableObject.state.__variant__ !== "Playing") throw new Error("must exist");
+  return getPlayerByIndex(tableObject, tableObject.roster.small_index)!;
+}
+
+export function getBigBlindPlayer(tableObject: OnChainTableObject) {
+  if (tableObject.state.__variant__ !== "Playing") throw new Error("must exist");
+  const numOfPlayers = tableObject.roster.players.length;
+  return getPlayerByIndex(tableObject, (tableObject.roster.small_index + 1) % numOfPlayers)!;
+}
+
+export function getPot(tableObject: OnChainTableObject) {
+  return tableObject.roster.players.reduce((pot, player) => pot + Number(player.bet._0), 0);
+}
+
+export function getNumberOfRaisesLeft(tableObject: OnChainTableObject) {
+  if (tableObject.state.__variant__ !== "Playing") return 0;
+  const phase = tableObject.state.phase;
+  if (!["BetPreFlop", "BetFlop", "BetTurn", "BetRiver"].includes(phase.__variant__)) {
+    return 0;
+  }
+  return Number((phase as BetPhase).raises_left);
 }

@@ -10,7 +10,6 @@ export const selectPot$ = () => state$.gameState.pot;
 export const selectBetState$ = () => state$.gameState.betState;
 export const selectAvailableActions$ = () => state$.gameState.betState?.availableActions ?? [];
 export const selectAwaitingBetFrom$ = () => state$.gameState.betState?.awaitingBetFrom;
-export const selectLastBet$ = () => state$.gameState.betState?.lastBet;
 export const selectPublicCards$ = () => {
   const flopCards = state$.gameState.flopCards.get() || [];
   const turnCard = state$.gameState.turnCard.get() || [];

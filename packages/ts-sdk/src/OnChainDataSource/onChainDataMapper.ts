@@ -101,6 +101,8 @@ const convertGameStatus = (state: OnChainGameState) => {
           return GameStatus.DrawTurn;
         case "DrawRiverCard":
           return GameStatus.DrawRiver;
+        case "ShowDown":
+          return GameStatus.ShowDown;
       }
     }
   }

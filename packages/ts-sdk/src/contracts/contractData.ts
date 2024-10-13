@@ -12,6 +12,13 @@ export const contractShuffleEventType =
   `${contractAddress}::${appName}::DeckShuffleEncryptedEvent` as MoveStructId;
 export const contractCardDecryptionShareEventType =
   `${contractAddress}::${appName}::CardDecryptedShareEvent` as MoveStructId;
+export const contractSmallBlindEventType =
+  `${contractAddress}::${appName}::SmallBlindEvent` as MoveStructId;
+export const contractBigBlindEventType =
+  `${contractAddress}::${appName}::BigBlindEvent` as MoveStructId;
+export const contractFoldEventType = `${contractAddress}::${appName}::FoldedEvent` as MoveStructId;
+export const contractRaiseEventType = `${contractAddress}::${appName}::RaisedEvent` as MoveStructId;
+export const contractCallEventType = `${contractAddress}::${appName}::CalledEvent` as MoveStructId;
 
 export const contractTableType = `${contractAddress}::${appName}::${tableType}` as MoveStructId;
 
@@ -24,6 +31,9 @@ export const contractShuffleEncryptDeckFunctionName =
   `${contractAddress}::${appName}::shuffle_encrypt_deck` as MoveStructId;
 export const contractDecryptShareFunctionName =
   `${contractAddress}::${appName}::decrypt_card_shares` as MoveStructId;
+export const contractFoldFunctionName = `${contractAddress}::${appName}::fold` as MoveStructId;
+export const contractCallFunctionName = `${contractAddress}::${appName}::call` as MoveStructId;
+export const contractRaiseFunctionName = `${contractAddress}::${appName}::raise` as MoveStructId;
 
 export const NODIT_GQL_ADDRESS =
   "https://aptos-testnet.nodit.io/tUOKeLdo0yUmJsNgwfln97h_03wYs8mP/v1/graphql";

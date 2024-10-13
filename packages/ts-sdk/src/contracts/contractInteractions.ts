@@ -5,13 +5,21 @@ import { aptos } from "@src/utils/aptos";
 import { gql, request } from "graphql-request";
 import {
   NODIT_GQL_ADDRESS,
+  contractBigBlindEventType,
+  contractCallEventType,
+  contractCallFunctionName,
   contractCardDecryptionShareEventType,
   contractCheckInFunctionName,
   contractCheckedInEventType,
   contractCreateTableFunctionName,
   contractDecryptShareFunctionName,
+  contractFoldEventType,
+  contractFoldFunctionName,
+  contractRaiseEventType,
+  contractRaiseFunctionName,
   contractShuffleEncryptDeckFunctionName,
   contractShuffleEventType,
+  contractSmallBlindEventType,
   contractTableCreatedEventType,
   contractTableType,
 } from "./contractData";
@@ -98,6 +106,66 @@ export const callDecryptCardShares = async (
   console.log("shuffle transaction result", transactionData);
 };
 
+export const callFoldContract = async (
+  address: string,
+  tableObjectAddress: string,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
+) => {
+  console.log("call Fold Contract", address);
+  const submittedTransaction = await signAndSubmitTransaction({
+    sender: address,
+    data: {
+      function: contractFoldFunctionName,
+      functionArguments: [tableObjectAddress],
+    },
+  });
+  const transactionData = await aptos.waitForTransaction({
+    transactionHash: submittedTransaction.hash,
+  });
+  console.log("fold transaction result", transactionData);
+};
+
+export const callCallContract = async (
+  address: string,
+  tableObjectAddress: string,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
+) => {
+  console.log("call call Contract", address);
+  const submittedTransaction = await signAndSubmitTransaction({
+    sender: address,
+    data: {
+      function: contractCallFunctionName,
+      functionArguments: [tableObjectAddress],
+    },
+  });
+  const transactionData = await aptos.waitForTransaction({
+    transactionHash: submittedTransaction.hash,
+  });
+  console.log("call transaction result", transactionData);
+};
+
+export const callRaiseContract = async (
+  address: string,
+  tableObjectAddress: string,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  signAndSubmitTransaction: any,
+) => {
+  console.log("call Raise Contract", address);
+  const submittedTransaction = await signAndSubmitTransaction({
+    sender: address,
+    data: {
+      function: contractRaiseFunctionName,
+      functionArguments: [tableObjectAddress],
+    },
+  });
+  const transactionData = await aptos.waitForTransaction({
+    transactionHash: submittedTransaction.hash,
+  });
+  console.log("raise transaction result", transactionData);
+};
+
 export const createTableObject = async (
   waitingTimeOut: number,
   smallBlind: number,
@@ -159,7 +227,17 @@ export async function queryEvents(tableId: string) {
   const document = gql`
         query MyQuery {
           events(
-            where: {indexed_type: {_in: ["${contractTableCreatedEventType}", "${contractCheckedInEventType}","${contractShuffleEventType}", "${contractCardDecryptionShareEventType}"]},
+            where: {indexed_type: {_in: [
+            "${contractTableCreatedEventType}", 
+            "${contractCheckedInEventType}",
+            "${contractShuffleEventType}", 
+            "${contractCardDecryptionShareEventType}",
+            "${contractSmallBlindEventType}",
+            "${contractBigBlindEventType}",
+            "${contractFoldEventType}",
+            "${contractRaiseEventType}",
+            "${contractCallEventType}",
+          ]},
             data: {_cast: {String: {_like: "%${tableId}%"}}}},
             order_by: {transaction_block_height: desc}
           ) {

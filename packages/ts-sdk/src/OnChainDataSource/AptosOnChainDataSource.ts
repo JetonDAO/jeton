@@ -6,21 +6,29 @@ import {
   type OnChainTableObject,
 } from "@src/OnChainDataSource";
 import {
+  contractBigBlindEventType,
+  contractCallEventType,
   contractCardDecryptionShareEventType,
   contractCheckedInEventType,
+  contractFoldEventType,
+  contractRaiseEventType,
   contractShuffleEventType,
+  contractSmallBlindEventType,
 } from "@src/contracts/contractData";
 import { createTableInfo } from "@src/contracts/contractDataMapper";
 import {
+  callCallContract,
   callCheckInContract,
   callDecryptCardShares,
+  callFoldContract,
+  callRaiseContract,
   callShuffleEncryptDeck,
   createTableObject,
   getTableObject,
   getTableObjectAddresses,
   queryEvents,
 } from "@src/contracts/contractInteractions";
-import type { ChipUnits, TableInfo } from "@src/types";
+import { BettingActions, type ChipUnits, PlacingBettingActions, type TableInfo } from "@src/types";
 import { POLLING_INTERVAL } from "./constants";
 
 export class AptosOnChainDataSource
@@ -58,6 +66,39 @@ export class AptosOnChainDataSource
           address: event.data.sender_addr,
         });
         break;
+      case contractSmallBlindEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_PLACED_BET);
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, {
+          action: BettingActions.SMALL_BLIND,
+        });
+        break;
+      case contractBigBlindEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_PLACED_BET);
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, {
+          action: BettingActions.BIG_BLIND,
+        });
+        break;
+      case contractFoldEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_PLACED_BET);
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, {
+          action: BettingActions.FOLD,
+          address: event.data.sender_addr,
+        });
+        break;
+      case contractRaiseEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_PLACED_BET);
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, {
+          action: BettingActions.RAISE,
+          address: event.data.sender_addr,
+        });
+        break;
+      case contractCallEventType:
+        console.log("publishing", OnChainEventTypes.PLAYER_PLACED_BET);
+        this.emit(OnChainEventTypes.PLAYER_PLACED_BET, {
+          action: BettingActions.CALL,
+          address: event.data.sender_addr,
+        });
+        break;
     }
   }
 
@@ -67,7 +108,7 @@ export class AptosOnChainDataSource
     if (lastEventIndex) {
       const newEvents = events
         .filter((ev) => ev.transaction_block_height > lastEventIndex)
-        .reverse();
+        .sort((a, b) => a.transaction_block_height - b.transaction_block_height);
       if (newEvents.length > 0) console.log("new events are", newEvents);
       for (const event of newEvents) {
         this.publishEvent(event);
@@ -159,7 +200,7 @@ export class AptosOnChainDataSource
     );
   }
 
-  async privateCardsDecryptionShares(
+  async cardsDecryptionShares(
     tableId: string,
     cardDecryptionShares: Uint8Array[],
     proofs: Uint8Array[],
@@ -171,6 +212,17 @@ export class AptosOnChainDataSource
       tableId,
       this.singAndSubmitTransaction,
     );
+  }
+
+  async Bet(tableId: string, action: PlacingBettingActions) {
+    switch (action) {
+      case PlacingBettingActions.FOLD:
+        return await callFoldContract(this.address, tableId, this.singAndSubmitTransaction);
+      case PlacingBettingActions.RAISE:
+        return await callRaiseContract(this.address, tableId, this.singAndSubmitTransaction);
+      case PlacingBettingActions.CHECK_CALL:
+        return await callCallContract(this.address, tableId, this.singAndSubmitTransaction);
+    }
   }
 
   static async getTableInfo(id: string) {
