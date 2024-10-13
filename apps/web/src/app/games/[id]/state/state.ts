@@ -8,11 +8,13 @@ import {
 } from "@jeton/ts-sdk";
 import { type Observable, observable } from "@legendapp/state";
 
-type UIPlayer = Player & {
+export type UIPlayer = Player & {
   roundAction?: {
     action: BettingActions;
     amount: number;
   };
+  cards?: number[];
+  winAmount?: number;
 };
 
 type GameState = {

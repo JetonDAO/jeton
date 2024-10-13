@@ -12,6 +12,7 @@ import {
   privateCardsDecryptionHandler,
   receivedPrivateCardHandler,
   receivedPublicCardsHandler,
+  receivedShowDown,
 } from "./gameEventHandlers";
 
 import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
@@ -66,6 +67,7 @@ function setGameEventListeners(game: Jeton) {
   game.addListener?.(GameEventTypes.AWAITING_BET, awaitingPlayerBetHandler);
   game.addListener?.(GameEventTypes.PLAYER_PLACED_BET, playerPlacedBetHandler);
   game.addListener?.(GameEventTypes.RECEIVED_PUBLIC_CARDS, receivedPublicCardsHandler);
+  game.addListener?.(GameEventTypes.SHOW_DOWN, receivedShowDown);
   console.log("set game event listeners end");
 }
 

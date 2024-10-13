@@ -19,6 +19,9 @@
         "useNodejsImportProtocol": "off",
         "useEnumInitializers": "off",
         "noNonNullAssertion": "off"
+      },
+      "complexity": {
+        "noForEach": "off"
       }
     }
   },

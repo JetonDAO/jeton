@@ -20,10 +20,13 @@ export function isActivePlayer(tableObject: OnChainTableObject, playerId: string
   return !!tableObject.roster.players.find((p) => p.addr === playerId);
 }
 
-export function getPrivateCardsIndexes(tableObject: OnChainTableObject, playerId: string) {
+export function getPrivateCardsIndexes(
+  tableObject: OnChainTableObject,
+  playerId: string,
+): [number, number] {
   const playerPosition = tableObject.roster.players.findIndex((p) => p.addr === playerId);
   if (playerPosition === -1) throw new Error("player does not exist");
-  return [playerPosition * 2, playerPosition * 2 + 1] as const;
+  return [playerPosition * 2, playerPosition * 2 + 1];
 }
 
 export function getDeck(tableObject: OnChainTableObject) {

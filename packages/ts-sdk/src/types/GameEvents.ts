@@ -13,6 +13,7 @@ export enum GameEventTypes {
   AWAITING_BET = "awaiting-bet",
   PLAYER_PLACED_BET = "player-placed-bet",
   RECEIVED_PUBLIC_CARDS = "received-public-cards",
+  SHOW_DOWN = "show-down",
 }
 
 export type DownloadProgressEvent = {
@@ -62,6 +63,14 @@ export type PlayerPlacedBetEvent = {
   availableActions: PlacingBettingActions[];
 };
 
+export type ShowDownEvent = {
+  [playerId: string]: {
+    winAmount: number;
+    cards: number[];
+    player: Player;
+  };
+};
+
 export type GameEvents =
   | DownloadProgressEvent
   | CheckInEvent
@@ -85,4 +94,5 @@ export type GameEventMap = {
   [GameEventTypes.AWAITING_BET]: [AwaitingBetEvent];
   [GameEventTypes.PLAYER_PLACED_BET]: [PlayerPlacedBetEvent];
   [GameEventTypes.RECEIVED_PUBLIC_CARDS]: [ReceivedPublicCardsEvent];
+  [GameEventTypes.SHOW_DOWN]: [ShowDownEvent];
 };

@@ -17,12 +17,30 @@ import {
   contractFoldFunctionName,
   contractRaiseEventType,
   contractRaiseFunctionName,
+  contractShowDownEventType,
   contractShuffleEncryptDeckFunctionName,
   contractShuffleEventType,
   contractSmallBlindEventType,
   contractTableCreatedEventType,
   contractTableType,
 } from "./contractData";
+
+export interface BaseEvent {
+  data: unknown;
+  indexed_type: string;
+  transaction_block_height: number;
+}
+export interface GeneralEvent extends BaseEvent {
+  data: { sender_addr: string };
+}
+
+export interface ShowDownEvent extends BaseEvent {
+  data: { private_cards: number[]; public_cards: number[]; winning_amounts: number[] };
+  indexed_type: typeof contractShowDownEventType;
+  transaction_block_height: number;
+}
+
+export type ChainEvents = GeneralEvent | ShowDownEvent;
 
 //TODO apply pagination for getModuleEventsByEventType
 export const getTableObjectAddresses = async (): Promise<GetEventsResponse> => {
@@ -237,6 +255,7 @@ export async function queryEvents(tableId: string) {
             "${contractFoldEventType}",
             "${contractRaiseEventType}",
             "${contractCallEventType}",
+            "${contractShowDownEventType}"
           ]},
             data: {_cast: {String: {_like: "%${tableId}%"}}}},
             order_by: {transaction_block_height: desc}
@@ -246,8 +265,8 @@ export async function queryEvents(tableId: string) {
           transaction_block_height
           }
         }`;
-  //TODO: typing
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  const res = await request<{ events: any[] }>(NODIT_GQL_ADDRESS, document);
+  const res = await request<{
+    events: ChainEvents[];
+  }>(NODIT_GQL_ADDRESS, document);
   return res.events;
 }
