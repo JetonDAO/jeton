@@ -50,28 +50,34 @@ export default function PlayerActions() {
     }
   };
 
+  const clearQueue = () => {
+    setQueuedAction(null);
+    setIsActionQueued(false);
+  };
+
   const takePlayerAction = (action: PlacingBettingActions) => {
     console.log(`Action taken: ${action}`);
     if (!game) throw new Error("Must exist by now");
     game.placeBet(action);
+    clearQueue();
   };
 
   return (
-    <div className="fixed bottom-5 gap-5 flex justify-center w-full px-10">
-      {availableActions &&
-        availableActions.length > 0 &&
-        actions.map((action) => (
-          <button
-            key={action}
-            className={`bg-[#b87d5b] focus:outline-[#b87d5b] disabled:opacity-70 w-full py-4 text-lg text-white hover:brightness-90 ${
-              isActionQueued && queuedAction === action ? "cursor-pointer" : ""
-            }`}
-            onClick={() => handlePlayerAction(action)}
-            disabled={!availableActions.includes(action) || queuedAction === action}
-          >
-            {isActionQueued && queuedAction === action ? `${action} (Queued)` : action}
-          </button>
-        ))}
+    <div className="fixed bottom-5 gap-5 left-5 right-5 flex justify-center ">
+      {actions.map((action) => (
+        <button
+          key={action}
+          className={`capitalize focus:outline-[#b87d5b] nes-btn is-warning disabled:hover:brightness-100 disabled:hover:cursor-not-allowed  disabled:opacity-70 w-full py-2 sm:py-4 text-[10px] sm:text-lg text-white hover:brightness-90 ${
+            isActionQueued && queuedAction === action ? "cursor-pointer" : ""
+          }`}
+          onClick={() => handlePlayerAction(action)}
+          disabled={
+            !availableActions || !availableActions.includes(action) || queuedAction === action
+          }
+        >
+          {`${action} ${isActionQueued && queuedAction === action ? "(Queued)" : ""}`}
+        </button>
+      ))}
     </div>
   );
 }
