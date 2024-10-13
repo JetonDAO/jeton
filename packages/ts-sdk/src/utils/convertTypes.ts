@@ -66,6 +66,20 @@ export function getGameStatusForPublicCard(round: PublicCardRounds) {
       return GameStatus.DrawRiver;
   }
 }
+
+export function getPreviousPublicCardRound(status: GameStatus) {
+  switch (status) {
+    case GameStatus.BetFlop:
+      return PublicCardRounds.FLOP;
+    case GameStatus.BetTurn:
+      return PublicCardRounds.TURN;
+    case GameStatus.BetRiver:
+      return PublicCardRounds.RIVER;
+    default:
+      return null;
+  }
+}
+
 export function getNextPublicCardRound(round: BettingRounds) {
   switch (round) {
     case BettingRounds.PRE_FLOP:

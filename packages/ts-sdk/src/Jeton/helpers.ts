@@ -99,5 +99,5 @@ export function getNumberOfRaisesLeft(tableObject: OnChainTableObject) {
   if (!["BetPreFlop", "BetFlop", "BetTurn", "BetRiver"].includes(phase.__variant__)) {
     return 0;
   }
-  return (phase as BetPhase).raises_left;
+  return Number((phase as BetPhase).raises_left);
 }

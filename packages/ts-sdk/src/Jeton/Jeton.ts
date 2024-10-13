@@ -21,14 +21,14 @@ import {
   PlacingBettingActions,
   type Player,
   PlayerStatus,
-  PublicCardRounds,
+  type PublicCardRounds,
   type ReceivedPublicCardsEvent,
   type TableInfo,
 } from "@src/types";
 import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
 import { type ZkDeckUrls, createLocalZKDeck } from "@src/utils/createZKDeck";
 import { hexStringToUint8Array } from "@src/utils/unsignedInt";
-import { getBettingRound, getNextBettingRound, getPublicCardRound } from "..";
+import { getBettingRound, getPreviousPublicCardRound, getPublicCardRound } from "..";
 import {
   getBettingPlayer,
   getBigBlindPlayer,
@@ -152,28 +152,38 @@ export class Jeton extends EventEmitter<GameEventMap> {
     }
     // don't send awaiting bet to ui for small and big blind
     if (data.action !== BettingActions.SMALL_BLIND && nextPlayer) {
-      this.emit(GameEventTypes.AWAITING_BET, {
-        bettingRound: bettingRound,
-        bettingPlayer: onChainDataMapper.convertPlayer(nextPlayer),
-        pot,
-        availableActions: this.calculateAvailableActions(onChainTableObject),
-      });
+      this.publishAwaitingBet(onChainTableObject);
     }
     this.gameState = newState;
   };
 
+  private publishAwaitingBet(tableObject: OnChainTableObject) {
+    const newState = onChainDataMapper.convertJetonState(tableObject);
+    const bettingRound = getBettingRound(newState.status);
+    const nextPlayer = getBettingPlayer(tableObject);
+    const pot = getPot(tableObject);
+    if (!nextPlayer) throw new Error("not awaiting bet");
+    this.emit(GameEventTypes.AWAITING_BET, {
+      bettingRound: bettingRound,
+      bettingPlayer: onChainDataMapper.convertPlayer(nextPlayer),
+      pot,
+      availableActions: this.calculateAvailableActions(tableObject),
+    });
+  }
+
   private receivedCardsShares = async (data: OnChainCardsSharesData) => {
     const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
     const newState = onChainDataMapper.convertJetonState(onChainTableObject);
+
+    const publicCardRound = getPreviousPublicCardRound(newState.status);
+
     if (newState.status === GameStatus.BetPreFlop) {
       this.decryptMyPrivateCards(onChainTableObject);
-    } else if (newState.status === GameStatus.BetFlop) {
-      this.decryptPublicCards(onChainTableObject, PublicCardRounds.FLOP);
-    } else if (newState.status === GameStatus.BetRiver) {
-      this.decryptPublicCards(onChainTableObject, PublicCardRounds.RIVER);
-    } else if (newState.status === GameStatus.BetTurn) {
-      this.decryptPublicCards(onChainTableObject, PublicCardRounds.TURN);
+    } else if (publicCardRound != null) {
+      this.decryptPublicCards(onChainTableObject, publicCardRound);
+      this.publishAwaitingBet(onChainTableObject);
     }
+
     this.gameState = newState;
   };
 
@@ -365,9 +375,9 @@ export class Jeton extends EventEmitter<GameEventMap> {
       if (alreadyBettedAmount == null) throw new Error("should not be undefined");
       const maxBet = onChainDataMapper
         .convertPlayers(tableObject.roster.players, [])
-        .reduce((maxBet, player) => (maxBet > Number(player.bet) ? maxBet : Number(player.bet)), 0);
+        .reduce((maxBet, player) => (maxBet > player.bet! ? maxBet : player.bet!), 0);
       const expectedAmount = maxBet - self.bet! + this.raiseAmount(round);
-      if (getNumberOfRaisesLeft(tableObject) > 0 && expectedAmount < self.balance) {
+      if (getNumberOfRaisesLeft(tableObject) > 0 && expectedAmount <= self.balance) {
         actions.push(PlacingBettingActions.RAISE);
       }
       return actions;
