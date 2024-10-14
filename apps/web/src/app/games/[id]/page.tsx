@@ -85,7 +85,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
       const privateCards = reorderedPlayers.reduce(
         (acc, player, seat) => {
           if (player) {
-            acc[seat + 1] = getRandomCards();
+            acc[seat + 1] = player.cards ?? [];
           }
           return acc;
         },

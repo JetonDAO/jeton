@@ -1,4 +1,3 @@
-import { stat } from "fs";
 import {
   type AwaitingBetEvent,
   GameStatus,
@@ -9,6 +8,7 @@ import {
   getGameStatus,
   type playerShufflingEvent,
 } from "@jeton/ts-sdk";
+import type { ShowDownEvent } from "@jeton/ts-sdk";
 import type { ReceivedPublicCardsEvent } from "@jeton/ts-sdk";
 import { PublicCardRounds } from "@jeton/ts-sdk";
 import { state$ } from "../state";
@@ -21,12 +21,26 @@ export function newPlayerCheckedInHandler(player: Player) {
 }
 
 export function handStartedHandler({ dealer }: HandStartedEvent) {
+  console.log("hand started handler", dealer);
   const gameState$ = state$.gameState;
   gameState$.dealer.set(dealer);
   gameState$.status.set(GameStatus.Shuffle);
+  gameState$.players.forEach((player) => {
+    player.cards.set(undefined);
+    player.bet.set(0);
+    player.winAmount.set(undefined);
+    player.roundAction.set(undefined);
+  });
+  gameState$.myCards.set(undefined);
+  gameState$.flopCards.set(undefined);
+  gameState$.riverCard.set(undefined);
+  gameState$.turnCard.set(undefined);
+  gameState$.pot.set(0);
+  gameState$.betState.set(undefined);
 }
 
 export function playerShufflingHandler(player: playerShufflingEvent) {
+  console.log("player shuffling handler");
   state$.gameState.shufflingPlayer.set(player);
   state$.gameState.status.set(GameStatus.Shuffle);
 }
@@ -83,8 +97,15 @@ export function playerPlacedBetHandler({
   state$.gameState.betState.availableActions.set(availableActions);
 }
 
+export function clearPlayersRoundAction() {
+  state$.gameState.players.forEach((player) => {
+    player.roundAction.set(undefined);
+  });
+}
+
 export function receivedPublicCardsHandler({ cards, round }: ReceivedPublicCardsEvent) {
   console.log("received public cards", round, cards);
+  clearPlayersRoundAction();
   if (round === PublicCardRounds.FLOP) {
     state$.gameState.flopCards.set(cards);
   } else if (round === PublicCardRounds.RIVER) {
@@ -92,4 +113,17 @@ export function receivedPublicCardsHandler({ cards, round }: ReceivedPublicCards
   } else if (round === PublicCardRounds.TURN) {
     state$.gameState.turnCard.set(cards);
   }
+}
+
+export function receivedShowDown(data: ShowDownEvent) {
+  console.log("received showdown event", data);
+  state$.gameState.players.forEach((player) => {
+    const eventPlayer = data[player.id.get()!];
+    if (eventPlayer) {
+      player.cards.set(eventPlayer.cards);
+      player.balance.set(eventPlayer.player.balance);
+      player.bet.set(0);
+      player.winAmount.set(eventPlayer.winAmount);
+    }
+  });
 }

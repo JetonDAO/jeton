@@ -6,6 +6,7 @@ import {
   OnChainEventTypes,
   type OnChainPlayerCheckedInData,
   type OnChainPlayerPlacedBetData,
+  type OnChainShowDownData,
   type OnChainShuffledDeckData,
   type OnChainTableObject,
 } from "@src/OnChainDataSource";
@@ -14,6 +15,7 @@ import onChainDataMapper, { covertTableInfo } from "@src/OnChainDataSource/onCha
 import {
   BettingActions,
   BettingRounds,
+  type CardShareAndProof,
   type ChipUnits,
   type GameEventMap,
   GameEventTypes,
@@ -23,6 +25,7 @@ import {
   PlayerStatus,
   type PublicCardRounds,
   type ReceivedPublicCardsEvent,
+  type ShowDownEvent,
   type TableInfo,
 } from "@src/types";
 import { type PendingMemo, createPendingMemo } from "@src/utils/PendingMemo";
@@ -37,7 +40,6 @@ import {
   getDeck,
   getNumberOfRaisesLeft,
   getPlayerByAddress,
-  getPlayerByIndex,
   getPot,
   getPrivateCardsIndexes,
   getShufflingPlayer,
@@ -68,7 +70,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
   private secretKey: bigint;
   private publicKey: Uint8Array;
   public gameState?: JGameState;
-  private myPrivateCardsShares?: [DecryptionCardShare, DecryptionCardShare];
+  private myPrivateCardsShares?: [CardShareAndProof, CardShareAndProof];
   private pendingMemo: PendingMemo;
 
   constructor(config: JetonConfigs) {
@@ -107,8 +109,30 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.onChainDataSource.on(OnChainEventTypes.SHUFFLED_DECK, this.playerShuffledDeck);
     this.onChainDataSource.on(OnChainEventTypes.CARDS_SHARES_RECEIVED, this.receivedCardsShares);
     this.onChainDataSource.on(OnChainEventTypes.PLAYER_PLACED_BET, this.receivedPlayerBet);
+    this.onChainDataSource.on(OnChainEventTypes.SHOW_DOWN, this.receivedShowDown);
     this.onChainDataSource.listenToTableEvents(this.tableInfo.id);
   }
+
+  private receivedShowDown = async (data: OnChainShowDownData) => {
+    if (!this.gameState) throw new Error(" must exist");
+    const players = this.gameState.players;
+    const eventData: ShowDownEvent = {};
+    for (const [index, player] of players.entries()) {
+      eventData[player.id] = {
+        player,
+        winAmount: data.winningAmounts[index]!,
+        cards: [data.privateCards[index * 2]!, data.privateCards[index * 2 + 1]!],
+      };
+    }
+    this.emit(GameEventTypes.SHOW_DOWN, eventData);
+
+    const onChainTableObject = await this.pendingMemo.memoize(this.queryGameState);
+    this.gameState = onChainDataMapper.convertJetonState(onChainTableObject);
+    // TODO: timeout is not a good solution
+    setTimeout(() => {
+      this.gameStarted(onChainTableObject);
+    }, 3000);
+  };
 
   private receivedPlayerBet = async (data: OnChainPlayerPlacedBetData) => {
     console.log("received Player bet", data);
@@ -147,7 +171,7 @@ export class Jeton extends EventEmitter<GameEventMap> {
       return;
     }
     if (nextPlayer === null) {
-      //TODO: showdown
+      this.createAndShareSelfPrivateKeyShares(onChainTableObject);
       return;
     }
     // don't send awaiting bet to ui for small and big blind
@@ -199,19 +223,21 @@ export class Jeton extends EventEmitter<GameEventMap> {
 
     // if the new player is active player then the game has just started
     if (newPlayer.status !== PlayerStatus.sittingOut) {
-      const dealerIndex = newJState.dealerIndex;
-      this.emit(GameEventTypes.HAND_STARTED, { dealer: newJState.players[dealerIndex]! });
-      const shufflingPlayer = getShufflingPlayer(onChainTableObject);
-      if (shufflingPlayer)
-        this.emit(
-          GameEventTypes.PLAYER_SHUFFLING,
-          onChainDataMapper.convertPlayer(shufflingPlayer),
-        );
-      this.checkForActions(onChainTableObject);
+      this.gameStarted(onChainTableObject);
     }
 
     this.gameState = newJState;
   };
+
+  private gameStarted(state: OnChainTableObject) {
+    const newJState = onChainDataMapper.convertJetonState(state);
+    const dealerIndex = newJState.dealerIndex;
+    this.emit(GameEventTypes.HAND_STARTED, { dealer: newJState.players[dealerIndex]! });
+    const shufflingPlayer = getShufflingPlayer(state);
+    if (shufflingPlayer)
+      this.emit(GameEventTypes.PLAYER_SHUFFLING, onChainDataMapper.convertPlayer(shufflingPlayer));
+    this.checkForActions(state);
+  }
 
   private playerShuffledDeck = async (data: OnChainShuffledDeckData) => {
     console.log("player shuffled deck");
@@ -260,7 +286,20 @@ export class Jeton extends EventEmitter<GameEventMap> {
     this.myPrivateCardsShares = proofsAndShares
       .filter((pas) => myPrivateCardsIndexes.includes(pas.cardIndex))
       .sort((a, b) => a.cardIndex - b.cardIndex)
-      .map((pas) => pas.decryptionCardShare) as [DecryptionCardShare, DecryptionCardShare];
+      .map((pas) => pas) as [CardShareAndProof, CardShareAndProof];
+    this.onChainDataSource.cardsDecryptionShares(this.tableInfo.id, sharesToSend, proofsToSend);
+  }
+
+  private async createAndShareSelfPrivateKeyShares(state: OnChainTableObject) {
+    if (!this.myPrivateCardsShares) {
+      this.myPrivateCardsShares = (await this.createDecryptionShareProofsFor(
+        getPrivateCardsIndexes(state, this.playerId),
+        state,
+      )) as [CardShareAndProof, CardShareAndProof];
+    }
+
+    const proofsToSend = this.myPrivateCardsShares.map((pas) => pas.proof);
+    const sharesToSend = this.myPrivateCardsShares.map((pas) => pas.decryptionCardShare);
     this.onChainDataSource.cardsDecryptionShares(this.tableInfo.id, sharesToSend, proofsToSend);
   }
 
@@ -303,8 +342,14 @@ export class Jeton extends EventEmitter<GameEventMap> {
 
     if (!this.myPrivateCardsShares) throw new Error("must be available");
     const [firstCardIndex, secondCardIndex] = getPrivateCardsIndexes(state, this.playerId);
-    const firstCardShares = [getCardShares(state, firstCardIndex), this.myPrivateCardsShares[0]];
-    const secondCardShares = [getCardShares(state, secondCardIndex), this.myPrivateCardsShares[1]];
+    const firstCardShares = [
+      getCardShares(state, firstCardIndex),
+      this.myPrivateCardsShares[0].decryptionCardShare,
+    ];
+    const secondCardShares = [
+      getCardShares(state, secondCardIndex),
+      this.myPrivateCardsShares[1].decryptionCardShare,
+    ];
     const firstPrivateCard = this.zkDeck.decryptCard(firstCardIndex, deck, firstCardShares);
     const secondPrivateCard = this.zkDeck.decryptCard(secondCardIndex, deck, secondCardShares);
 

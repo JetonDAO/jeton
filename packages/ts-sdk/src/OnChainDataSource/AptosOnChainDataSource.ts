@@ -12,11 +12,14 @@ import {
   contractCheckedInEventType,
   contractFoldEventType,
   contractRaiseEventType,
+  contractShowDownEventType,
   contractShuffleEventType,
   contractSmallBlindEventType,
 } from "@src/contracts/contractData";
 import { createTableInfo } from "@src/contracts/contractDataMapper";
 import {
+  type ChainEvents,
+  type ShowDownEvent,
   callCallContract,
   callCheckInContract,
   callDecryptCardShares,
@@ -49,7 +52,7 @@ export class AptosOnChainDataSource
     this.address = address;
   }
 
-  private publishEvent(event: { data: { sender_addr: string }; indexed_type: string }) {
+  private publishEvent(event: ChainEvents) {
     console.log("publish event", event);
     switch (event.indexed_type) {
       case contractCheckedInEventType:
@@ -99,6 +102,15 @@ export class AptosOnChainDataSource
           address: event.data.sender_addr,
         });
         break;
+      case contractShowDownEventType: {
+        console.log("publishing", OnChainEventTypes.SHOW_DOWN);
+        const data = (event as ShowDownEvent).data;
+        this.emit(OnChainEventTypes.SHOW_DOWN, {
+          publicCards: data.public_cards.map((p) => Number(p)),
+          privateCards: data.private_cards.map((p) => Number(p)),
+          winningAmounts: data.winning_amounts.map((a) => Number(a)),
+        });
+      }
     }
   }
 
@@ -117,7 +129,7 @@ export class AptosOnChainDataSource
     // TODO: parse events and emit
     const pollingTable = this.pollingTables[tableId];
     if (pollingTable) {
-      pollingTable.lastEventBlockHeight = events[0].transaction_block_height;
+      pollingTable.lastEventBlockHeight = events[0]!.transaction_block_height;
       pollingTable.timerId = setTimeout(this.pollTableEvents.bind(this, tableId), POLLING_INTERVAL);
     }
   };

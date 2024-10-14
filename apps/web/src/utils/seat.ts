@@ -1,9 +1,9 @@
-import type { Player } from "@jeton/ts-sdk";
+import type { UIPlayer } from "@src/app/games/[id]/state/state";
 
 export const orderPlayersSeats = (
-  players: (Player | null)[],
+  players: (UIPlayer | null)[],
   mainPlayerId: string,
-): (Player | null)[] => {
+): (UIPlayer | null)[] => {
   const mainPlayerIndex = players.findIndex((player) => player?.id === mainPlayerId);
 
   const mainPlayer = players[mainPlayerIndex];
@@ -11,7 +11,7 @@ export const orderPlayersSeats = (
     return players;
   }
 
-  const playersAfterMainPlayer: (Player | null)[] = players.slice(mainPlayerIndex + 1);
-  const playersBeforeMainPlayer: (Player | null)[] = players.slice(0, mainPlayerIndex);
+  const playersAfterMainPlayer: (UIPlayer | null)[] = players.slice(mainPlayerIndex + 1);
+  const playersBeforeMainPlayer: (UIPlayer | null)[] = players.slice(0, mainPlayerIndex);
   return [mainPlayer, ...playersAfterMainPlayer, ...playersBeforeMainPlayer];
 };
