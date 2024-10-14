@@ -50,7 +50,6 @@ export default function Modal({
           `rounded-2xl p-10 bg-[url("/images/wood-pattern-light.png")] pt-12 overflow-auto max-h-[100dvh] bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b]`,
           className,
         )}
-        style={{ transform: "translate(-50%, -50%)" }}
       >
         {closeButton && (
           <button
