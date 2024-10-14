@@ -18,16 +18,20 @@ export default function PlayerActions() {
   const [queuedAction, setQueuedAction] = useState<PlacingBettingActions | null>(null);
   const [isActionQueued, setIsActionQueued] = useState(false);
   const { account } = useWallet();
+  const [address, setInAppAddress] = useState<string>();
   const mainPlayer = useMemo(() => {
-    const [address, _] = finalAddress(account?.address || "");
     return players?.find((player) => player?.id === address);
-  }, [players, account]);
+  }, [players, address]);
   const isPlayerTurn = awaitingBetFrom?.id === mainPlayer?.id;
   const actions: PlacingBettingActions[] = [
     PlacingBettingActions.FOLD,
     PlacingBettingActions.CHECK_CALL,
     PlacingBettingActions.RAISE,
   ];
+
+  useEffect(() => {
+    setInAppAddress(finalAddress(account?.address || ""));
+  }, [account]);
 
   useEffect(() => {
     if (isPlayerTurn && queuedAction) {

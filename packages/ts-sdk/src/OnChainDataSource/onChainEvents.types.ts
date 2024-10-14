@@ -26,8 +26,8 @@ export type OnChainPlayerPlacedBetData = {
 };
 
 export type OnChainShowDownData = {
-  privateCards: number[];
-  publicCards: number[];
+  privateCards: string;
+  publicCards: string;
   winningAmounts: number[];
 };
 

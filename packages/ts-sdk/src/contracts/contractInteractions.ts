@@ -35,7 +35,7 @@ export interface GeneralEvent extends BaseEvent {
 }
 
 export interface ShowDownEvent extends BaseEvent {
-  data: { private_cards: number[]; public_cards: number[]; winning_amounts: number[] };
+  data: { private_cards: string; public_cards: string; winning_amounts: number[] };
   indexed_type: typeof contractShowDownEventType;
   transaction_block_height: number;
 }
