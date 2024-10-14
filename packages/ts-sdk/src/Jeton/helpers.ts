@@ -31,7 +31,7 @@ export function getPrivateCardsIndexes(
 
 export function getDeck(tableObject: OnChainTableObject) {
   return (
-    tableObject.state.__variant__ === "Playing" && hexStringToUint8Array(tableObject.state.deck)
+    tableObject.state.__variant__ === "Playing" && hexStringToUint8Array(tableObject.state.deck._0)
   );
 }
 
@@ -40,7 +40,7 @@ export function getCardShares(tableObject: OnChainTableObject, indexes: number[]
 export function getCardShares(tableObject: OnChainTableObject, indexes: number | number[]) {
   if (tableObject.state.__variant__ !== "Playing") throw new Error("must be playing");
   const arrayedShares = new Array(52);
-  const mapShares = tableObject.state.decryption_card_shares.data;
+  const mapShares = tableObject.state.decryption_share_store._0.data;
   for (const mapShare of mapShares) {
     arrayedShares[mapShare.key] = mapShare.value;
   }

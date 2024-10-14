@@ -11,7 +11,7 @@ export type OnChainActivePlayer = {
   stake: ChipStack;
   is_folded: boolean;
   is_last_hand: boolean;
-  public_key: string;
+  public_key: { _0: string };
 };
 
 export type OnChainPendingPlayer = {
@@ -66,8 +66,8 @@ export type RemovedState = {
 export type PlayingState = {
   __variant__: "Playing";
   timeout: string;
-  deck: string;
-  decryption_card_shares: { data: { key: number; value: string }[] };
+  deck: { _0: string };
+  decryption_share_store: { _0: { data: { key: number; value: string }[] } };
   phase: OnChainPhase;
 };
 
