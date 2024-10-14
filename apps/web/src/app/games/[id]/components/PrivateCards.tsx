@@ -9,7 +9,7 @@ export default function PrivateCards({
 }: {
   playersPrivateCards: Record<number /* seat number start from */, number[]> | null;
 }) {
-  const [startRevealing, setStartRevealing] = useState(false);
+  const [receivedCards, setReceivedCards] = useState(true);
   const [revealedCards, setRevealedCards] = useState(false);
   const [dealCards, setDealCards] = useState<number[]>([]);
   const dealCardEffect = useAudio(dealCardSound, "effect");
@@ -35,6 +35,12 @@ export default function PrivateCards({
     });
   }, [seats, dealCardEffect]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setRevealedCards(true);
+    }, 3000);
+  }, []);
+
   return (
     <>
       {seats.map((seat, i) => {
@@ -53,7 +59,7 @@ export default function PrivateCards({
                   (cardName, i) =>
                     CARDS_MAP[cardName] && (
                       <Card
-                        className={`w-16 h-24 animate-flip-y grow-0 shrink-0 ${
+                        className={`sm:w-[72px] w-5 animate-flip-y grow-0 shrink-0 ${
                           revealedCards ? "" : ""
                         }`}
                         key={cardName}
@@ -65,20 +71,20 @@ export default function PrivateCards({
             ) : (
               <div className="relative">
                 <div
-                  className={`w-14 h-20 rounded-lg animate-deal bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all ${
+                  className={`sm:w-14 sm:h-20 w-5 h-8 rounded-lg animate-deal bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] transition-all ${
                     revealedCards ? "" : ""
                   }`}
                   style={{
-                    transform: startRevealing ? "rotateY(90deg)" : "",
+                    transform: receivedCards ? "rotateY(90deg)" : "",
                     transformStyle: "preserve-3d",
                   }}
                 />
                 <div
-                  className={`w-14 h-20 rounded-lg animate-deal absolute bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] left-0 top-0 transition-all ${
-                    dealCards.includes(seat) ? "!left-7" : ""
+                  className={`sm:w-14 sm:h-20 w-5 h-8 rounded-lg animate-deal absolute bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center grow-0 shrink-0 duration-[600ms] left-0 top-0 transition-all ${
+                    dealCards.includes(seat) ? "sm:!left-7 !left-2" : ""
                   }`}
                   style={{
-                    transform: startRevealing ? "rotateY(90deg)" : "",
+                    transform: receivedCards ? "rotateY(90deg)" : "",
                     transformStyle: "preserve-3d",
                   }}
                 />

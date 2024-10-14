@@ -78,7 +78,7 @@ module.exports = {
         dealAndRotate1: "dealAndRotate1 1s ease-out forwards",
         dealAndRotate2: "dealAndRotate2 1s ease-out forwards",
         spinner: "spinner 2s infinite",
-        cardLoop: "cardAnimation 6s ease-in-out infinite",
+        cardLoop: "cardAnimation 5s ease-in-out infinite",
         tada: "tada 1s ease-in-out infinite",
         "pot-charge": "tada 1s ease-in-out .4s",
       },

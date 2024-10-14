@@ -7,6 +7,7 @@ import {
   selectMyCards$,
   selectShufflingPlayer$,
 } from "../state/selectors/gameSelectors";
+import LogsButton from "./LogsSidebar";
 
 export default function GameStatusBox() {
   const gameStatus = useSelector(selectGameStatus$());
@@ -29,15 +30,18 @@ export default function GameStatusBox() {
   }
 
   return (
-    <motion.div
-      className="absolute top-4 left-4 bg-black bg-opacity-70 text-[10px] max-w-[50vw] sm:text-base text-white p-3 rounded-lg shadow-md"
-      key={statusMessage}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3 }}
-    >
-      <p>{statusMessage}</p>
-    </motion.div>
+    <div className="flex gap-1 items-center absolute top-4 left-4 z-[420]">
+      <LogsButton />
+      <motion.div
+        className=" bg-black bg-opacity-70 text-[10px] max-w-[50vw] sm:text-base text-white p-3 rounded-lg shadow-md"
+        key={statusMessage}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3 }}
+      >
+        <p>{statusMessage}</p>
+      </motion.div>
+    </div>
   );
 }

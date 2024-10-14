@@ -21,12 +21,12 @@ import { JetonContext } from "@src/components/JetonContextProvider";
 import useCheckIn from "@src/hooks/useCheckIn";
 
 const INITIAL_FORM_VALUES: FormValues = {
-  smallBlind: 0,
-  numberOfRaises: 0,
+  smallBlind: 1,
+  numberOfRaises: 2,
   minPlayers: 2,
-  maxPlayers: 10,
   minBuyIn: 100,
   maxBuyIn: 1000,
+  maxPlayers: 9,
   waitingTimeout: 3600,
   chipUnit: ChipUnits.apt,
 };
@@ -35,10 +35,8 @@ const INPUT_FIELDS = [
   { label: "Small Blind", name: "smallBlind" },
   { label: "Number of Raises", name: "numberOfRaises" },
   { label: "Minimum Players", name: "minPlayers" },
-  { label: "Maximum Players", name: "maxPlayers" },
   { label: "Minimum Buy-in", name: "minBuyIn" },
   { label: "Maximum Buy-in", name: "maxBuyIn" },
-  { label: "Waiting timeOut(seconds)", name: "waitingTimeOut" },
 ];
 
 export default function GameCreateModal() {
@@ -68,13 +66,15 @@ export default function GameCreateModal() {
       if (!createTable) throw new Error("create Table must exist");
       if (!checkIn) throw new Error("Check in you must do");
 
+      const TIMEOUT = 300; // 5 minutes
+
       const jeton = await createTable(
         formValues.smallBlind,
         formValues.numberOfRaises,
         formValues.minPlayers,
         formValues.minBuyIn,
         formValues.maxBuyIn,
-        formValues.waitingTimeout,
+        TIMEOUT,
         formValues.chipUnit,
         checkIn,
         account!.address,

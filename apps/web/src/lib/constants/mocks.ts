@@ -3,6 +3,22 @@ import { useEffect, useState } from "react";
 
 export const mockPublicKey: Uint8Array = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
+export const mockPublicCards = [2, 51, 45, 33, 21];
+
+export const mockMyCards = [51, 49];
+
+export const mockPrivateCards: Record<number, number[]> = {
+  1: [1, 2],
+  2: [1, 2],
+  3: [3, 4],
+  4: [5, 6],
+  5: [3, 4],
+  6: [5, 6],
+  7: [3, 4],
+  8: [5, 6],
+  9: [5, 6],
+};
+
 export const mockPlayers: Player[] = [
   {
     id: "player123",
