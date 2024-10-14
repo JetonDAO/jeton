@@ -363,9 +363,9 @@ export class Jeton extends EventEmitter<GameEventMap> {
       if (onChainTableObject.state.__variant__ !== "Playing")
         throw new Error("shuffle should only be called during playing");
       const publicKeys = onChainTableObject.roster.players.map((p) =>
-        hexStringToUint8Array(p.public_key),
+        hexStringToUint8Array(p.public_key._0),
       );
-      this.shuffle(hexStringToUint8Array(onChainTableObject.state.deck), publicKeys);
+      this.shuffle(hexStringToUint8Array(onChainTableObject.state.deck._0), publicKeys);
     }
     if (
       onChainDataMapper.convertGameStatus(onChainTableObject.state) === GameStatus.BetPreFlop &&
