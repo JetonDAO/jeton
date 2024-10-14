@@ -143,7 +143,7 @@ export default function Seat({
           </p>
         </div>
       )}
-      {dealer?.id !== player.id && <DealerBadge />}
+      {dealer?.id === player.id && <DealerBadge />}
 
       {isMainPlayerCards && (
         <div className="justify-center flex sm:absolute shrink-0 -translate-x-4 sm:translate-x-0 sm:bottom-0 -bottom-5 right-[-160%]">
