@@ -63,7 +63,7 @@ export default function PlayerActions() {
   };
 
   return (
-    <div className="fixed bottom-5 gap-5 left-5 right-5 flex justify-center ">
+    <div className="fixed bottom-5 gap-5 left-5 right-5 flex justify-center max-w-[1000px] mx-auto">
       {actions.map((action) => (
         <button
           key={action}

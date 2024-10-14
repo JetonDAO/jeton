@@ -39,7 +39,7 @@ export default function Modal({
   return (
     <motion.div
       ref={overlay}
-      className="fixed z-50 inset-0 flex justify-center items-center animate-fadeIn"
+      className="fixed w-screen z-50 inset-0 flex justify-center items-center animate-fadeIn h-[100dvh] overflow-auto"
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
@@ -47,9 +47,10 @@ export default function Modal({
       <div
         ref={wrapper}
         className={cn(
-          `absolute rounded-2xl p-10 bg-[url("/images/wood-pattern-light.png")] pt-12 bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b]`,
+          `rounded-2xl p-10 bg-[url("/images/wood-pattern-light.png")] pt-12 overflow-auto max-h-[100dvh] bg-repeat bg-center bg-[length:200px_200px] border-8 shadow border-[#b87d5b]`,
           className,
         )}
+        style={{ transform: "translate(-50%, -50%)" }}
       >
         {closeButton && (
           <button

@@ -124,7 +124,8 @@ export default function Seat({
           }}
         />
         <div className="bg-black/70 shrink-0 flex-col rounded-sm line-clamp-1 relative flex justify-center text-[6px] text-white text-center shadow-2xl md:text-sm px-1 ">
-          <span>{player.id.slice(2, 8)} </span> <span>${player.balance}</span>
+          <span>{seatNumber === 1 ? "me" : player.id.slice(2, 8)} </span>{" "}
+          <span>${player.balance}</span>
         </div>
       </div>
 
@@ -152,7 +153,7 @@ export default function Seat({
               CARDS_MAP[cardName] && (
                 <Card
                   className={`
-                    w-10 sm:w-32  z-50 relative
+                    w-10 sm:w-32 z-50 relative
                     ${
                       i === 0
                         ? "animate-dealAndRotate1"

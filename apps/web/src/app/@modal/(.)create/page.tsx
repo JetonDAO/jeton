@@ -26,6 +26,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   minPlayers: 2,
   minBuyIn: 100,
   maxBuyIn: 1000,
+  maxPlayers: 9,
   waitingTimeout: 3600,
   chipUnit: ChipUnits.apt,
 };
