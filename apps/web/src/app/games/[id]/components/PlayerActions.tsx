@@ -2,6 +2,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { PlacingBettingActions } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import { JetonContext } from "@src/components/JetonContextProvider";
+import { finalAddress } from "@src/utils/inAppWallet";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   selectAvailableActions$,
@@ -17,10 +18,10 @@ export default function PlayerActions() {
   const [queuedAction, setQueuedAction] = useState<PlacingBettingActions | null>(null);
   const [isActionQueued, setIsActionQueued] = useState(false);
   const { account } = useWallet();
-  const mainPlayer = useMemo(
-    () => players?.find((player) => player?.id === account?.address),
-    [players, account],
-  );
+  const mainPlayer = useMemo(() => {
+    const [address, _] = finalAddress(account?.address || "");
+    return players?.find((player) => player?.id === address);
+  }, [players, account]);
   const isPlayerTurn = awaitingBetFrom?.id === mainPlayer?.id;
   const actions: PlacingBettingActions[] = [
     PlacingBettingActions.FOLD,
