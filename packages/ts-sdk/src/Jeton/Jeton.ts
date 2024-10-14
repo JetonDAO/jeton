@@ -117,11 +117,14 @@ export class Jeton extends EventEmitter<GameEventMap> {
     if (!this.gameState) throw new Error(" must exist");
     const players = this.gameState.players;
     const eventData: ShowDownEvent = {};
+    const privateCards = hexStringToUint8Array(data.privateCards);
+    const publicCards = hexStringToUint8Array(data.privateCards);
+    console.log("show down results", privateCards, publicCards, data.winningAmounts);
     for (const [index, player] of players.entries()) {
       eventData[player.id] = {
         player,
         winAmount: data.winningAmounts[index]!,
-        cards: [data.privateCards[index * 2]!, data.privateCards[index * 2 + 1]!],
+        cards: [privateCards[index * 2]!, privateCards[index * 2 + 1]!],
       };
     }
     this.emit(GameEventTypes.SHOW_DOWN, eventData);

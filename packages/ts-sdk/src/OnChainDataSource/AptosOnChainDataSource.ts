@@ -106,8 +106,8 @@ export class AptosOnChainDataSource
         console.log("publishing", OnChainEventTypes.SHOW_DOWN);
         const data = (event as ShowDownEvent).data;
         this.emit(OnChainEventTypes.SHOW_DOWN, {
-          publicCards: data.public_cards.map((p) => Number(p)),
-          privateCards: data.private_cards.map((p) => Number(p)),
+          publicCards: data.public_cards,
+          privateCards: data.private_cards,
           winningAmounts: data.winning_amounts.map((a) => Number(a)),
         });
       }
