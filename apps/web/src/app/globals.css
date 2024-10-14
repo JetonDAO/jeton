@@ -78,52 +78,51 @@
   }
 
   /* Cards near the center of the table */
-
   .cards-2 {
-    top: 68%;
-    left: 30%;
+    top: 68% !important;
+    left: 33% !important;
     transform: translateX(-50%);
   }
 
   .cards-3 {
-    top: 55%;
-    left: 15%;
+    top: 55% !important;
+    left: 15% !important;
     transform: translateX(-50%);
   }
 
   .cards-4 {
-    top: 35%;
-    left: 15%;
+    top: 35% !important;
+    left: 15% !important;
     transform: translateX(-50%);
   }
 
   .cards-5 {
-    top: 20%;
-    left: 30%;
+    top: 20% !important;
+    left: 33% !important;
     transform: translateX(-50%);
   }
 
   .cards-6 {
-    top: 20%;
-    left: 65%;
+    top: 20% !important;
+    left: 67% !important;
     transform: translateX(-50%);
   }
 
   .cards-7 {
-    top: 35%;
-    left: 82%;
+    top: 35% !important;
+    left: 82% !important;
     transform: translateX(-50%);
   }
 
   .cards-8 {
-    top: 60%;
-    left: 82%;
+    top: 60% !important;
+    left: 82% !important;
     transform: translateX(-50%);
   }
 
   .cards-9 {
-    top: 70%;
-    left: 70%;
+    top: 68% !important;
+    left: 70% !important;
     transform: translateX(-50%);
   }
 
@@ -189,131 +188,125 @@
   }
 }
 
-.pot {
-  top: 80%;
-  left: 50%;
-  transform: translateX(-50%);
-}
+@media (max-width: 768px) {
+  .cards-center {
+    top: 50% !important;
+    left: 50% !important;
+  }
 
-.seat-1 {
-  top: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-}
+  .pot {
+    top: 75%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.seat-1 .cards,
-.seat-1 .chips {
-  top: -50%;
-  left: 50%;
-  transform: translateX(-50%);
-}
+  .seat-1 {
+    top: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.seat-2 {
-  top: 100%;
-  left: 20%;
-  transform: translateY(-50%);
-}
+  .seat-2 {
+    top: 100%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
 
-.seat-2 .cards,
-.seat-2 .chips {
-  top: -35%;
-  right: 10%;
-  transform: translate(50%);
-}
+  .seat-3 {
+    top: 70%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
 
-.seat-3 {
-  top: 70%;
-  left: 20%;
-  transform: translateY(-50%);
-}
+  .seat-4 {
+    top: 28%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
 
-.seat-3 .cards,
-.seat-3 .chips {
-  bottom: 50%;
-  right: -40%;
-  transform: translate(50%);
-}
+  .seat-5 {
+    top: -10%;
+    left: 25%;
+    transform: translateY(-50%);
+  }
 
-.seat-4 {
-  top: 30%;
-  left: 20%;
-  transform: translateY(-50%);
-}
+  .seat-6 {
+    top: -10%;
+    left: 64%;
+    transform: translateY(-50%);
+  }
 
-.seat-4 .cards,
-.seat-4 .chips {
-  bottom: -20%;
-  right: -60%;
-  transform: translate(-50%);
-}
+  .seat-7 {
+    top: 28%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
 
-.seat-5 {
-  top: -10%;
-  left: 25%;
-  transform: translateY(-50%);
-}
+  .seat-8 {
+    top: 70%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
 
-.seat-5 .cards,
-.seat-5 .chips {
-  bottom: -45%;
-  right: 10%;
-  transform: translate(-50%);
-}
+  .seat-9 {
+    top: 100%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
 
-.seat-6 {
-  top: -10%;
-  left: 68%;
-  transform: translateY(-50%);
-}
+  .seat-dealer {
+    top: -5% !important;
+    left: 45% !important;
+    transform: translate(0);
+  }
 
-.seat-6 .cards,
-.seat-6 .chips {
-  bottom: -45%;
-  right: 20%;
-  transform: translate(-50%);
-}
+  .cards-2 {
+    top: 89%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
 
-.seat-7 {
-  top: 30%;
-  left: 72%;
-  transform: translateY(-50%);
-}
+  .cards-3 {
+    top: 63%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
 
-.seat-7 .cards {
-  left: -40%;
-  transform: translate(-50%);
-}
+  .cards-4 {
+    top: 20%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
 
-.seat-8 {
-  top: 70%;
-  left: 72%;
-  transform: translateY(-50%);
-}
+  .cards-5 {
+    top: 0%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
 
-.seat-8 .cards,
-.seat-8 .chips {
-  bottom: 60%;
-  left: -50%;
-  transform: translate(-50%);
-}
+  .cards-6 {
+    top: 0%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
 
-.seat-9 {
-  top: 100%;
-  left: 72%;
-  transform: translateY(-50%);
-}
+  .cards-7 {
+    top: 20%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
 
-.seat-9 .cards,
-.seat-9 .chips {
-  top: -50%;
-  left: 20%;
-  transform: translate(-50%);
-}
+  .cards-8 {
+    top: 63%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
 
-.seat-dealer {
-  top: -5% !important;
-  left: 45% !important;
-  transform: translate(0);
+  .cards-9 {
+    top: 89%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
 }
 
 .rotate-y-180 {

@@ -32,20 +32,11 @@ import {
   selectShufflingPlayer$,
 } from "./state/selectors/gameSelectors";
 
-function getRandomCards() {
-  const cards = new Set<number>();
-  while (cards.size < 2) {
-    cards.add(Math.floor(Math.random() * 52));
-  }
-  return Array.from(cards);
-}
-
 export default function PlayPage({ params }: { params: { id: string } }) {
   const { game, joinTable } = useContext(JetonContext);
   const players = useSelector(selectGamePlayers$());
   const [toffState, setToffState] = useState(false);
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
-  const cards = useSelector(selectPublicCards$);
   const gameStatus = useSelector(selectGameStatus$());
   const [drawPrivateCards, setDrawPrivateCards] = useState(false);
   const myCards = useSelector(selectMyCards$());
@@ -104,7 +95,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         )}
         {shufflingPlayer?.id && <ShufflingCards />}
         <div className="absolute flex flex-col justify-center items-center">
-          {cards.length > 0 && <PublicCards cards={cards} />}
+          <PublicCards />
           {gameStatus === GameStatus.AwaitingStart && <WaitingIndicator />}
         </div>
 
@@ -116,7 +107,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         )}
       </Table>
       <PlayerActions />
-      <DownloadModal />
+      {/* <DownloadModal /> */}
       <GameStatusBox />
     </GameContainer>
   );

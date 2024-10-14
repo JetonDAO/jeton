@@ -54,20 +54,20 @@ export default function LandingPage() {
       </motion.header>
 
       <main className="flex-grow justify-center mb-10 px-5 text-center w-full text-white items-center flex flex-col">
-        <motion.h1
-          className="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 sm:leading-relaxed"
+        <motion.div
+          className="text-5xl font-bold mb-8 leading-relaxed"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          Jeton
+          <span>Jeton</span>
           <br />
-          Decentralized Poker Game
-        </motion.h1>
+          <p className="text-2xl">Decentralized Poker Game</p>
+        </motion.div>
 
         <motion.p
-          className="text-base sm:text-xl mb-10 sm:leading-9 max-w-5xl text-balance"
+          className="text-base sm:text-2xl mb-10 sm:leading-9 max-w-5xl text-balance"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
           exit={{ opacity: 0, scale: 0.95 }}

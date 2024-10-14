@@ -64,12 +64,17 @@ export default function Seat({
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const isPlayerTurn = awaitingBetFrom?.id === player.id;
-  const myCards = useSelector(selectMyCards$());
+  //   const myCards = useSelector(selectMyCards$());
+  const myCards = [1, 2];
   const dealer = useSelector(selectDealer$());
 
   const gameStatus = useSelector(selectGameStatus$());
   const [lastAction, setLastAction] = useState("");
   const isWinner = false;
+
+  const isMainPlayer = useMemo(() => {
+    return seatNumber === 1 && myCards && myCards.length > 0;
+  }, [seatNumber]);
 
   useEffect(() => {
     if (mounted.current) return;
@@ -89,7 +94,7 @@ export default function Seat({
 
   return (
     <div
-      className={`seat-position items-center flex z-30 shrink-0  md:w-28 xl:w-32 w-10 grow-0 flex-col duration-1000 ${
+      className={`seat-position items-center flex z-30 shrink-0  md:w-28 xl:w-36 w-6 grow-0 duration-1000 ${
         shufflingPlayer?.id === player.id
           ? "seat-dealer scale-110"
           : `seat-${seatNumber} ${2 > Math.random() ? "z-[501]" : ""} ${
@@ -98,21 +103,31 @@ export default function Seat({
       }`}
       style={{ animationDelay: `${seatNumber * 100 + 100}ms` }}
     >
-      <Image
-        draggable={false}
-        src={playerAvatar ?? ""}
-        alt="avatar"
-        className={`w-full aspect-square object-contain bg-black/70 h-full animate-grow-in grow-0 sm:w-14 rounded-full shrink-0 border-2 md:border-8 ${
-          shufflingPlayer?.id === player.id ? "scale-125 animate-bounce delay-1000" : ""
-        } ${isPlayerTurn ? "ring-8 animate-bounce ring-blue-600 duration-500" : ""} ${
-          player.status === PlayerStatus.sittingOut || player.status === PlayerStatus.folded
-            ? "scale-95"
-            : ""
-        } ${isWinner ? "animate-tada" : ""}`}
-        style={{
-          transitionDelay: mounted.current ? "0ms" : `${150 * seatNumber}ms`,
-        }}
-      />
+      <div
+        className={`flex flex-col items-center duration-500 ${
+          isMainPlayer && myCards.length > 0 ? "-translate-x-5" : ""
+        }`}
+      >
+        <Image
+          draggable={false}
+          src={playerAvatar ?? ""}
+          alt="avatar"
+          className={`aspect-square object-contain bg-black/70 h-full animate-grow-in grow-0 rounded-full shrink-0 border-2 md:border-8 ${
+            shufflingPlayer?.id === player.id ? "scale-125 animate-bounce delay-1000" : ""
+          } ${isPlayerTurn ? "ring-8 animate-bounce ring-amber-600 duration-500" : ""} ${
+            player.status === PlayerStatus.sittingOut || player.status === PlayerStatus.folded
+              ? "scale-95"
+              : ""
+          } ${isWinner ? "animate-tada" : ""}`}
+          style={{
+            transitionDelay: mounted.current ? "0ms" : `${150 * seatNumber}ms`,
+          }}
+        />
+        <div className="bg-black/70 shrink-0 flex-col rounded-sm line-clamp-1 relative flex justify-center text-[6px] text-white text-center shadow-2xl md:text-sm px-1 ">
+          <span>{player.id.slice(2, 8)} </span> <span>${player.balance}</span>
+        </div>
+      </div>
+
       {isWinner && (
         <Image
           className={`absolute top-0 -right-14 animate-grow-in ${isWinner ? "animate-tada" : ""}`}
@@ -122,7 +137,7 @@ export default function Seat({
       )}
 
       {(lastAction || player.status === PlayerStatus.folded) && (
-        <div className="nes-balloon from-left z-50 animate-grow-in origin-bottom-left absolute top-0 -right-20 text-center p-2 sm:p-2">
+        <div className="nes-balloon hidden sm:block sm:absolute from-left z-50 animate-grow-in origin-bottom-left -top-5 -right-14 text-center p-2 sm:p-2">
           <p className="text-[8px] sm:text-sm">
             {player.status === PlayerStatus.folded ? "Folded" : lastAction}
           </p>
@@ -130,15 +145,20 @@ export default function Seat({
       )}
       {dealer?.id === player.id && <DealerBadge />}
 
-      {seatNumber === 1 && myCards && myCards.length > 0 && (
-        <div className="justify-center flex absolute shrink-0 -right-[200%] bottom-0">
+      {isMainPlayer && (
+        <div className="justify-center flex sm:absolute shrink-0 -translate-x-4 sm:translate-x-0 sm:bottom-0 -bottom-5 right-[-160%]">
           {myCards?.map(
             (cardName, i) =>
               CARDS_MAP[cardName] && (
                 <Card
-                  className={
-                    i === 0 ? "animate-dealAndRotate1" : "animate-dealAndRotate2 relative right-14"
-                  }
+                  className={`
+                    w-10 sm:w-32  z-50 relative
+                    ${
+                      i === 0
+                        ? "animate-dealAndRotate1"
+                        : "animate-dealAndRotate2 right-4 sm:right-14"
+                    }
+                  `}
                   key={cardName}
                   cardName={CARDS_MAP[cardName]}
                 />
@@ -146,9 +166,6 @@ export default function Seat({
           )}
         </div>
       )}
-      <div className="bg-black/70 shrink-0 flex-col rounded-sm line-clamp-1 relative flex justify-center text-[8px] text-white text-center shadow-2xl md:text-sm px-1 ">
-        <span>{player.id.slice(2, 8)} </span> <span>${player.balance}</span>
-      </div>
     </div>
   );
 }

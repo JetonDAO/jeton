@@ -12,7 +12,7 @@ export default function Pot() {
   return (
     <>
       <div
-        className={`text-white sm:text-lg text-[10px] items-center bg-black/20 px-4 py-1 mt-2 absolute pot ${
+        className={`text-white sm:text-lg text-[8px] items-center bg-black/20 px-2 sm:px-4 py-1 mt-2 absolute pot ${
           started ? "" : ""
         }`}
       >
