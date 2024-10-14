@@ -1,5 +1,4 @@
 "use client";
-import type { InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { GameEventTypes, type Jeton } from "@jeton/ts-sdk";
 import { when } from "@legendapp/state";
 import { state$ } from "../state";
@@ -20,10 +19,12 @@ import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
 import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
 //@ts-ignore
 import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import type { SignAndSubmitTransaction } from "@src/types/SignAndSubmitTransaction";
+import { finalAddressAndSignFunction } from "@src/utils/inAppWallet";
 
 export const initGame = async (
   address: string,
-  signAndSubmitTransaction: (transaction: InputTransactionData) => Promise<void>,
+  signAndSubmitTransaction: SignAndSubmitTransaction,
   joinTable: (typeof Jeton)["joinTable"],
   game?: Jeton,
 ) => {
@@ -37,9 +38,14 @@ export const initGame = async (
   state$.initializing.set(true);
   const tableId = state$.tableId.peek() as string;
   // TODO: should we get 'entryGameState' from user?
+  const [finalAddress, finalSignAndSubmit] = finalAddressAndSignFunction(
+    address,
+    signAndSubmitTransaction,
+  );
+
   const finalGame =
     game ||
-    (await joinTable(tableId, 1000, address, signAndSubmitTransaction, {
+    (await joinTable(tableId, 1000, finalAddress, finalSignAndSubmit, {
       decryptCardShareWasm,
       shuffleEncryptDeckWasm,
       decryptCardShareZkey,

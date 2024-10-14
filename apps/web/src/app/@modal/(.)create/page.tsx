@@ -19,6 +19,8 @@ import CheckIn from "@src/components/CheckIn";
 import { Input } from "@src/components/Input";
 import { JetonContext } from "@src/components/JetonContextProvider";
 import useCheckIn from "@src/hooks/useCheckIn";
+import type { SignAndSubmitTransaction } from "@src/types/SignAndSubmitTransaction";
+import { finalAddressAndSignFunction } from "@src/utils/inAppWallet";
 
 const INITIAL_FORM_VALUES: FormValues = {
   smallBlind: 1,
@@ -48,7 +50,6 @@ export default function GameCreateModal() {
 
   const { createTable } = useContext(JetonContext);
   const router = useRouter();
-  const pathname = usePathname();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,6 +68,10 @@ export default function GameCreateModal() {
       if (!checkIn) throw new Error("Check in you must do");
 
       const TIMEOUT = 300; // 5 minutes
+      const [finalAddress, finalSignAndSubmit] = finalAddressAndSignFunction(
+        account!.address,
+        signAndSubmitTransaction as SignAndSubmitTransaction,
+      );
 
       const jeton = await createTable(
         formValues.smallBlind,
@@ -77,8 +82,8 @@ export default function GameCreateModal() {
         TIMEOUT,
         formValues.chipUnit,
         checkIn,
-        account!.address,
-        signAndSubmitTransaction,
+        finalAddress,
+        finalSignAndSubmit,
         {
           decryptCardShareWasm,
           shuffleEncryptDeckWasm,

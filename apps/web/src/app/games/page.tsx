@@ -15,6 +15,7 @@ import { decryptCardShareZkey, shuffleEncryptDeckZkey } from "@jeton/zk-deck";
 import decryptCardShareWasm from "@jeton/zk-deck/wasm/decrypt-card-share.wasm";
 //@ts-ignore
 import shuffleEncryptDeckWasm from "@jeton/zk-deck/wasm/shuffle-encrypt-deck.wasm";
+import InAppDialog from "@src/components/InAppDialog";
 import { setProgress } from "./[id]/state/actions/gameActions";
 
 export const runtime = "edge";
@@ -122,6 +123,7 @@ export default function Home() {
           )}
         </div>
       </div>
+      {connected && <InAppDialog />}
     </div>
   );
 }
