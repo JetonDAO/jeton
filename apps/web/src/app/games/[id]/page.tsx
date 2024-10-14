@@ -107,7 +107,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
         )}
       </Table>
       <PlayerActions />
-      {/* <DownloadModal /> */}
+      <DownloadModal />
       <GameStatusBox />
     </GameContainer>
   );
