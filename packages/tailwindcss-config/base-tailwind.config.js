@@ -72,7 +72,7 @@ const config = {
           "10%": {
             opacity: "1",
           },
-          "80%": {
+          "90%": {
             opacity: "1",
           },
           "100%": {
@@ -98,7 +98,7 @@ const config = {
         "slide-in": "slideIn 1s ease-out",
         "grow-in": "growIn 0.5s ease-out",
         "flip-y": "flip 1s",
-        fading: "fading .7s",
+        fading: "fading 2s infinite",
         headShake: "headShake 1s ease-in-out .5s",
       },
     },

@@ -6,7 +6,8 @@ import {
   retrieveInAppAccount,
   setInAppWalletStatus,
 } from "@src/utils/inAppWallet";
-import { useEffect, useState } from "react";
+import { FormEventHandler, useEffect, useState } from "react";
+import { Input } from "./Input";
 import Modal from "./Modal";
 
 enum ModalStates {
@@ -30,7 +31,9 @@ export default function InAppDialog() {
     }
   };
 
-  const fundAccount = () => {
+  const fundAccount = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     setLoading(true);
     const [address, _] = retrieveInAppAccount();
     signAndSubmitTransaction({
@@ -64,35 +67,43 @@ export default function InAppDialog() {
 
   if (modalState === ModalStates.FUND) {
     return (
-      <Modal>
+      <Modal className="max-w-[600px] animate-scaleUp">
         <h1 className="text-white text-lg mb-3">
           in order to use your in app wallet you need to fund it with a small amount
         </h1>
-        <input type="number" min={1} /> APT
-        <button className="nes-btn is-primary mt-2 w-full" onClick={fundAccount} disabled={loading}>
-          Fund It!
-        </button>
+        <form onSubmit={fundAccount}>
+          <Input
+            value={inputValue}
+            name="apt"
+            label="APT"
+            type="number"
+            onChange={(e) => {
+              e.preventDefault();
+              setInputValue(Number(e.target.value));
+            }}
+          />
+          <button className="nes-btn is-warning mt-2 w-full" type="submit" disabled={loading}>
+            Fund It!
+          </button>
+        </form>
       </Modal>
     );
   }
 
   return (
-    <Modal>
+    <Modal className="animate-scaleUp max-w-[600px]">
       <div className="flex flex-col">
         <h1 className="text-white text-lg mb-3">
-          For better experience we recommend using our in app wallet for your games
+          For better experience we recommend using our <b>in-app wallet</b> for your games.
         </h1>
         <button
-          className="nes-btn is-primary mt-2 w-full"
+          className="nes-btn is-warning mt-2 w-full"
           onClick={() => inAppDialogCallBack(true)}
         >
           Yeah, Sure!
         </button>
-        <button
-          className="nes-btn is-primary mt-2 w-full"
-          onClick={() => inAppDialogCallBack(false)}
-        >
-          No, I'm stupid
+        <button className="nes-btn mt-2 w-full" onClick={() => inAppDialogCallBack(false)}>
+          No, I'm fine
         </button>
       </div>
     </Modal>

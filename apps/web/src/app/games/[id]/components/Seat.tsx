@@ -1,4 +1,4 @@
-import { GameStatus, type Player, PlayerStatus } from "@jeton/ts-sdk";
+import { GameStatus, PlayerStatus } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import Avatar1 from "@src/assets/images/avatars/avatar-1.png";
 import Avatar2 from "@src/assets/images/avatars/avatar-2.png";
@@ -11,20 +11,54 @@ import Avatar8 from "@src/assets/images/avatars/avatar-8.png";
 import Avatar9 from "@src/assets/images/avatars/avatar-9.png";
 import Avatar10 from "@src/assets/images/avatars/avatar-10.png";
 import WinnerStuff from "@src/assets/images/champagne-pixel-animated.gif";
-import { CARDS_MAP } from "@src/lib/constants/cards";
+import Chip from "@src/assets/images/chips/chip.png";
+import { mockPlayers } from "@src/lib/constants/mocks";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   selectAwaitingBetFrom$,
   selectDealer$,
+  selectGamePlayers$,
   selectGameStatus$,
-  selectMyCards$,
   selectShufflingPlayer$,
 } from "../state/selectors/gameSelectors";
-import Card from "./Card";
+import type { UIPlayer } from "../state/state";
 import DealerBadge from "./DealerBadge";
 
-function hashPlayerIDToAvatar(id: string, avatarCount: number) {
+const avatars = [
+  Avatar1,
+  Avatar2,
+  Avatar3,
+  Avatar4,
+  Avatar5,
+  Avatar6,
+  Avatar7,
+  Avatar8,
+  Avatar9,
+  Avatar10,
+];
+
+function assignUniqueAvatars(players: (UIPlayer | null)[]): Record<string, string> {
+  const availableAvatars = [...avatars];
+  const assignedAvatars: Record<string, string> = {};
+
+  players.forEach((player) => {
+    if (!player) return;
+    if (!assignedAvatars[player.id]) {
+      const avatarIndex = hashPlayerIDToAvatar(player.id, availableAvatars.length);
+
+      const assignedAvatar = String(availableAvatars[avatarIndex]);
+
+      assignedAvatars[player.id] = assignedAvatar;
+
+      availableAvatars.splice(avatarIndex, 1);
+    }
+  });
+
+  return assignedAvatars;
+}
+
+function hashPlayerIDToAvatar(id: string, avatarCount: number): number {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = id.charCodeAt(i) + ((hash << 5) - hash);
@@ -36,44 +70,27 @@ export default function Seat({
   player,
   seatNumber,
 }: {
-  player: Player;
+  player: UIPlayer;
   seatNumber: number;
 }) {
-  const avatars = [
-    Avatar1,
-    Avatar2,
-    Avatar3,
-    Avatar4,
-    Avatar5,
-    Avatar6,
-    Avatar7,
-    Avatar8,
-    Avatar9,
-    Avatar10,
-  ];
   const mounted = useRef(false);
 
-  // Hash the player ID to consistently pick an avatar
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  const playerAvatarIndex = useMemo(() => {
-    return hashPlayerIDToAvatar(player.id, avatars.length);
-  }, [player.id]);
-
-  const playerAvatar = avatars[playerAvatarIndex];
-
+  const players = useSelector(selectGamePlayers$());
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const isPlayerTurn = awaitingBetFrom?.id === player.id;
-  const myCards = useSelector(selectMyCards$());
   const dealer = useSelector(selectDealer$());
-
   const gameStatus = useSelector(selectGameStatus$());
   const [lastAction, setLastAction] = useState("");
-  const isWinner = false;
+  const isWinner = player.winAmount && player.winAmount > 0;
+
+  const assignedAvatars = useMemo(() => (players ? assignUniqueAvatars(players) : {}), [players]);
+
+  const playerAvatar = assignedAvatars[player.id];
 
   const isMainPlayerCards = useMemo(() => {
-    return seatNumber === 1 && myCards && myCards.length > 0;
-  }, [seatNumber, myCards]);
+    return seatNumber === 1;
+  }, [seatNumber]);
 
   useEffect(() => {
     if (mounted.current) return;
@@ -90,6 +107,13 @@ export default function Seat({
       setLastAction("");
     }
   }, [gameStatus]);
+
+  useEffect(() => {
+    if (player.roundAction) {
+      const { action, amount } = player.roundAction;
+      setLastAction(`${action} ${amount}`);
+    }
+  });
 
   return (
     <div
@@ -122,50 +146,44 @@ export default function Seat({
             transitionDelay: mounted.current ? "0ms" : `${150 * seatNumber}ms`,
           }}
         />
-        <div className="bg-black/70 shrink-0 flex-col rounded-sm line-clamp-1 relative flex justify-center text-[6px] text-white text-center shadow-2xl md:text-sm px-1 ">
+        <div className="bg-black/70 shrink-0 flex-col sm:border border-amber-300 rounded-sm line-clamp-1 relative flex justify-center text-[6px] text-white text-center shadow-2xl md:text-sm px-1 divide-y divide-white/50">
           <span>{seatNumber === 1 ? "me" : player.id.slice(2, 8)} </span>
-          <span>${player.balance}</span>
+          <span className="flex items-center justify-center">
+            <Image src={Chip} alt="chip" className="w-6 sm:block hidden" />
+            {player.balance}
+          </span>
         </div>
       </div>
 
       {isWinner && (
         <Image
-          className={`absolute top-0 -right-14 animate-grow-in ${isWinner ? "animate-tada" : ""}`}
+          className={`absolute top-0 -right-5 sm:-right-14 animate-grow-in ${
+            isWinner ? "animate-tada" : ""
+          }`}
           alt="chicken winner"
           src={WinnerStuff}
         />
       )}
 
-      {(lastAction || player.status === PlayerStatus.folded) && (
-        <div className="nes-balloon hidden sm:block sm:absolute from-left z-50 animate-grow-in origin-bottom-left -top-5 -right-14 text-center p-2 sm:p-2">
-          <p className="text-[8px] sm:text-sm">
-            {player.status === PlayerStatus.folded ? "Folded" : lastAction}
-          </p>
-        </div>
+      {lastAction && (
+        <>
+          <div className="nes-balloon hidden sm:block sm:absolute from-left z-50 animate-grow-in origin-bottom-left left-20 bottom-32 max-w-32 w-full self-center text-center p-2 sm:p-2">
+            <p className="text-[8px] sm:text-sm">
+              {player.status === PlayerStatus.folded ? "Folded" : lastAction}
+            </p>
+          </div>
+          <div
+            className={`bg-black/70 sm:hidden absolute z-50 animate-grow-in top-[40%] text-center ${
+              seatNumber > 5 ? "right-0" : "left-0"
+            }`}
+          >
+            <p className="text-[6px] sm:text-sm text-amber-200 text-center">
+              {player.status === PlayerStatus.folded ? "Folded" : lastAction}
+            </p>
+          </div>
+        </>
       )}
       {dealer?.id === player.id && <DealerBadge />}
-
-      {isMainPlayerCards && (
-        <div className="justify-center flex sm:absolute shrink-0 -translate-x-4 sm:translate-x-0 sm:bottom-0 -bottom-5 right-[-160%]">
-          {myCards?.map(
-            (cardName, i) =>
-              CARDS_MAP[cardName] && (
-                <Card
-                  className={`
-                    w-10 sm:w-32 z-50 relative
-                    ${
-                      i === 0
-                        ? "animate-dealAndRotate1"
-                        : "animate-dealAndRotate2 right-4 sm:right-14"
-                    }
-                  `}
-                  key={cardName}
-                  cardName={CARDS_MAP[cardName]}
-                />
-              ),
-          )}
-        </div>
-      )}
     </div>
   );
 }

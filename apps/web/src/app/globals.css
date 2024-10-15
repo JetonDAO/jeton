@@ -77,7 +77,6 @@
     left: 50% !important;
   }
 
-  /* Cards near the center of the table */
   .cards-2 {
     top: 68% !important;
     left: 33% !important;
@@ -123,61 +122,6 @@
   .cards-9 {
     top: 68% !important;
     left: 70% !important;
-    transform: translateX(-50%);
-  }
-
-  /* Chips near the center of the table */
-  .chips-1 {
-    top: 60%;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .chips-2 {
-    top: 75%;
-    left: 25%;
-    transform: translateX(-50%);
-  }
-
-  .chips-3 {
-    top: 55%;
-    left: 10%;
-    transform: translateX(-50%);
-  }
-
-  .chips-4 {
-    top: 35%;
-    left: 10%;
-    transform: translateX(-50%);
-  }
-
-  .chips-5 {
-    top: 5%;
-    left: 20%;
-    transform: translateX(-50%);
-  }
-
-  .chips-6 {
-    top: 5%;
-    left: 65%;
-    transform: translateX(-50%);
-  }
-
-  .chips-7 {
-    top: 35%;
-    left: 85%;
-    transform: translateX(-50%);
-  }
-
-  .chips-8 {
-    top: 55%;
-    left: 85%;
-    transform: translateX(-50%);
-  }
-
-  .chips-9 {
-    top: 75%;
-    left: 65%;
     transform: translateX(-50%);
   }
 

@@ -1,6 +1,7 @@
 import dealCardSound from "@src/assets/audio/effects/card-place.mp3";
 import { useAudio } from "@src/hooks/useAudio";
 import { CARDS_MAP } from "@src/lib/constants/cards";
+import { mockPrivateCards } from "@src/lib/constants/mocks";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Card from "./Card";
 
@@ -14,11 +15,12 @@ export default function PrivateCards({
   const [dealCards, setDealCards] = useState<number[]>([]);
   const dealCardEffect = useAudio(dealCardSound, "effect");
 
+  const cards = playersPrivateCards;
   const mounted = useRef(false);
 
   const seats = useMemo(() => {
-    return playersPrivateCards ? Object.keys(playersPrivateCards).map((seat) => Number(seat)) : [];
-  }, [playersPrivateCards]);
+    return cards ? Object.keys(cards).map((seat) => Number(seat)) : [];
+  }, [cards]);
 
   useEffect(() => {
     if (mounted.current || seats.length === 0) return;
@@ -53,9 +55,9 @@ export default function PrivateCards({
             } `}
             key={seat}
           >
-            {revealedCards && playersPrivateCards ? (
+            {revealedCards && cards ? (
               <>
-                {playersPrivateCards[seat]?.map(
+                {cards[seat]?.map(
                   (cardName, i) =>
                     CARDS_MAP[cardName] && (
                       <Card
