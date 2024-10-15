@@ -8,6 +8,7 @@
 .chips,
 .cards {
   position: absolute;
+  will-change: transform;
 }
 
 @media (min-width: 768px) {

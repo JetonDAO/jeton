@@ -27,7 +27,7 @@ const ShufflingCards = () => {
       {angles.map((angle, index) => (
         <div
           key={angle}
-          className={`w-24 h-32 mx-2 rounded-lg bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center absolute animate-cardLoop`}
+          className={`md:w-16 md:h-24 2xl:w-24 2xl:h-32 mx-2 rounded-lg bg-[url("/images/card-back.png")] bg-no-repeat bg-contain justify-center absolute animate-cardLoop`}
           style={{
             transformOrigin: "20% 80%",
             zIndex: positions[index]?.zIndex,

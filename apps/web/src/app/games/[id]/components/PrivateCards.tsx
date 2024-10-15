@@ -1,8 +1,11 @@
+import { GameStatus } from "@jeton/ts-sdk";
+import { useSelector } from "@legendapp/state/react";
 import dealCardSound from "@src/assets/audio/effects/card-place.mp3";
 import { useAudio } from "@src/hooks/useAudio";
 import { CARDS_MAP } from "@src/lib/constants/cards";
 import { mockPrivateCards } from "@src/lib/constants/mocks";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { selectGameStatus$ } from "../state/selectors/gameSelectors";
 import Card from "./Card";
 
 export default function PrivateCards({
@@ -10,7 +13,8 @@ export default function PrivateCards({
 }: {
   playersPrivateCards: Record<number /* seat number start from */, number[]> | null;
 }) {
-  const [receivedCards, setReceivedCards] = useState(true);
+  const gameStatus = useSelector(selectGameStatus$());
+  const [receivedCards, setReceivedCards] = useState(false);
   const [revealedCards, setRevealedCards] = useState(false);
   const [dealCards, setDealCards] = useState<number[]>([]);
   const dealCardEffect = useAudio(dealCardSound, "effect");
@@ -38,10 +42,14 @@ export default function PrivateCards({
   }, [seats, dealCardEffect]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setRevealedCards(true);
-    }, 3000);
-  }, []);
+    if (gameStatus === GameStatus.ShowDown) {
+      setReceivedCards(true);
+
+      setTimeout(() => {
+        setRevealedCards(true);
+      }, 600);
+    }
+  });
 
   return (
     <>

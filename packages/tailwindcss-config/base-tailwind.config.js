@@ -98,7 +98,7 @@ const config = {
         "slide-in": "slideIn 1s ease-out",
         "grow-in": "growIn 0.5s ease-out",
         "flip-y": "flip 1s",
-        fading: "fading 2s infinite",
+        fading: "fading 1.5s",
         headShake: "headShake 1s ease-in-out .5s",
       },
     },
