@@ -40,12 +40,20 @@ export default function LandingPage() {
           />
           <ul className="flex space-x-10">
             <li>
-              <a href="#about" className="hover:text-gray-400 text-xs">
+              <a
+                target="_blank"
+                href="https://github.com/JetonDAO/jeton/blob/main/project-overview.md"
+                className="hover:text-gray-400 text-xs sm:text-sm"
+              >
                 Docs
               </a>
             </li>
             <li>
-              <a href="#features" className="hover:text-gray-400 text-xs">
+              <a
+                target="_blank"
+                href="https://scribehow.com/shared/How_to_Create_and_Join_a_Game_on_Jeton__SPXkQgPVQWO6m61Lrh3S-A"
+                className="hover:text-gray-400 text-xs sm:text-sm"
+              >
                 User Manual
               </a>
             </li>
