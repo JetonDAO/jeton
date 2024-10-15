@@ -12,8 +12,8 @@ export default function DownloadModal() {
   if (isLoading)
     return (
       <Modal closeButton={false} className="w-96 h-52 animate-grow-in">
-        <div className="flex text-nowrap text-sm flex-col items-center gap-1 text-white text-center">
-          {percentage ? (
+        <div className="flex  text-sm flex-col items-center gap-1 text-white text-center">
+          {!percentage ? (
             <>
               Downloading assets
               <progress
