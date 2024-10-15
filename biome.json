@@ -16,11 +16,17 @@
         "all": false
       },
       "style": {
-        "useNodejsImportProtocol": "off"
+        "useNodejsImportProtocol": "off",
+        "useEnumInitializers": "off",
+        "noNonNullAssertion": "off"
+      },
+      "complexity": {
+        "noForEach": "off"
       }
     }
   },
   "formatter": {
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "lineWidth": 100
   }
 }

@@ -1,0 +1,226 @@
+module zk_deck::zk_deck {
+    use aptos_std::simple_map;
+    use aptos_std::simple_map::SimpleMap;
+    use std::vector;
+    use zk_deck::groth16;
+    use zk_deck::groth16::VerificationKey;
+    use zk_deck::jubjub;
+
+    const EINVALID_PUBLIC_KEY: u64 = 1;
+    const EINVALID_PROOF: u64 = 2;
+
+    struct PublicKey (vector<u8>) has drop, copy, store;
+
+    public fun new_public_key(bytes: vector<u8>): PublicKey {
+        let params = jubjub::get_curve_params();
+        let point = jubjub::deserialize(&bytes);
+        assert!(
+            jubjub::in_curve(&params, &point),
+            EINVALID_PUBLIC_KEY,
+        );
+        PublicKey(bytes)
+    }
+
+    struct EncryptedDeck (vector<u8>) has drop, store;
+
+    public fun new_encrypted_deck(): EncryptedDeck {
+        let params = jubjub::get_curve_params();
+        let one = jubjub::one();
+        let acc = jubjub::zero();
+        let zero_bytes = jubjub::serialize(&acc);
+        let deck = vector::empty<u8>();
+        for (i in 0..52) {
+            acc = jubjub::add(&params, &acc, &one);
+            vector::append(&mut deck, copy zero_bytes);
+            vector::append(&mut deck, jubjub::serialize(&acc));
+        };
+        EncryptedDeck(deck)
+    }
+
+    public fun shuffle_encrypt(
+        self: &mut EncryptedDeck,
+        public_keys: &vector<PublicKey>,
+        bytes: &vector<u8>,
+        proof: &vector<u8>,
+    ) {
+        let params = jubjub::get_curve_params();
+        let key = shuffle_encrypt_deck_key();        
+        let num_public_keys = public_keys.length();
+        let aggregated_public_key = jubjub::deserialize(&public_keys[0].0);
+        for (i in 1..num_public_keys) {
+            let public_key = jubjub::deserialize(&public_keys[i].0);
+            aggregated_public_key = jubjub::add(
+                &params,
+                &aggregated_public_key,
+                &public_key,
+            );
+        };
+
+        let public_signals = vector::range(0, 52 * 4).map(
+            |i| groth16::deserialize_fr(&bytes.slice(32*i, 32*i+32))
+        );
+        public_signals.append(aggregated_public_key.to_element_vector());
+        public_signals.append(
+            vector::range(0, 52 * 4).map(
+                |i| groth16::deserialize_fr(&self.0.slice(32*i, 32*i+32)),
+            ),
+        );
+        assert!(
+            groth16::verify(&key, &public_signals, proof),
+            EINVALID_PROOF,
+        );
+        self.0 = *bytes;
+    }
+
+    struct DecryptionShareStore (SimpleMap<u8, vector<u8>>) has drop, store;
+
+    public fun new_decryption_share_store(): DecryptionShareStore {
+        DecryptionShareStore(simple_map::new())
+    }
+
+    public fun add_shares(
+        self: &mut DecryptionShareStore,
+        deck: &EncryptedDeck,
+        public_key: &PublicKey,
+        card_indexes: &vector<u8>,
+        shares: &vector<vector<u8>>,
+        proofs: &vector<vector<u8>>,
+    ) {
+        let params = jubjub::get_curve_params();
+        let num_shares = card_indexes.length();
+        assert!(
+            num_shares == shares.length(),
+        );
+        assert!(
+            num_shares == proofs.length(),
+        );
+        let key = decrypt_card_share_key();
+        let public_key = jubjub::deserialize(&public_key.0);
+        for (i in 0..num_shares) {
+            let card_index = card_indexes[i];
+            let c1 = jubjub::deserialize(
+                &deck.0.slice(128*(card_index as u64), 128*(card_index as u64)+64)
+            );
+            let share = jubjub::deserialize(&shares[i]);
+            let public_signals = share.to_element_vector();
+            public_signals.append(public_key.to_element_vector());
+            public_signals.append(c1.to_element_vector());
+            assert!(
+                groth16::verify(&key, &public_signals, &proofs[i]),
+                EINVALID_PROOF,
+            );
+            if (self.0.contains_key(&card_index)) {
+                let old_share = jubjub::deserialize(self.0.borrow(&card_index));
+                share = jubjub::add(&params, &share, &old_share);
+            };
+            self.0.upsert(
+                card_index,
+                jubjub::serialize(&share),
+            );
+        }
+    }
+
+    public fun decrypt_deck(self: &DecryptionShareStore, deck: &EncryptedDeck): SimpleMap<u8, u8> {
+        let params = jubjub::get_curve_params();
+        let cards = vector::empty();
+        let acc = jubjub::zero();
+        let one = jubjub::one();
+        for (i in 0..52) {
+            acc = jubjub::add(&params, &acc, &one);
+            cards.push_back(copy acc);
+        };
+        let keys = self.0.keys();
+        let values = keys.map_ref(|key| {
+            let c2 = jubjub::deserialize(
+                &deck.0.slice(128*(*key as u64)+64, 128*(*key as u64)+128),
+            );
+            let share = jubjub::deserialize(self.0.borrow(key));
+            let card = jubjub::sub(&params, &c2, &share);
+            let (has_card, card_index) = cards.find(|c| jubjub::eq(c, &card));
+            assert!(has_card);
+            card_index as u8
+        });
+        simple_map::new_from(keys, values)
+    }
+
+    fun shuffle_encrypt_deck_key(): VerificationKey {
+        groth16::new_verification_key(
+            &x"{{shuffleEncryptDeck.alpha}}",
+            &x"{{shuffleEncryptDeck.beta}}",
+            &x"{{shuffleEncryptDeck.gamma}}",
+            &x"{{shuffleEncryptDeck.delta}}",
+            &vector[{{#each shuffleEncryptDeck.ic}}
+                x"{{this}}",{{/each}}
+            ],
+        )
+    }
+
+    fun decrypt_card_share_key(): VerificationKey {
+        groth16::new_verification_key(
+            &x"{{decryptCardShare.alpha}}",
+            &x"{{decryptCardShare.beta}}",
+            &x"{{decryptCardShare.gamma}}",
+            &x"{{decryptCardShare.delta}}",
+            &vector[{{#each decryptCardShare.ic}}
+                x"{{this}}",{{/each}}
+            ],
+        )
+    }
+
+    #[test]
+    fun test_2_party_deck() {
+        let num_players = 2;
+        let public_key_bytes = vector[{{#each test.publicKeys}}
+            x"{{this}}",{{/each}}
+        ];
+        let shuffle_encrypt_bytes = vector[{{#each test.shuffleEncryptBytes}}
+            x"{{this}}",{{/each}}
+        ];
+        let shuffle_encrypt_proofs = vector[{{#each test.shuffleEncryptProofs}}
+            x"{{this}}",{{/each}}
+        ];
+        let decrypt_shares = vector[{{#each test.decryptShares}}
+            vector[{{#each this}}
+                x"{{this}}",{{/each}}
+            ],{{/each}}
+        ];
+        let decrypt_proofs = vector[{{#each test.decryptProofs}}
+            vector[{{#each this}}
+                x"{{this}}",{{/each}}
+            ],{{/each}}
+        ];
+        let output_deck = vector[{{#each test.outputDeck}}
+            {{this}}u8,{{/each}}
+        ];
+
+        let public_keys = public_key_bytes.map(|bytes| new_public_key(bytes));
+        let deck = new_encrypted_deck();
+        for (i in 0..num_players) {
+            deck.shuffle_encrypt(
+                &public_keys,
+                &shuffle_encrypt_bytes[i],
+                &shuffle_encrypt_proofs[i],
+            );
+        };
+
+        let card_indexes = vector::empty();
+        for (i in 0..52) {
+            card_indexes.push_back(i as u8);
+        };
+        let store = new_decryption_share_store();
+        for (i in 0..num_players) {
+            store.add_shares(
+                &deck,
+                &public_keys[i],
+                &card_indexes,
+                &decrypt_shares[i],
+                &decrypt_proofs[i],
+            );
+        };
+
+        let cards = store.decrypt_deck(&deck);
+        cards.keys().for_each(
+            |key| assert!(*cards.borrow(&key) == output_deck[key as u64]),
+        );
+    }
+}

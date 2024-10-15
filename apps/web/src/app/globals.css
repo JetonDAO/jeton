@@ -1,3 +1,263 @@
+@import "nes.css/css/nes.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.seat-position,
+.chips,
+.cards {
+  position: absolute;
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  .seat-1 {
+    top: 80% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+
+  .seat-2 {
+    top: 90% !important;
+    left: 22% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-3 {
+    top: 70% !important;
+    left: 4% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-4 {
+    top: 25% !important;
+    left: 4% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-5 {
+    top: 10% !important;
+    left: 22% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-6 {
+    top: 10% !important;
+    left: 70% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-7 {
+    top: 25% !important;
+    left: 87% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-8 {
+    top: 70% !important;
+    left: 87% !important;
+    transform: translateY(-50%);
+  }
+
+  .seat-9 {
+    top: 90% !important;
+    left: 75% !important;
+    transform: translateY(-50%);
+  }
+
+  /* Dealer */
+  .seat-dealer {
+    top: -5% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-center {
+    top: 50% !important;
+    left: 50% !important;
+  }
+
+  .cards-2 {
+    top: 68% !important;
+    left: 33% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-3 {
+    top: 55% !important;
+    left: 15% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-4 {
+    top: 35% !important;
+    left: 15% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-5 {
+    top: 20% !important;
+    left: 33% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-6 {
+    top: 20% !important;
+    left: 67% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-7 {
+    top: 35% !important;
+    left: 82% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-8 {
+    top: 60% !important;
+    left: 82% !important;
+    transform: translateX(-50%);
+  }
+
+  .cards-9 {
+    top: 68% !important;
+    left: 70% !important;
+    transform: translateX(-50%);
+  }
+
+  .pot {
+    top: 65% !important;
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-center {
+    top: 50% !important;
+    left: 50% !important;
+  }
+
+  .pot {
+    top: 75%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat-1 {
+    top: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat-2 {
+    top: 100%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
+
+  .seat-3 {
+    top: 70%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
+
+  .seat-4 {
+    top: 28%;
+    left: 24%;
+    transform: translateY(-50%);
+  }
+
+  .seat-5 {
+    top: -10%;
+    left: 25%;
+    transform: translateY(-50%);
+  }
+
+  .seat-6 {
+    top: -10%;
+    left: 64%;
+    transform: translateY(-50%);
+  }
+
+  .seat-7 {
+    top: 28%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
+
+  .seat-8 {
+    top: 70%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
+
+  .seat-9 {
+    top: 100%;
+    left: 67%;
+    transform: translateY(-50%);
+  }
+
+  .seat-dealer {
+    top: -5% !important;
+    left: 45% !important;
+    transform: translate(0);
+  }
+
+  .cards-2 {
+    top: 89%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
+
+  .cards-3 {
+    top: 63%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
+
+  .cards-4 {
+    top: 20%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
+
+  .cards-5 {
+    top: 0%;
+    left: 40%;
+    transform: translateX(-50%);
+  }
+
+  .cards-6 {
+    top: 0%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
+
+  .cards-7 {
+    top: 20%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
+
+  .cards-8 {
+    top: 63%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
+
+  .cards-9 {
+    top: 89%;
+    left: 60%;
+    transform: translateX(-50%);
+  }
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}

@@ -4,19 +4,30 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:service-worker": "tsx ./addCacheUrls.mts",
+    "build:service-worker": "tsx ./addCacheUrls.mts",
     "build": "next build",
     "next-on-pages": "npx @cloudflare/next-on-pages",
     "start": "next start"
   },
   "dependencies": {
-    "@jeton/ts-sdk": "*",
-    "@jeton/ui": "*",
+    "@aptos-labs/ts-sdk": "^1.29.1",
     "@aptos-labs/wallet-adapter-ant-design": "^3.0.13",
     "@aptos-labs/wallet-adapter-react": "^3.6.2",
+    "@jeton/ts-sdk": "*",
+    "@jeton/ui": "*",
+    "@jeton/zk-deck": "*",
     "@legendapp/state": "^3.0.0-alpha.29",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.6.0",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0",
+    "nes.css": "^2.2.1",
     "next": "^14.2.8",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "tsx": "^4.19.1"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.2",
@@ -28,6 +39,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.41",
+    "postcss-import": "^16.1.0",
     "tailwindcss": "^3.4.10",
     "typescript": "^5"
   }

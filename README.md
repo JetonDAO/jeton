@@ -1,6 +1,10 @@
-# jeton
+# Jeton: A Decentralized and Trustless Poker Platform
 
-Decentralized poker protocol enabling trustless, transparent, and community-governed gameplay – powered by JatonDAO.
+Jeton is a decentralized poker platform designed to ensure fairness and transparency in online poker games. Built on the Aptos blockchain, Jeton eliminates the need for players to trust a central authority by leveraging zk-SNARKs (Zero-Knowledge Succinct Non-Interactive Arguments of Knowledge) and Elgamal encryption. These cryptographic techniques guarantee that the cards are shuffled, encrypted, and dealt fairly without revealing any information to players or the platform itself.
+
+The platform utilizes Elgamal encryption on the JubJub elliptic curve to securely encrypt cards and zk-SNARK circuits to verify both the shuffle and decryption processes. Each player participates in shuffling the deck and generating decryption shares, ensuring no individual player or entity can manipulate the outcome. Smart contracts on the Aptos blockchain handle the game logic and verify cryptographic proofs, providing a fully decentralized and tamper-proof environment for online poker.
+
+For a more detailed explanation of the algorithms, security considerations, and cryptographic methods used in Jeton, you can read the [full project overview](project-overview.md).
 
 ## What's inside?
 
@@ -8,8 +12,12 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 
-- `web`: a [Next.js](https://nextjs.org/) app
+- `web`: the web application of the jeton protocol, implemented in [Next.js](https://nextjs.org/)
+- `@jeton/zk-deck`: a package containing Move, TypeScript, and Circom code, for implementing zero knowledge based playing decks
+- `@jeton/smart-contracts`: a Move package responsible for on chain game logic
+- `@jeton/ts-sdk`:
 - `@jeton/ui`: a React component library shared by `web` application
+- `@jeton/tailwindcss-config`: 
 - `@jeton/typescript-config`: `tsconfig.json`s used throughout the monorepo
   Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -30,7 +38,17 @@ Make sure you have the correct versions of Node.js and npm installed:
 - **Node.js**: v20.16 or later
 - **npm**: v10.8 or later
 
-You can use [NVM](https://github.com/nvm-sh/nvm) to install the required version of node and npm.
+You can use [NVM](https://github.com/nvm-sh/nvm) to install the required version
+of node and npm.
+
+Also you need rustc and cargo install. It is recommended to use
+[rustup](https://rustup.rs/) to install them.
+
+After that you need to also install circom using:
+
+```shell
+cargo install --git https://github.com/iden3/circom.git --tag v2.1.9
+```
 
 ### Cloning the Repository
 

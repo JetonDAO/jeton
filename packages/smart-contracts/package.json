@@ -1,0 +1,17 @@
+{
+  "name": "@jeton/smart-contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "move:build": "aptos move compile --move-2 --named-addresses jeton=default",
+    "move:test": "aptos move test --move-2 --named-addresses jeton=default",
+    "move:publish": "aptos move deploy-object --address-name jeton --move-2 --assume-yes"
+  },
+  "devDependencies": {
+    "@aptos-labs/aptos-cli": "^0.2.0"
+  },
+  "dependencies": {
+    "@jeton/zk-deck": "^0.0.0"
+  }
+}

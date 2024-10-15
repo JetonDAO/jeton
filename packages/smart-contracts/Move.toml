@@ -1,0 +1,22 @@
+[package]
+name = "Jeton"
+version = "0.0.0"
+
+[addresses]
+aptos_framework = "0x1"
+aptos_std = "0x1"
+std = "0x1"
+zk_deck = "0x2550c62d611b5f27ff81a8839b32b5b540cbca2d692a7cf6cdd6127077b31b5d"
+jeton = "_"
+
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dependencies.ZKDeck]
+local = "../zk-deck/contracts"
+
+[dev-dependencies]

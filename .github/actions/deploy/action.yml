@@ -7,6 +7,12 @@ inputs:
   piesocket-api-key:
     description: "PieSocket API Key"
     required: true
+  base-url:
+    description: "Base URL for WebApp"
+    required: true
+  contracts-addr:
+    description: "Contracts Address"
+    required: true
 outputs:
   cloudflare-preview-url:
     description: "Couldflare Preview URL"
@@ -20,6 +26,8 @@ runs:
       shell: bash
       env:
         PIESOCKET_API_KEY: ${{ inputs.piesocket-api-key }}
+        NEXT_PUBLIC_BASE_URL: ${{ inputs.base-url }}
+        NEXT_PUBLIC_CONTRACTS_ADDR: ${{ inputs.contracts-addr }}
       run: npm run build
     - name: Deploy To Cloudflare
       id: deploy

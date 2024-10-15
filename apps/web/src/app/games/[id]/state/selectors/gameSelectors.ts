@@ -1,9 +1,20 @@
-import type { Player } from "@jeton/ts-sdk";
-import type { Observable, ObservableBoolean } from "@legendapp/state";
 import { state$ } from "../state";
 
-export const selectIsGameLoading$: () => ObservableBoolean = () =>
-  state$.loading;
+export const selectIsGameLoading$ = () => state$.loading;
+export const selectGamePlayers$ = () => state$.gameState.players;
+export const selectGameStatus$ = () => state$.gameState.status;
+export const selectShufflingPlayer$ = () => state$.gameState.shufflingPlayer;
+export const selectDealer$ = () => state$.gameState.dealer;
+export const selectMyCards$ = () => state$.gameState.myCards;
+export const selectPot$ = () => state$.gameState.pot;
+export const selectBetState$ = () => state$.gameState.betState;
+export const selectAvailableActions$ = () => state$.gameState.betState?.availableActions ?? [];
+export const selectAwaitingBetFrom$ = () => state$.gameState.betState?.awaitingBetFrom;
+export const selectPublicCards$ = () => {
+  const flopCards = state$.gameState.flopCards.get() || [];
+  const turnCard = state$.gameState.turnCard.get() || [];
+  const riverCard = state$.gameState.riverCard.get() || [];
 
-export const selectGamePlayers$: () => Observable<Player[] | undefined> = () =>
-  state$.gameState.players;
+  return [flopCards, turnCard, riverCard].flat();
+};
+export const selectProgressPercentage$ = () => state$.downloadingAssets.loadingProgress;
