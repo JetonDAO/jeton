@@ -21,10 +21,10 @@ module.exports = {
           "100%": { transform: "scale3d(1, 1, 1)" },
         },
         cardAnimation: {
-          "0%, 100%": { transform: "rotate(0deg)" },
+          "0%, 100%": { transform: "rotate(0deg) rotateY(0deg)" },
           "30%": { transform: "rotate(360deg)" },
           "50%": { transform: "rotateY(180deg)" },
-          "70%": { transform: "rotate(360deg)" },
+          "70%": { transform: "rotate(360deg) " },
         },
         deal: {
           "0%": {

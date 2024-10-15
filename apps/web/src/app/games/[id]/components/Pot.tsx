@@ -14,18 +14,19 @@ export default function Pot({ players }: { players: (UIPlayer | null)[] }) {
   const [betting, setBetting] = useState(false);
   const pot = useSelector(selectPot$());
   const gameStatus = useSelector(selectGameStatus$());
-  const raisedSeats = mockPlayers.reduce<number[]>((acc, curr, i) => {
+  const raisedSeats = players.reduce<number[]>((acc, curr, i) => {
     if (
-      curr.roundAction?.action === BettingActions.CALL ||
-      curr.roundAction?.action === BettingActions.RAISE
+      curr &&
+      (curr.roundAction?.action === BettingActions.CALL ||
+        curr.roundAction?.action === BettingActions.RAISE)
     ) {
       acc.push(i + 1);
     }
     return acc;
   }, []);
 
-  const winnerSeats = mockPlayers?.reduce<number[]>((acc, curr, i) => {
-    if (curr.winAmount && curr.winAmount > 0) {
+  const winnerSeats = players?.reduce<number[]>((acc, curr, i) => {
+    if (curr?.winAmount && curr.winAmount > 0) {
       acc.push(i + 1);
     }
     return acc;
