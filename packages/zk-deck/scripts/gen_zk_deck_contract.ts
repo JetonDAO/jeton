@@ -45,46 +45,53 @@ async function generateTestDeckData(zkDeck: ZKDeck, numPlayers: number) {
   const publicKeys = secretKeys.map((secretKey) => zkDeck.generatePublicKey(secretKey));
   const aggregatedPublicKey = zkDeck.generateAggregatedPublicKey(publicKeys);
 
-  const encryptedDecks: Uint8Array[] = [];
-  const encryptProofs: Uint8Array[] = [];
+  const shuffleEncryptBytes: Uint8Array[] = [];
+  const shuffleEncryptProofs: Uint8Array[] = [];
   let deck = zkDeck.initialEncryptedDeck;
   for (let i = 0; i < numPlayers; i++) {
     const { proof, outputDeck } = await zkDeck.proveShuffleEncryptDeck(aggregatedPublicKey, deck);
-    encryptedDecks.push(outputDeck);
-    encryptProofs.push(proof);
+    shuffleEncryptBytes.push(outputDeck);
+    shuffleEncryptProofs.push(proof);
     deck = outputDeck;
   }
 
   const decryptData = await Promise.all(
-    Array.from(new Array(52).keys()).map((cardIndex) =>
+    Array.from(new Array(numPlayers).keys()).map((playerIndex) =>
       Promise.all(
-        Array.from(new Array(numPlayers).keys()).map((playerIndex) =>
+        Array.from(new Array(numCards).keys()).map((cardIndex) =>
           zkDeck.proveDecryptCardShare(secretKeys[playerIndex], cardIndex, deck),
         ),
       ),
     ),
   );
-  const decryptCardShares: Uint8Array[][] = [];
+  const decryptShares: Uint8Array[][] = [];
   const decryptProofs: Uint8Array[][] = [];
-  const outputDeck: number[] = [];
-  for (let i = 0; i < numCards; i++) {
+  for (let i = 0; i < numPlayers; i++) {
     const shares: Uint8Array[] = [];
     const proofs: Uint8Array[] = [];
-    for (let j = 0; j < numPlayers; j++) {
+    for (let j = 0; j < numCards; j++) {
       shares.push(decryptData[i][j].decryptionCardShare);
       proofs.push(decryptData[i][j].proof);
     }
-    decryptCardShares.push(shares);
+    decryptShares.push(shares);
     decryptProofs.push(proofs);
-    outputDeck.push(zkDeck.decryptCard(i, deck, shares));
+  }
+  const outputDeck: number[] = [];
+  for (let i = 0; i < numCards; i++) {
+    outputDeck.push(
+      zkDeck.decryptCard(
+        i,
+        deck,
+        decryptShares.map((shares) => shares[i]),
+      ),
+    );
   }
 
   return {
     publicKeys: publicKeys.map((pk) => hexify(pk)),
-    aggregatedPublicKey: hexify(aggregatedPublicKey),
-    encryptedDecks: encryptedDecks.map((ed) => hexify(ed)),
-    encryptProofs: encryptProofs.map((ep) => hexify(ep)),
-    decryptCardShares: decryptCardShares.map((dcss) => dcss.map((dcs) => hexify(dcs))),
+    shuffleEncryptBytes: shuffleEncryptBytes.map((ed) => hexify(ed)),
+    shuffleEncryptProofs: shuffleEncryptProofs.map((ep) => hexify(ep)),
+    decryptShares: decryptShares.map((dcss) => dcss.map((dcs) => hexify(dcs))),
     decryptProofs: decryptProofs.map((dps) => dps.map((dp) => hexify(dp))),
     outputDeck,
   };
