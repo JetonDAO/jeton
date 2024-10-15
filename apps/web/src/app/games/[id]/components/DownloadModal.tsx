@@ -7,23 +7,24 @@ import { selectIsGameLoading$, selectProgressPercentage$ } from "../state/select
 export default function DownloadModal() {
   const { isLoading: isWalletLoading } = useWallet();
   const percentage = useSelector(selectProgressPercentage$());
-
   const isLoading = useSelector(selectIsGameLoading$()) || isWalletLoading;
+
   if (isLoading)
     return (
       <Modal closeButton={false} className="w-96 h-52 animate-grow-in">
-        <div className="flex flex-col items-center gap-1 text-white text-center">
+        <div className="flex text-nowrap text-sm flex-col items-center gap-1 text-white text-center">
           {percentage ? (
             <>
+              Downloading assets
               <progress
-                className="nes-progress is-success duration-300 transition-all"
+                className="nes-progress is-success duration-300 transition-all h-6"
                 value={percentage}
                 max={100}
               />
               {`%${percentage}`}
             </>
           ) : (
-            "Starting download assets..."
+            "Starting downloading assets..."
           )}
         </div>
       </Modal>
