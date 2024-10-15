@@ -6,7 +6,7 @@ import {
   retrieveInAppAccount,
   setInAppWalletStatus,
 } from "@src/utils/inAppWallet";
-import { useEffect, useState } from "react";
+import { FormEventHandler, useEffect, useState } from "react";
 import { Input } from "./Input";
 import Modal from "./Modal";
 
@@ -31,7 +31,7 @@ export default function InAppDialog() {
     }
   };
 
-  const fundAccount = (e) => {
+  const fundAccount = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setLoading(true);
