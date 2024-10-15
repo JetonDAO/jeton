@@ -101,27 +101,21 @@ export default function Seat({
     mounted.current = true;
   }, []);
 
-  // Reset last action based on game status
   useEffect(() => {
-    console.log("status: ", gameStatus);
-
     if (
       gameStatus === GameStatus.DrawRiver ||
       gameStatus === GameStatus.DrawFlop ||
       gameStatus === GameStatus.DrawTurn ||
+      gameStatus === GameStatus.Shuffle ||
+      gameStatus === GameStatus.ShowDown ||
       isPlayerTurn
     ) {
       setLastAction("");
-    }
-  }, [gameStatus, isPlayerTurn]);
-
-  // Update last action for the player
-  useEffect(() => {
-    if (player.roundAction) {
+    } else if (player.roundAction) {
       const { action, amount } = player.roundAction;
       setLastAction(`${action} ${amount}`);
     }
-  }, [player.roundAction]);
+  }, [player.roundAction, gameStatus, isPlayerTurn]);
 
   return (
     <div
@@ -139,9 +133,9 @@ export default function Seat({
       >
         <Image
           draggable={false}
-          src={playerAvatar} // playerAvatar is always a valid image
+          src={playerAvatar}
           alt="avatar"
-          className={`aspect-square object-contain bg-black/70 h-full animate-grow-in grow-0 rounded-full shrink-0 border-2 md:border-8 ${
+          className={`aspect-square object-contain transition-all bg-black/70 h-full animate-grow-in grow-0 rounded-full shrink-0 border-2 md:border-8 ${
             shufflingPlayer?.id === player.id ? "scale-125 animate-bounce delay-1000" : ""
           } ${isPlayerTurn ? "ring-8 animate-bounce ring-amber-600 duration-500" : ""} ${
             player.status === PlayerStatus.sittingOut || player.status === PlayerStatus.folded

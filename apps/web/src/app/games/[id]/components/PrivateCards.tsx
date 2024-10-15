@@ -42,14 +42,18 @@ export default function PrivateCards({
   }, [seats, dealCardEffect]);
 
   useEffect(() => {
-    if (gameStatus === GameStatus.ShowDown) {
+    if (gameStatus === GameStatus.ShowDown && cards) {
+      console.log("fuck show down");
+
+      console.log(cards);
+
       setReceivedCards(true);
 
       setTimeout(() => {
         setRevealedCards(true);
       }, 600);
     }
-  });
+  }, [gameStatus, cards]);
 
   return (
     <>
