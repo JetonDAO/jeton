@@ -1,26 +1,20 @@
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import CloseIcon from "@src/assets/icons/close.svg";
+import { finalAddress } from "@src/utils/inAppWallet";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function LogsButton() {
+  const { account } = useWallet();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const logs = [
-    { description: "Player A shuffled", link: "https://example.com/tx/12345" },
-    {
-      description: "Player B placed a bet",
-      link: "https://example.com/tx/67890",
-    },
-    { description: "Player C folded", link: "" },
-    {
-      description: "Player D won the hand",
-      link: "https://example.com/tx/54321",
-    },
-  ];
+  const address = finalAddress(account?.address || "");
+  const isInAppWallet = address !== account?.address;
+  const logs: { link: string; description: string }[] = [];
 
   return (
     <div className="hidden sm:block">
@@ -45,6 +39,11 @@ export default function LogsButton() {
           </button>
         </div>
         <div className="p-4 divide-y-2 divide-white/20">
+          <p className="text-sm break-words">
+            You are using {isInAppWallet ? "our in app wallet" : "your own wallet"} with the address
+            of: {address}
+          </p>
+
           {logs.map((log, index) => (
             <div key={log.description} className="py-4">
               <p className="text-sm">
