@@ -310,16 +310,19 @@ export class Jeton extends EventEmitter<GameEventMap> {
     const deck = getDeck(state);
     if (!deck) throw new Error("Deck must exist");
 
-    const proofPromises: Promise<{
+    const proofsAndShares: {
       proof: Proof;
       decryptionCardShare: DecryptionCardShare;
-    }>[] = [];
+      cardIndex: number;
+    }[] = [];
+
     for (const index of indexes) {
-      proofPromises.push(this.zkDeck.proveDecryptCardShare(this.secretKey, index, deck));
+      proofsAndShares.push(
+        await this.zkDeck
+          .proveDecryptCardShare(this.secretKey, index, deck)
+          .then((v) => Object.assign({ cardIndex: index as number }, v)),
+      );
     }
-    const proofsAndShares = (await Promise.all(proofPromises)).map((s, i) =>
-      Object.assign({ cardIndex: indexes[i] as number }, s),
-    );
     return proofsAndShares;
   }
 
