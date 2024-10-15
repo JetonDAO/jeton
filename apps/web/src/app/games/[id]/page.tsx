@@ -86,7 +86,7 @@ export default function PlayPage({ params }: { params: { id: string } }) {
   }, [isWalletLoading, connected, router, toffState]);
 
   useEffect(() => {
-    if (myCards && myCards.length > 0) {
+    if (gameStatus === GameStatus.DrawPrivateCards || gameStatus === GameStatus.ShowDown) {
       const privateCards = reorderedPlayers.reduce(
         (acc, player, seat) => {
           if (player) {
@@ -99,7 +99,13 @@ export default function PlayPage({ params }: { params: { id: string } }) {
 
       setPrivateCards(privateCards);
     }
-  }, [reorderedPlayers, myCards]);
+  }, [reorderedPlayers, gameStatus]);
+
+  useEffect(() => {
+    if (gameStatus === GameStatus.Shuffle) {
+      setDrawPrivateCards(false);
+    }
+  }, [gameStatus]);
 
   return (
     <GameContainer>
@@ -127,18 +133,3 @@ export default function PlayPage({ params }: { params: { id: string } }) {
     </GameContainer>
   );
 }
-
-// mock shuffling for testing
-// const [dealerSeat, setDealerSeat] = useState(1);
-
-// useEffect(() => {
-//   const timeout = setTimeout(() => {
-//     const dealerInterval = setInterval(() => {
-//       setDealerSeat((prevSeat) => (prevSeat < 9 ? prevSeat + 1 : 1));
-//     }, 3000);
-
-//     return () => clearInterval(dealerInterval);
-//   }, 2000);
-
-//   return () => clearTimeout(timeout);
-// }, []);

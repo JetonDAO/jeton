@@ -13,7 +13,7 @@
 
 @media (min-width: 768px) {
   .seat-1 {
-    top: 80% !important;
+    top: 77% !important;
     left: 50% !important;
     transform: translateX(-50%);
   }

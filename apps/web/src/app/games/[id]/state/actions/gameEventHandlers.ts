@@ -117,6 +117,7 @@ export function receivedPublicCardsHandler({ cards, round }: ReceivedPublicCards
 
 export function receivedShowDown(data: ShowDownEvent) {
   console.log("received showdown event", data);
+  state$.gameState.status.set(GameStatus.ShowDown);
   state$.gameState.players.forEach((player) => {
     const eventPlayer = data[player.id.get()!];
     if (eventPlayer) {
