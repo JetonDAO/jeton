@@ -75,7 +75,7 @@ export default function Seat({
 }) {
   const mounted = useRef(false);
 
-  const players = useSelector(selectGamePlayers$);
+  const players = useSelector(selectGamePlayers$());
   const shufflingPlayer = useSelector(selectShufflingPlayer$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const isPlayerTurn = awaitingBetFrom?.id === player.id;

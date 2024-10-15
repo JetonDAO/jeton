@@ -43,8 +43,7 @@ export default function PlayerActions() {
     if (isPlayerTurn && queuedAction) {
       console.log(`Player turn, executing queued action: ${queuedAction}`);
       handlePlayerAction(queuedAction);
-      setQueuedAction(null);
-      setIsActionQueued(false);
+      clearQueue();
     }
   }, [isPlayerTurn, queuedAction]);
 
@@ -70,7 +69,6 @@ export default function PlayerActions() {
     console.log(`Action taken: ${action}`);
     if (!game) throw new Error("Must exist by now");
     game.placeBet(action);
-    clearQueue();
   };
 
   return (
@@ -80,7 +78,7 @@ export default function PlayerActions() {
         actions.map((action) => (
           <button
             key={action}
-            className={`capitalize focus:outline-[#b87d5b] z-20 relative nes-btn is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-lg text-white hover:brightness-90 ${
+            className={`capitalize focus:outline-[#b87d5b] z-20 relative nes-btn is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-base text-white flex hover:brightness-90 ${
               isActionQueued && queuedAction === action ? "cursor-pointer" : ""
             }`}
             onClick={() => handlePlayerAction(action)}
