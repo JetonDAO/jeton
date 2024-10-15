@@ -67,7 +67,7 @@ export default function LandingPage() {
         </motion.div>
 
         <motion.p
-          className="text-base sm:text-2xl mb-10 sm:leading-9 max-w-5xl text-balance"
+          className="text-base sm:text-xl mb-10 max-w-5xl text-balance"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={shouldAnimate ? { opacity: 1, scale: 1 } : {}}
           exit={{ opacity: 0, scale: 0.95 }}

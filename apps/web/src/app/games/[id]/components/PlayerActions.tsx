@@ -2,19 +2,25 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { PlacingBettingActions } from "@jeton/ts-sdk";
 import { useSelector } from "@legendapp/state/react";
 import { JetonContext } from "@src/components/JetonContextProvider";
+import { CARDS_MAP } from "@src/lib/constants/cards";
+import { mockMyCards } from "@src/lib/constants/mocks";
 import { finalAddress } from "@src/utils/inAppWallet";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   selectAvailableActions$,
   selectAwaitingBetFrom$,
   selectGamePlayers$,
+  selectMyCards$,
 } from "../state/selectors/gameSelectors";
+import Card from "./Card";
 
 export default function PlayerActions() {
   const availableActions = useSelector(selectAvailableActions$());
   const awaitingBetFrom = useSelector(selectAwaitingBetFrom$());
   const { game } = useContext(JetonContext);
   const players = useSelector(selectGamePlayers$());
+  const myCards = useSelector(selectMyCards$());
+
   const [queuedAction, setQueuedAction] = useState<PlacingBettingActions | null>(null);
   const [isActionQueued, setIsActionQueued] = useState(false);
   const { account } = useWallet();
@@ -74,7 +80,7 @@ export default function PlayerActions() {
         actions.map((action) => (
           <button
             key={action}
-            className={`capitalize focus:outline-[#b87d5b] nes-btn is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-lg text-white hover:brightness-90 ${
+            className={`capitalize focus:outline-[#b87d5b] z-20 relative nes-btn is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-lg text-white hover:brightness-90 ${
               isActionQueued && queuedAction === action ? "cursor-pointer" : ""
             }`}
             onClick={() => handlePlayerAction(action)}
@@ -85,6 +91,25 @@ export default function PlayerActions() {
             {`${action} ${isActionQueued && queuedAction === action ? "(Queued)" : ""}`}
           </button>
         ))}
+      <div className="justify-center flex absolute shrink-0 -translate-x-4 sm:translate-x-0 -top-20 -right-5 sm:-top-28 sm:right-44 z-10">
+        {myCards?.map(
+          (cardName, i) =>
+            CARDS_MAP[cardName] && (
+              <Card
+                className={`
+                    w-20 sm:w-32 z-50 relative
+                    ${
+                      i === 0
+                        ? "animate-dealAndRotate1"
+                        : "animate-dealAndRotate2 right-4 sm:right-14"
+                    }
+                  `}
+                key={cardName}
+                cardName={CARDS_MAP[cardName]}
+              />
+            ),
+        )}
+      </div>
     </div>
   );
 }

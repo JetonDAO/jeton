@@ -113,15 +113,15 @@ export default function PlayPage({ params }: { params: { id: string } }) {
           {gameStatus === GameStatus.AwaitingStart && <WaitingIndicator />}
         </div>
 
-        {drawPrivateCards && (
+        {drawPrivateCards && players && (
           <>
             <PrivateCards playersPrivateCards={privateCard} />
-            <Pot />
+            <Pot players={players} />
           </>
         )}
       </Table>
       <PlayerActions />
-      <DownloadModal />
+      {/* <DownloadModal /> */}
       <GameStatusBox />
       {connected && <InAppDialog />}
     </GameContainer>
