@@ -20,6 +20,7 @@ export default function PlayerActions() {
   const { game } = useContext(JetonContext);
   const players = useSelector(selectGamePlayers$());
   const myCards = useSelector(selectMyCards$());
+  const [loading, setLoading] = useState(false);
 
   const [queuedAction, setQueuedAction] = useState<PlacingBettingActions | null>(null);
   const [isActionQueued, setIsActionQueued] = useState(false);
@@ -65,10 +66,16 @@ export default function PlayerActions() {
     setIsActionQueued(false);
   };
 
-  const takePlayerAction = (action: PlacingBettingActions) => {
+  const takePlayerAction = async (action: PlacingBettingActions) => {
     console.log(`Action taken: ${action}`);
+    setLoading(true);
+
     if (!game) throw new Error("Must exist by now");
-    game.placeBet(action);
+    try {
+      await game.placeBet(action);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,15 +85,15 @@ export default function PlayerActions() {
         actions.map((action) => (
           <button
             key={action}
-            className={`capitalize text-center focus:outline-[#b87d5b] z-20 relative nes-btn is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-base text-white flex hover:brightness-90 ${
+            className={`capitalize text-center focus:outline-[#b87d5b] z-20 disabled:bright relative nes-btn justify-center is-warning disabled:hover:cursor-not-allowed w-full py-2 sm:py-4 text-[10px] sm:text-base text-white flex hover:brightness-90 ${
               isActionQueued && queuedAction === action ? "cursor-pointer" : ""
             }`}
             onClick={() => handlePlayerAction(action)}
             disabled={
-              !availableActions || !availableActions.includes(action) || queuedAction === action
+              !availableActions || !availableActions.includes(action) || isActionQueued || loading
             }
           >
-            {`${action} ${isActionQueued && queuedAction === action ? "(Queued)" : ""}`}
+            {`${action} ${isActionQueued && queuedAction === action ? "(Q)" : ""}`}
           </button>
         ))}
       <div className="justify-center flex absolute shrink-0 -translate-x-4 sm:translate-x-0 -top-20 -right-5 sm:-top-28 sm:right-44 z-10">
@@ -99,7 +106,7 @@ export default function PlayerActions() {
                     ${
                       i === 0
                         ? "animate-dealAndRotate1"
-                        : "animate-dealAndRotate2 right-4 sm:right-14"
+                        : "animate-dealAndRotate2 right-4 sm:right-8"
                     }
                   `}
                 key={cardName}
